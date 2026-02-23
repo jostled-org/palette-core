@@ -1,0 +1,151 @@
+# Dracula base preset
+
+[meta]
+name = "Dracula"
+preset_id = "dracula"
+schema_version = "1"
+style = "dark"
+kind = "preset-base"
+
+[base]
+background = "#282a36"
+background_dark = "#21222c"
+background_highlight = "#44475a"
+foreground = "#f8f8f2"
+foreground_dark = "#bfbfbf"
+border = "#44475a"
+border_highlight = "#bd93f9"
+
+[semantic]
+success = "#50fa7b"
+warning = "#f1fa8c"
+error = "#ff5555"
+info = "#8be9fd"
+hint = "#6272a4"
+
+[diff]
+added_bg = "#2a3d2e"
+modified_bg = "#44475a"
+removed_bg = "#3d2a2e"
+text_bg = "#44475a"
+
+added_fg = "#50fa7b"
+modified_fg = "#ffb86c"
+removed_fg = "#ff5555"
+ignored = "#6272a4"
+
+[git]
+add = "#50fa7b"
+change = "#ffb86c"
+delete = "#ff5555"
+ignore = "#6272a4"
+
+[surface]
+menu = "#21222c"
+sidebar = "#21222c"
+statusline = "#21222c"
+float = "#21222c"
+popup = "#21222c"
+overlay = "#21222c"
+highlight = "#44475a"
+selection = "#44475a"
+search = "#bd93f9"
+
+[typography]
+comment = "#6272a4"
+gutter = "#6272a4"
+line_number = "#f8f8f2"
+selection_text = "#f8f8f2"
+link = "#8be9fd"
+title = "#bd93f9"
+
+[syntax]
+keywords = "#ff79c6"
+keywords_fn = "#ff79c6"
+functions = "#50fa7b"
+variables = "#f8f8f2"
+variables_builtin = "#bd93f9"
+parameters = "#ffb86c"
+
+properties = "#8be9fd"
+types = "#8be9fd"
+types_builtin = "#8be9fd"
+constants = "#bd93f9"
+
+numbers = "#bd93f9"
+booleans = "#bd93f9"
+strings = "#f1fa8c"
+strings_doc = "#6272a4"
+strings_escape = "#ff79c6"
+strings_regex = "#ff5555"
+
+operators = "#ff79c6"
+punctuation = "#f8f8f2"
+punctuation_bracket = "#f8f8f2"
+
+annotations = "#8be9fd"
+attributes = "#50fa7b"
+constructor = "#8be9fd"
+tag = "#ff79c6"
+tag_delimiter = "#f8f8f2"
+tag_attribute = "#50fa7b"
+comments = "#6272a4"
+
+[editor]
+cursor = "#f8f8f2"
+cursor_text = "#282a36"
+match_paren = "#ffb86c"
+selection_bg = "#44475a"
+selection_fg = "#f8f8f2"
+inlay_hint_bg = "#44475a"
+inlay_hint_fg = "#6272a4"
+search_bg = "#bd93f9"
+search_fg = "#f8f8f2"
+
+diagnostic_error = "#ff5555"
+diagnostic_warn = "#f1fa8c"
+diagnostic_info = "#8be9fd"
+diagnostic_hint = "#6272a4"
+diagnostic_underline_error = "#ff5555"
+diagnostic_underline_warn = "#f1fa8c"
+diagnostic_underline_info = "#8be9fd"
+diagnostic_underline_hint = "#6272a4"
+
+[terminal]
+black = "#21222c"
+red = "#ff5555"
+green = "#50fa7b"
+yellow = "#f1fa8c"
+blue = "#bd93f9"
+magenta = "#ff79c6"
+cyan = "#8be9fd"
+white = "#f8f8f2"
+bright_black = "#6272a4"
+bright_red = "#ff6e6e"
+bright_green = "#69ff94"
+bright_yellow = "#ffffa5"
+bright_blue = "#d6acff"
+bright_magenta = "#ff92df"
+bright_cyan = "#a4ffff"
+bright_white = "#ffffff"
+
+[platform.terminal]
+background = "#21222c"
+foreground = "#f8f8f2"
+
+[platform.web]
+background = "#282a36"
+foreground = "#f8f8f2"
+
+[palette]
+background = "#282a36"
+current_line = "#44475a"
+foreground = "#f8f8f2"
+comment = "#6272a4"
+cyan = "#8be9fd"
+green = "#50fa7b"
+orange = "#ffb86c"
+pink = "#ff79c6"
+purple = "#bd93f9"
+red = "#ff5555"
+yellow = "#f1fa8c"

@@ -1,0 +1,157 @@
+# Everforest Dark base preset
+
+[meta]
+name = "Everforest Dark"
+preset_id = "everforest_dark"
+schema_version = "1"
+style = "dark"
+kind = "preset-base"
+
+[base]
+background = "#2d353b"
+background_dark = "#232a2e"
+background_highlight = "#343f44"
+foreground = "#d3c6aa"
+foreground_dark = "#9da9a0"
+border = "#475258"
+border_highlight = "#7fbbb3"
+
+[semantic]
+success = "#a7c080"
+warning = "#dbbc7f"
+error = "#e67e80"
+info = "#7fbbb3"
+hint = "#83c092"
+
+[diff]
+added_bg = "#2e383a"
+modified_bg = "#343f44"
+removed_bg = "#3a2e30"
+text_bg = "#3d484d"
+
+added_fg = "#a7c080"
+modified_fg = "#e69875"
+removed_fg = "#e67e80"
+ignored = "#7a8478"
+
+[git]
+add = "#a7c080"
+change = "#e69875"
+delete = "#e67e80"
+ignore = "#7a8478"
+
+[surface]
+menu = "#232a2e"
+sidebar = "#232a2e"
+statusline = "#232a2e"
+float = "#232a2e"
+popup = "#232a2e"
+overlay = "#232a2e"
+highlight = "#343f44"
+selection = "#3d484d"
+search = "#7fbbb3"
+
+[typography]
+comment = "#7a8478"
+gutter = "#7a8478"
+line_number = "#859289"
+selection_text = "#d3c6aa"
+link = "#7fbbb3"
+title = "#a7c080"
+
+[syntax]
+keywords = "#e67e80"
+keywords_fn = "#e67e80"
+functions = "#a7c080"
+variables = "#d3c6aa"
+variables_builtin = "#e69875"
+parameters = "#e69875"
+
+properties = "#83c092"
+types = "#dbbc7f"
+types_builtin = "#7fbbb3"
+constants = "#d699b6"
+
+numbers = "#d699b6"
+booleans = "#d699b6"
+strings = "#a7c080"
+strings_doc = "#7a8478"
+strings_escape = "#e69875"
+strings_regex = "#83c092"
+
+operators = "#e69875"
+punctuation = "#d3c6aa"
+punctuation_bracket = "#9da9a0"
+
+annotations = "#d699b6"
+attributes = "#dbbc7f"
+constructor = "#dbbc7f"
+tag = "#e67e80"
+tag_delimiter = "#d3c6aa"
+tag_attribute = "#83c092"
+comments = "#7a8478"
+
+[editor]
+cursor = "#d3c6aa"
+cursor_text = "#2d353b"
+match_paren = "#e69875"
+selection_bg = "#3d484d"
+selection_fg = "#d3c6aa"
+inlay_hint_bg = "#343f44"
+inlay_hint_fg = "#7a8478"
+search_bg = "#7fbbb3"
+search_fg = "#2d353b"
+
+diagnostic_error = "#e67e80"
+diagnostic_warn = "#dbbc7f"
+diagnostic_info = "#7fbbb3"
+diagnostic_hint = "#83c092"
+diagnostic_underline_error = "#e67e80"
+diagnostic_underline_warn = "#dbbc7f"
+diagnostic_underline_info = "#7fbbb3"
+diagnostic_underline_hint = "#83c092"
+
+[terminal]
+black = "#343f44"
+red = "#e67e80"
+green = "#a7c080"
+yellow = "#dbbc7f"
+blue = "#7fbbb3"
+magenta = "#d699b6"
+cyan = "#83c092"
+white = "#d3c6aa"
+bright_black = "#7a8478"
+bright_red = "#e67e80"
+bright_green = "#a7c080"
+bright_yellow = "#dbbc7f"
+bright_blue = "#7fbbb3"
+bright_magenta = "#d699b6"
+bright_cyan = "#83c092"
+bright_white = "#d3c6aa"
+
+[platform.terminal]
+background = "#232a2e"
+foreground = "#d3c6aa"
+
+[platform.web]
+background = "#2d353b"
+foreground = "#d3c6aa"
+
+[palette]
+bg_dim = "#232a2e"
+bg0 = "#2d353b"
+bg1 = "#343f44"
+bg2 = "#3d484d"
+bg3 = "#475258"
+bg4 = "#4f585e"
+fg = "#d3c6aa"
+grey0 = "#7a8478"
+grey1 = "#859289"
+grey2 = "#9da9a0"
+red = "#e67e80"
+orange = "#e69875"
+yellow = "#dbbc7f"
+green = "#a7c080"
+aqua = "#83c092"
+blue = "#7fbbb3"
+purple = "#d699b6"

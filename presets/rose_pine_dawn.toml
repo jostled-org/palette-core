@@ -1,0 +1,129 @@
+# Rose Pine Dawn variant
+
+[meta]
+name = "Rose Pine Dawn"
+preset_id = "rose_pine_dawn"
+schema_version = "1"
+style = "dawn"
+kind = "preset-variant"
+inherits = "rose_pine"
+
+[base]
+background = "#faf4ed"
+background_dark = "#fffaf3"
+background_highlight = "#f2e9e1"
+foreground = "#575279"
+foreground_dark = "#797593"
+border = "#f2e9e1"
+border_highlight = "#907aa9"
+
+[semantic]
+success = "#56949f"
+warning = "#ea9d34"
+error = "#b4637a"
+info = "#286983"
+hint = "#907aa9"
+
+[diff]
+added_bg = "#e6ede5"
+modified_bg = "#f2e9e1"
+removed_bg = "#ede5e5"
+text_bg = "#dfdad9"
+added_fg = "#56949f"
+modified_fg = "#ea9d34"
+removed_fg = "#b4637a"
+ignored = "#9893a5"
+
+[git]
+add = "#56949f"
+change = "#ea9d34"
+delete = "#b4637a"
+ignore = "#9893a5"
+
+[surface]
+menu = "#fffaf3"
+sidebar = "#fffaf3"
+statusline = "#fffaf3"
+float = "#fffaf3"
+popup = "#fffaf3"
+overlay = "#f2e9e1"
+highlight = "#dfdad9"
+selection = "#dfdad9"
+search = "#907aa9"
+
+[typography]
+comment = "#9893a5"
+gutter = "#9893a5"
+line_number = "#797593"
+selection_text = "#575279"
+link = "#286983"
+title = "#907aa9"
+
+[syntax]
+keywords = "#286983"
+keywords_fn = "#286983"
+functions = "#d7827e"
+variables = "#575279"
+variables_builtin = "#b4637a"
+parameters = "#907aa9"
+
+properties = "#d7827e"
+types = "#ea9d34"
+types_builtin = "#286983"
+constants = "#ea9d34"
+
+numbers = "#ea9d34"
+booleans = "#d7827e"
+strings = "#ea9d34"
+strings_doc = "#9893a5"
+strings_escape = "#b4637a"
+strings_regex = "#907aa9"
+
+operators = "#797593"
+punctuation = "#797593"
+punctuation_bracket = "#797593"
+
+annotations = "#d7827e"
+attributes = "#907aa9"
+constructor = "#ea9d34"
+tag = "#d7827e"
+tag_delimiter = "#797593"
+tag_attribute = "#907aa9"
+comments = "#9893a5"
+
+[editor]
+cursor = "#575279"
+cursor_text = "#faf4ed"
+match_paren = "#ea9d34"
+selection_bg = "#dfdad9"
+selection_fg = "#575279"
+inlay_hint_bg = "#f2e9e1"
+inlay_hint_fg = "#9893a5"
+search_bg = "#907aa9"
+search_fg = "#faf4ed"
+
+[terminal]
+black = "#f2e9e1"
+red = "#b4637a"
+green = "#56949f"
+yellow = "#ea9d34"
+blue = "#286983"
+magenta = "#907aa9"
+cyan = "#56949f"
+white = "#575279"
+bright_black = "#9893a5"
+bright_red = "#b4637a"
+bright_green = "#56949f"
+bright_yellow = "#ea9d34"
+bright_blue = "#286983"
+bright_magenta = "#907aa9"
+bright_cyan = "#56949f"
+bright_white = "#575279"
+
+[platform.terminal]
+background = "#fffaf3"
+foreground = "#575279"
+
+[platform.web]
+background = "#faf4ed"
+foreground = "#575279"

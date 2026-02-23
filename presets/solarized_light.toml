@@ -1,0 +1,139 @@
+# Solarized Light variant
+
+[meta]
+name = "Solarized Light"
+preset_id = "solarized_light"
+schema_version = "1"
+style = "light"
+kind = "preset-variant"
+inherits = "solarized_dark"
+
+[base]
+background = "#fdf6e3"
+background_dark = "#eee8d5"
+background_highlight = "#eee8d5"
+foreground = "#657b83"
+foreground_dark = "#586e75"
+border = "#eee8d5"
+border_highlight = "#268bd2"
+
+[semantic]
+success = "#859900"
+warning = "#b58900"
+error = "#dc322f"
+info = "#268bd2"
+hint = "#2aa198"
+
+[diff]
+added_bg = "#d5e8c6"
+modified_bg = "#eee8d5"
+removed_bg = "#e8c6c6"
+text_bg = "#eee8d5"
+
+added_fg = "#859900"
+modified_fg = "#b58900"
+removed_fg = "#dc322f"
+ignored = "#586e75"
+
+[git]
+add = "#859900"
+change = "#b58900"
+delete = "#dc322f"
+ignore = "#586e75"
+
+[surface]
+menu = "#eee8d5"
+sidebar = "#eee8d5"
+statusline = "#eee8d5"
+float = "#eee8d5"
+popup = "#eee8d5"
+overlay = "#eee8d5"
+highlight = "#eee8d5"
+selection = "#eee8d5"
+search = "#268bd2"
+
+[typography]
+comment = "#93a1a1"
+gutter = "#93a1a1"
+line_number = "#586e75"
+selection_text = "#586e75"
+link = "#268bd2"
+title = "#6c71c4"
+
+[syntax]
+keywords = "#859900"
+keywords_fn = "#859900"
+functions = "#268bd2"
+variables = "#657b83"
+variables_builtin = "#dc322f"
+parameters = "#cb4b16"
+
+properties = "#2aa198"
+types = "#b58900"
+types_builtin = "#6c71c4"
+constants = "#cb4b16"
+
+numbers = "#d33682"
+booleans = "#cb4b16"
+strings = "#2aa198"
+strings_doc = "#586e75"
+strings_escape = "#cb4b16"
+strings_regex = "#d33682"
+
+operators = "#859900"
+punctuation = "#657b83"
+punctuation_bracket = "#586e75"
+
+annotations = "#cb4b16"
+attributes = "#b58900"
+constructor = "#6c71c4"
+tag = "#268bd2"
+tag_delimiter = "#657b83"
+tag_attribute = "#b58900"
+comments = "#93a1a1"
+
+[editor]
+cursor = "#657b83"
+cursor_text = "#fdf6e3"
+match_paren = "#cb4b16"
+selection_bg = "#eee8d5"
+selection_fg = "#586e75"
+inlay_hint_bg = "#eee8d5"
+inlay_hint_fg = "#93a1a1"
+search_bg = "#268bd2"
+search_fg = "#002b36"
+
+diagnostic_error = "#dc322f"
+diagnostic_warn = "#b58900"
+diagnostic_info = "#268bd2"
+diagnostic_hint = "#2aa198"
+diagnostic_underline_error = "#dc322f"
+diagnostic_underline_warn = "#b58900"
+diagnostic_underline_info = "#268bd2"
+diagnostic_underline_hint = "#2aa198"
+
+[terminal]
+black = "#002b36"
+red = "#dc322f"
+green = "#859900"
+yellow = "#b58900"
+blue = "#268bd2"
+magenta = "#d33682"
+cyan = "#2aa198"
+white = "#586e75"
+bright_black = "#586e75"
+bright_red = "#cb4b16"
+bright_green = "#586e75"
+bright_yellow = "#657b83"
+bright_blue = "#839496"
+bright_magenta = "#6c71c4"
+bright_cyan = "#93a1a1"
+bright_white = "#002b36"
+
+[platform.terminal]
+background = "#eee8d5"
+foreground = "#657b83"
+
+[platform.web]
+background = "#fdf6e3"
+foreground = "#657b83"

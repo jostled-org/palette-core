@@ -1,0 +1,51 @@
+# Rose Pine Moon variant
+
+[meta]
+name = "Rose Pine Moon"
+preset_id = "rose_pine_moon"
+schema_version = "1"
+style = "moon"
+kind = "preset-variant"
+inherits = "rose_pine"
+
+[base]
+background = "#232136"
+background_dark = "#2a273f"
+background_highlight = "#393552"
+border = "#393552"
+
+[semantic]
+info = "#3e8fb0"
+
+[surface]
+menu = "#2a273f"
+sidebar = "#2a273f"
+statusline = "#2a273f"
+float = "#2a273f"
+popup = "#2a273f"
+overlay = "#393552"
+highlight = "#44415a"
+selection = "#44415a"
+
+[syntax]
+keywords_fn = "#3e8fb0"
+functions = "#ea9a97"
+properties = "#ea9a97"
+types_builtin = "#3e8fb0"
+booleans = "#ea9a97"
+tag = "#ea9a97"
+comments = "#6e6a86"
+
+[editor]
+cursor_text = "#232136"
+inlay_hint_bg = "#393552"
+selection_bg = "#44415a"
+
+[terminal]
+black = "#393552"
+
+[platform.terminal]
+background = "#2a273f"
+
+[platform.web]
+background = "#232136"

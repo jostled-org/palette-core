@@ -1,0 +1,129 @@
+# One Light variant
+
+[meta]
+name = "One Light"
+preset_id = "one_light"
+schema_version = "1"
+style = "light"
+kind = "preset-variant"
+inherits = "one_dark"
+
+[base]
+background = "#fafafa"
+background_dark = "#f0f0f0"
+background_highlight = "#eaeaeb"
+foreground = "#383a42"
+foreground_dark = "#a0a1a7"
+border = "#e0e0e0"
+border_highlight = "#526fff"
+
+[semantic]
+success = "#50a14f"
+warning = "#c18401"
+error = "#e45649"
+info = "#4078f2"
+hint = "#0184bc"
+
+[diff]
+added_bg = "#d5ebd5"
+modified_bg = "#eaeaeb"
+removed_bg = "#ebd5d5"
+text_bg = "#d4d4d5"
+added_fg = "#50a14f"
+modified_fg = "#986801"
+removed_fg = "#e45649"
+ignored = "#a0a1a7"
+
+[git]
+add = "#50a14f"
+change = "#986801"
+delete = "#e45649"
+ignore = "#a0a1a7"
+
+[surface]
+menu = "#f0f0f0"
+sidebar = "#f0f0f0"
+statusline = "#f0f0f0"
+float = "#f0f0f0"
+popup = "#f0f0f0"
+overlay = "#f0f0f0"
+highlight = "#eaeaeb"
+selection = "#d4d4d5"
+search = "#526fff"
+
+[typography]
+comment = "#a0a1a7"
+gutter = "#9d9d9f"
+line_number = "#9d9d9f"
+selection_text = "#383a42"
+link = "#0184bc"
+title = "#4078f2"
+
+[syntax]
+keywords = "#a626a4"
+keywords_fn = "#a626a4"
+functions = "#4078f2"
+variables = "#383a42"
+variables_builtin = "#e45649"
+parameters = "#986801"
+
+properties = "#e45649"
+types = "#c18401"
+types_builtin = "#0184bc"
+constants = "#986801"
+
+numbers = "#986801"
+booleans = "#986801"
+strings = "#50a14f"
+strings_doc = "#a0a1a7"
+strings_escape = "#0184bc"
+strings_regex = "#0184bc"
+
+operators = "#0184bc"
+punctuation = "#383a42"
+punctuation_bracket = "#383a42"
+
+annotations = "#986801"
+attributes = "#c18401"
+constructor = "#c18401"
+tag = "#e45649"
+tag_delimiter = "#383a42"
+tag_attribute = "#986801"
+comments = "#a0a1a7"
+
+[editor]
+cursor = "#526fff"
+cursor_text = "#fafafa"
+match_paren = "#986801"
+selection_bg = "#d4d4d5"
+selection_fg = "#383a42"
+inlay_hint_bg = "#eaeaeb"
+inlay_hint_fg = "#a0a1a7"
+search_bg = "#526fff"
+search_fg = "#fafafa"
+
+[terminal]
+black = "#383a42"
+red = "#e45649"
+green = "#50a14f"
+yellow = "#c18401"
+blue = "#4078f2"
+magenta = "#a626a4"
+cyan = "#0184bc"
+white = "#a0a1a7"
+bright_black = "#696c77"
+bright_red = "#ca1243"
+bright_green = "#50a14f"
+bright_yellow = "#986801"
+bright_blue = "#4078f2"
+bright_magenta = "#a626a4"
+bright_cyan = "#0184bc"
+bright_white = "#fafafa"
+
+[platform.terminal]
+background = "#f0f0f0"
+foreground = "#383a42"
+
+[platform.web]
+background = "#fafafa"
+foreground = "#383a42"

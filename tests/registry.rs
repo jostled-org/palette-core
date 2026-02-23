@@ -37,5 +37,5 @@ fn unknown_preset_returns_error() {
 
 #[test]
 fn preset_ids_list_is_complete() {
-    assert_eq!(preset_ids().len(), 10);
+    assert_eq!(preset_ids().len(), 28);
 }

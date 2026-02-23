@@ -1,0 +1,163 @@
+# Kanagawa base preset
+
+[meta]
+name = "Kanagawa"
+preset_id = "kanagawa"
+schema_version = "1"
+style = "dark"
+kind = "preset-base"
+
+[base]
+background = "#1f1f28"
+background_dark = "#16161d"
+background_highlight = "#2a2a37"
+foreground = "#dcd7ba"
+foreground_dark = "#c8c093"
+border = "#54546d"
+border_highlight = "#7e9cd8"
+
+[semantic]
+success = "#98bb6c"
+warning = "#ff9e3b"
+error = "#e82424"
+info = "#7e9cd8"
+hint = "#6a9589"
+
+[diff]
+added_bg = "#2b3328"
+modified_bg = "#252535"
+removed_bg = "#43242b"
+text_bg = "#49443c"
+
+added_fg = "#76946a"
+modified_fg = "#dca561"
+removed_fg = "#c34043"
+ignored = "#54546d"
+
+[git]
+add = "#76946a"
+change = "#dca561"
+delete = "#c34043"
+ignore = "#54546d"
+
+[surface]
+menu = "#16161d"
+sidebar = "#16161d"
+statusline = "#16161d"
+float = "#16161d"
+popup = "#16161d"
+overlay = "#16161d"
+highlight = "#2a2a37"
+selection = "#2d4f67"
+search = "#7e9cd8"
+
+[typography]
+comment = "#727169"
+gutter = "#54546d"
+line_number = "#c8c093"
+selection_text = "#dcd7ba"
+link = "#7fb4ca"
+title = "#957fb8"
+
+[syntax]
+keywords = "#957fb8"
+keywords_fn = "#957fb8"
+functions = "#7e9cd8"
+variables = "#dcd7ba"
+variables_builtin = "#e46876"
+parameters = "#e6c384"
+
+properties = "#7aa89f"
+types = "#7fb4ca"
+types_builtin = "#658594"
+constants = "#ffa066"
+
+numbers = "#d27e99"
+booleans = "#ffa066"
+strings = "#98bb6c"
+strings_doc = "#727169"
+strings_escape = "#d27e99"
+strings_regex = "#e46876"
+
+operators = "#c0a36e"
+punctuation = "#9cabca"
+punctuation_bracket = "#c8c093"
+
+annotations = "#ffa066"
+attributes = "#e6c384"
+constructor = "#e6c384"
+tag = "#957fb8"
+tag_delimiter = "#9cabca"
+tag_attribute = "#7aa89f"
+comments = "#727169"
+
+[editor]
+cursor = "#dcd7ba"
+cursor_text = "#1f1f28"
+match_paren = "#ff9e3b"
+selection_bg = "#2d4f67"
+selection_fg = "#dcd7ba"
+inlay_hint_bg = "#2a2a37"
+inlay_hint_fg = "#54546d"
+search_bg = "#7e9cd8"
+search_fg = "#1f1f28"
+
+diagnostic_error = "#e82424"
+diagnostic_warn = "#ff9e3b"
+diagnostic_info = "#7e9cd8"
+diagnostic_hint = "#6a9589"
+diagnostic_underline_error = "#e82424"
+diagnostic_underline_warn = "#ff9e3b"
+diagnostic_underline_info = "#7e9cd8"
+diagnostic_underline_hint = "#6a9589"
+
+[terminal]
+black = "#16161d"
+red = "#c34043"
+green = "#76946a"
+yellow = "#c0a36e"
+blue = "#7e9cd8"
+magenta = "#957fb8"
+cyan = "#6a9589"
+white = "#c8c093"
+bright_black = "#54546d"
+bright_red = "#e82424"
+bright_green = "#98bb6c"
+bright_yellow = "#e6c384"
+bright_blue = "#7fb4ca"
+bright_magenta = "#938aa9"
+bright_cyan = "#7aa89f"
+bright_white = "#dcd7ba"
+
+[platform.terminal]
+background = "#16161d"
+foreground = "#dcd7ba"
+
+[platform.web]
+background = "#1f1f28"
+foreground = "#dcd7ba"
+
+[palette]
+sumi_ink0 = "#16161d"
+sumi_ink1 = "#181820"
+sumi_ink2 = "#1a1a22"
+sumi_ink3 = "#1f1f28"
+sumi_ink4 = "#2a2a37"
+sumi_ink5 = "#363646"
+sumi_ink6 = "#54546d"
+fuji_white = "#dcd7ba"
+old_white = "#c8c093"
+surimi_orange = "#ffa066"
+carp_yellow = "#e6c384"
+spring_violet1 = "#938aa9"
+spring_violet2 = "#9cabca"
+spring_blue = "#7fb4ca"
+spring_green = "#98bb6c"
+sakura_pink = "#d27e99"
+wave_red = "#e46876"
+peach_red = "#ff5d62"
+crystal_blue = "#7e9cd8"
+oni_violet = "#957fb8"
+dragon_blue = "#658594"
+wave_aqua1 = "#6a9589"
+wave_aqua2 = "#7aa89f"

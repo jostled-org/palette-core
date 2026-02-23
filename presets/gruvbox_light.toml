@@ -1,0 +1,139 @@
+# Gruvbox Light variant
+
+[meta]
+name = "Gruvbox Light"
+preset_id = "gruvbox_light"
+schema_version = "1"
+style = "light"
+kind = "preset-variant"
+inherits = "gruvbox_dark"
+
+[base]
+background = "#fbf1c7"
+background_dark = "#f9f5d7"
+background_highlight = "#ebdbb2"
+foreground = "#3c3836"
+foreground_dark = "#504945"
+border = "#ebdbb2"
+border_highlight = "#458588"
+
+[semantic]
+success = "#79740e"
+warning = "#b57614"
+error = "#9d0006"
+info = "#076678"
+hint = "#427b58"
+
+[diff]
+added_bg = "#d5e0b6"
+modified_bg = "#ebdbb2"
+removed_bg = "#e0b6b6"
+text_bg = "#d5c4a1"
+
+added_fg = "#79740e"
+modified_fg = "#af3a03"
+removed_fg = "#9d0006"
+ignored = "#928374"
+
+[git]
+add = "#79740e"
+change = "#af3a03"
+delete = "#9d0006"
+ignore = "#928374"
+
+[surface]
+menu = "#f9f5d7"
+sidebar = "#f9f5d7"
+statusline = "#f9f5d7"
+float = "#f9f5d7"
+popup = "#f9f5d7"
+overlay = "#f9f5d7"
+highlight = "#ebdbb2"
+selection = "#d5c4a1"
+search = "#b57614"
+
+[typography]
+comment = "#928374"
+gutter = "#d5c4a1"
+line_number = "#7c6f64"
+selection_text = "#3c3836"
+link = "#076678"
+title = "#79740e"
+
+[syntax]
+keywords = "#9d0006"
+keywords_fn = "#9d0006"
+functions = "#79740e"
+variables = "#3c3836"
+variables_builtin = "#af3a03"
+parameters = "#076678"
+
+properties = "#427b58"
+types = "#b57614"
+types_builtin = "#076678"
+constants = "#8f3f71"
+
+numbers = "#8f3f71"
+booleans = "#8f3f71"
+strings = "#79740e"
+strings_doc = "#928374"
+strings_escape = "#af3a03"
+strings_regex = "#076678"
+
+operators = "#af3a03"
+punctuation = "#3c3836"
+punctuation_bracket = "#504945"
+
+annotations = "#427b58"
+attributes = "#b57614"
+constructor = "#b57614"
+tag = "#9d0006"
+tag_delimiter = "#3c3836"
+tag_attribute = "#79740e"
+comments = "#928374"
+
+[editor]
+cursor = "#3c3836"
+cursor_text = "#fbf1c7"
+match_paren = "#af3a03"
+selection_bg = "#d5c4a1"
+selection_fg = "#3c3836"
+inlay_hint_bg = "#ebdbb2"
+inlay_hint_fg = "#928374"
+search_bg = "#b57614"
+search_fg = "#fbf1c7"
+
+diagnostic_error = "#9d0006"
+diagnostic_warn = "#b57614"
+diagnostic_info = "#076678"
+diagnostic_hint = "#427b58"
+diagnostic_underline_error = "#9d0006"
+diagnostic_underline_warn = "#b57614"
+diagnostic_underline_info = "#076678"
+diagnostic_underline_hint = "#427b58"
+
+[terminal]
+black = "#fbf1c7"
+red = "#9d0006"
+green = "#79740e"
+yellow = "#b57614"
+blue = "#076678"
+magenta = "#8f3f71"
+cyan = "#427b58"
+white = "#3c3836"
+bright_black = "#928374"
+bright_red = "#af3a03"
+bright_green = "#79740e"
+bright_yellow = "#b57614"
+bright_blue = "#076678"
+bright_magenta = "#8f3f71"
+bright_cyan = "#427b58"
+bright_white = "#282828"
+
+[platform.terminal]
+background = "#f9f5d7"
+foreground = "#3c3836"
+
+[platform.web]
+background = "#fbf1c7"
+foreground = "#3c3836"

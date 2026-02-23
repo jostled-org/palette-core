@@ -1,0 +1,156 @@
+# Nord base preset
+
+[meta]
+name = "Nord"
+preset_id = "nord"
+schema_version = "1"
+style = "dark"
+kind = "preset-base"
+
+[base]
+background = "#2e3440"
+background_dark = "#272c36"
+background_highlight = "#3b4252"
+foreground = "#d8dee9"
+foreground_dark = "#e5e9f0"
+border = "#3b4252"
+border_highlight = "#88c0d0"
+
+[semantic]
+success = "#a3be8c"
+warning = "#ebcb8b"
+error = "#bf616a"
+info = "#81a1c1"
+hint = "#8fbcbb"
+
+[diff]
+added_bg = "#2b3b2e"
+modified_bg = "#3b4252"
+removed_bg = "#3b2e30"
+text_bg = "#434c5e"
+
+added_fg = "#a3be8c"
+modified_fg = "#d08770"
+removed_fg = "#bf616a"
+ignored = "#4c566a"
+
+[git]
+add = "#a3be8c"
+change = "#d08770"
+delete = "#bf616a"
+ignore = "#4c566a"
+
+[surface]
+menu = "#272c36"
+sidebar = "#272c36"
+statusline = "#272c36"
+float = "#272c36"
+popup = "#272c36"
+overlay = "#272c36"
+highlight = "#3b4252"
+selection = "#434c5e"
+search = "#88c0d0"
+
+[typography]
+comment = "#4c566a"
+gutter = "#4c566a"
+line_number = "#d8dee9"
+selection_text = "#eceff4"
+link = "#88c0d0"
+title = "#81a1c1"
+
+[syntax]
+keywords = "#81a1c1"
+keywords_fn = "#81a1c1"
+functions = "#88c0d0"
+variables = "#d8dee9"
+variables_builtin = "#bf616a"
+parameters = "#d08770"
+
+properties = "#8fbcbb"
+types = "#ebcb8b"
+types_builtin = "#5e81ac"
+constants = "#d08770"
+
+numbers = "#b48ead"
+booleans = "#d08770"
+strings = "#a3be8c"
+strings_doc = "#ebcb8b"
+strings_escape = "#d08770"
+strings_regex = "#ebcb8b"
+
+operators = "#81a1c1"
+punctuation = "#d8dee9"
+punctuation_bracket = "#d8dee9"
+
+annotations = "#d08770"
+attributes = "#ebcb8b"
+constructor = "#88c0d0"
+tag = "#81a1c1"
+tag_delimiter = "#d8dee9"
+tag_attribute = "#8fbcbb"
+comments = "#4c566a"
+
+[editor]
+cursor = "#d8dee9"
+cursor_text = "#2e3440"
+match_paren = "#d08770"
+selection_bg = "#434c5e"
+selection_fg = "#d8dee9"
+inlay_hint_bg = "#3b4252"
+inlay_hint_fg = "#4c566a"
+search_bg = "#88c0d0"
+search_fg = "#2e3440"
+
+diagnostic_error = "#bf616a"
+diagnostic_warn = "#ebcb8b"
+diagnostic_info = "#81a1c1"
+diagnostic_hint = "#8fbcbb"
+diagnostic_underline_error = "#bf616a"
+diagnostic_underline_warn = "#ebcb8b"
+diagnostic_underline_info = "#81a1c1"
+diagnostic_underline_hint = "#8fbcbb"
+
+[terminal]
+black = "#3b4252"
+red = "#bf616a"
+green = "#a3be8c"
+yellow = "#ebcb8b"
+blue = "#81a1c1"
+magenta = "#b48ead"
+cyan = "#88c0d0"
+white = "#e5e9f0"
+bright_black = "#4c566a"
+bright_red = "#bf616a"
+bright_green = "#a3be8c"
+bright_yellow = "#ebcb8b"
+bright_blue = "#81a1c1"
+bright_magenta = "#b48ead"
+bright_cyan = "#8fbcbb"
+bright_white = "#eceff4"
+
+[platform.terminal]
+background = "#272c36"
+foreground = "#d8dee9"
+
+[platform.web]
+background = "#2e3440"
+foreground = "#d8dee9"
+
+[palette]
+nord0 = "#2e3440"
+nord1 = "#3b4252"
+nord2 = "#434c5e"
+nord3 = "#4c566a"
+nord4 = "#d8dee9"
+nord5 = "#e5e9f0"
+nord6 = "#eceff4"
+nord7 = "#8fbcbb"
+nord8 = "#88c0d0"
+nord9 = "#81a1c1"
+nord10 = "#5e81ac"
+nord11 = "#bf616a"
+nord12 = "#d08770"
+nord13 = "#ebcb8b"
+nord14 = "#a3be8c"
+nord15 = "#b48ead"

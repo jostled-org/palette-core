@@ -1,0 +1,154 @@
+# Ayu Dark base preset
+
+[meta]
+name = "Ayu Dark"
+preset_id = "ayu_dark"
+schema_version = "1"
+style = "dark"
+kind = "preset-base"
+
+[base]
+background = "#0b0e14"
+background_dark = "#0a0d12"
+background_highlight = "#11141a"
+foreground = "#bfbdb6"
+foreground_dark = "#636a72"
+border = "#11141a"
+border_highlight = "#e6b450"
+
+[semantic]
+success = "#aad94c"
+warning = "#e6b450"
+error = "#d95757"
+info = "#39bae6"
+hint = "#95e6cb"
+
+[diff]
+added_bg = "#1a2a1a"
+modified_bg = "#11141a"
+removed_bg = "#2a1a1a"
+text_bg = "#1c1f25"
+
+added_fg = "#aad94c"
+modified_fg = "#fa8d3e"
+removed_fg = "#d95757"
+ignored = "#636a72"
+
+[git]
+add = "#aad94c"
+change = "#fa8d3e"
+delete = "#d95757"
+ignore = "#636a72"
+
+[surface]
+menu = "#0a0d12"
+sidebar = "#0a0d12"
+statusline = "#0a0d12"
+float = "#0a0d12"
+popup = "#0a0d12"
+overlay = "#0a0d12"
+highlight = "#11141a"
+selection = "#1a2332"
+search = "#e6b450"
+
+[typography]
+comment = "#636a72"
+gutter = "#1c1f25"
+line_number = "#636a72"
+selection_text = "#bfbdb6"
+link = "#39bae6"
+title = "#e6b450"
+
+[syntax]
+keywords = "#ff8f40"
+keywords_fn = "#ff8f40"
+functions = "#ffb454"
+variables = "#bfbdb6"
+variables_builtin = "#f07178"
+parameters = "#d2a6ff"
+
+properties = "#39bae6"
+types = "#59c2ff"
+types_builtin = "#39bae6"
+constants = "#d2a6ff"
+
+numbers = "#d2a6ff"
+booleans = "#d2a6ff"
+strings = "#aad94c"
+strings_doc = "#636a72"
+strings_escape = "#95e6cb"
+strings_regex = "#95e6cb"
+
+operators = "#f29668"
+punctuation = "#bfbdb6"
+punctuation_bracket = "#bfbdb6"
+
+annotations = "#e6b673"
+attributes = "#ffb454"
+constructor = "#59c2ff"
+tag = "#39bae6"
+tag_delimiter = "#bfbdb6"
+tag_attribute = "#ffb454"
+comments = "#636a72"
+
+[editor]
+cursor = "#e6b450"
+cursor_text = "#0b0e14"
+match_paren = "#e6b450"
+selection_bg = "#1a2332"
+selection_fg = "#bfbdb6"
+inlay_hint_bg = "#11141a"
+inlay_hint_fg = "#636a72"
+search_bg = "#e6b450"
+search_fg = "#0b0e14"
+
+diagnostic_error = "#d95757"
+diagnostic_warn = "#e6b450"
+diagnostic_info = "#39bae6"
+diagnostic_hint = "#95e6cb"
+diagnostic_underline_error = "#d95757"
+diagnostic_underline_warn = "#e6b450"
+diagnostic_underline_info = "#39bae6"
+diagnostic_underline_hint = "#95e6cb"
+
+[terminal]
+black = "#0b0e14"
+red = "#f07178"
+green = "#aad94c"
+yellow = "#e6b450"
+blue = "#39bae6"
+magenta = "#d2a6ff"
+cyan = "#95e6cb"
+white = "#bfbdb6"
+bright_black = "#636a72"
+bright_red = "#f07178"
+bright_green = "#aad94c"
+bright_yellow = "#ffb454"
+bright_blue = "#59c2ff"
+bright_magenta = "#d2a6ff"
+bright_cyan = "#95e6cb"
+bright_white = "#bfbdb6"
+
+[platform.terminal]
+background = "#0a0d12"
+foreground = "#bfbdb6"
+
+[platform.web]
+background = "#0b0e14"
+foreground = "#bfbdb6"
+
+[palette]
+bg = "#0b0e14"
+fg = "#bfbdb6"
+accent = "#e6b450"
+tag = "#39bae6"
+func = "#ffb454"
+entity = "#59c2ff"
+string = "#aad94c"
+regexp = "#95e6cb"
+markup = "#f07178"
+keyword = "#ff8f40"
+special = "#e6b673"
+operator = "#f29668"
+error = "#d95757"
+constant = "#d2a6ff"

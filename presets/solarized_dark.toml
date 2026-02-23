@@ -1,0 +1,156 @@
+# Solarized Dark base preset
+
+[meta]
+name = "Solarized Dark"
+preset_id = "solarized_dark"
+schema_version = "1"
+style = "dark"
+kind = "preset-base"
+
+[base]
+background = "#002b36"
+background_dark = "#001e27"
+background_highlight = "#073642"
+foreground = "#839496"
+foreground_dark = "#93a1a1"
+border = "#073642"
+border_highlight = "#268bd2"
+
+[semantic]
+success = "#859900"
+warning = "#b58900"
+error = "#dc322f"
+info = "#268bd2"
+hint = "#2aa198"
+
+[diff]
+added_bg = "#003d2a"
+modified_bg = "#073642"
+removed_bg = "#3d0014"
+text_bg = "#073642"
+
+added_fg = "#859900"
+modified_fg = "#b58900"
+removed_fg = "#dc322f"
+ignored = "#586e75"
+
+[git]
+add = "#859900"
+change = "#b58900"
+delete = "#dc322f"
+ignore = "#586e75"
+
+[surface]
+menu = "#001e27"
+sidebar = "#001e27"
+statusline = "#001e27"
+float = "#001e27"
+popup = "#001e27"
+overlay = "#001e27"
+highlight = "#073642"
+selection = "#073642"
+search = "#268bd2"
+
+[typography]
+comment = "#586e75"
+gutter = "#586e75"
+line_number = "#657b83"
+selection_text = "#93a1a1"
+link = "#268bd2"
+title = "#6c71c4"
+
+[syntax]
+keywords = "#859900"
+keywords_fn = "#859900"
+functions = "#268bd2"
+variables = "#839496"
+variables_builtin = "#dc322f"
+parameters = "#cb4b16"
+
+properties = "#2aa198"
+types = "#b58900"
+types_builtin = "#6c71c4"
+constants = "#cb4b16"
+
+numbers = "#d33682"
+booleans = "#cb4b16"
+strings = "#2aa198"
+strings_doc = "#586e75"
+strings_escape = "#cb4b16"
+strings_regex = "#d33682"
+
+operators = "#859900"
+punctuation = "#839496"
+punctuation_bracket = "#93a1a1"
+
+annotations = "#cb4b16"
+attributes = "#b58900"
+constructor = "#6c71c4"
+tag = "#268bd2"
+tag_delimiter = "#839496"
+tag_attribute = "#b58900"
+comments = "#586e75"
+
+[editor]
+cursor = "#839496"
+cursor_text = "#002b36"
+match_paren = "#cb4b16"
+selection_bg = "#073642"
+selection_fg = "#93a1a1"
+inlay_hint_bg = "#073642"
+inlay_hint_fg = "#586e75"
+search_bg = "#268bd2"
+search_fg = "#fdf6e3"
+
+diagnostic_error = "#dc322f"
+diagnostic_warn = "#b58900"
+diagnostic_info = "#268bd2"
+diagnostic_hint = "#2aa198"
+diagnostic_underline_error = "#dc322f"
+diagnostic_underline_warn = "#b58900"
+diagnostic_underline_info = "#268bd2"
+diagnostic_underline_hint = "#2aa198"
+
+[terminal]
+black = "#073642"
+red = "#dc322f"
+green = "#859900"
+yellow = "#b58900"
+blue = "#268bd2"
+magenta = "#d33682"
+cyan = "#2aa198"
+white = "#eee8d5"
+bright_black = "#586e75"
+bright_red = "#cb4b16"
+bright_green = "#586e75"
+bright_yellow = "#657b83"
+bright_blue = "#839496"
+bright_magenta = "#6c71c4"
+bright_cyan = "#93a1a1"
+bright_white = "#fdf6e3"
+
+[platform.terminal]
+background = "#001e27"
+foreground = "#839496"
+
+[platform.web]
+background = "#002b36"
+foreground = "#839496"
+
+[palette]
+base03 = "#002b36"
+base02 = "#073642"
+base01 = "#586e75"
+base00 = "#657b83"
+base0 = "#839496"
+base1 = "#93a1a1"
+base2 = "#eee8d5"
+base3 = "#fdf6e3"
+yellow = "#b58900"
+orange = "#cb4b16"
+red = "#dc322f"
+magenta = "#d33682"
+violet = "#6c71c4"
+blue = "#268bd2"
+cyan = "#2aa198"
+green = "#859900"

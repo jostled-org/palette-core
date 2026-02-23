@@ -1,0 +1,150 @@
+# Atom One Dark base preset
+
+[meta]
+name = "One Dark"
+preset_id = "one_dark"
+schema_version = "1"
+style = "dark"
+kind = "preset-base"
+
+[base]
+background = "#282c34"
+background_dark = "#21252b"
+background_highlight = "#2c313a"
+foreground = "#abb2bf"
+foreground_dark = "#5c6370"
+border = "#181a1f"
+border_highlight = "#528bff"
+
+[semantic]
+success = "#98c379"
+warning = "#e5c07b"
+error = "#e06c75"
+info = "#61afef"
+hint = "#56b6c2"
+
+[diff]
+added_bg = "#2a3429"
+modified_bg = "#2c313a"
+removed_bg = "#382b2c"
+text_bg = "#3e4451"
+added_fg = "#98c379"
+modified_fg = "#d19a66"
+removed_fg = "#e06c75"
+ignored = "#5c6370"
+
+[git]
+add = "#98c379"
+change = "#d19a66"
+delete = "#e06c75"
+ignore = "#5c6370"
+
+[surface]
+menu = "#21252b"
+sidebar = "#21252b"
+statusline = "#21252b"
+float = "#21252b"
+popup = "#21252b"
+overlay = "#21252b"
+highlight = "#2c313a"
+selection = "#3e4451"
+search = "#528bff"
+
+[typography]
+comment = "#5c6370"
+gutter = "#636d83"
+line_number = "#636d83"
+selection_text = "#abb2bf"
+link = "#56b6c2"
+title = "#61afef"
+
+[syntax]
+keywords = "#c678dd"
+keywords_fn = "#c678dd"
+functions = "#61afef"
+variables = "#abb2bf"
+variables_builtin = "#e06c75"
+parameters = "#d19a66"
+
+properties = "#e06c75"
+types = "#e5c07b"
+types_builtin = "#56b6c2"
+constants = "#d19a66"
+
+numbers = "#d19a66"
+booleans = "#d19a66"
+strings = "#98c379"
+strings_doc = "#5c6370"
+strings_escape = "#56b6c2"
+strings_regex = "#56b6c2"
+
+operators = "#56b6c2"
+punctuation = "#abb2bf"
+punctuation_bracket = "#abb2bf"
+
+annotations = "#d19a66"
+attributes = "#e5c07b"
+constructor = "#e5c07b"
+tag = "#e06c75"
+tag_delimiter = "#abb2bf"
+tag_attribute = "#d19a66"
+comments = "#5c6370"
+
+[editor]
+cursor = "#528bff"
+cursor_text = "#282c34"
+match_paren = "#d19a66"
+selection_bg = "#3e4451"
+selection_fg = "#abb2bf"
+inlay_hint_bg = "#2c313a"
+inlay_hint_fg = "#5c6370"
+search_bg = "#528bff"
+search_fg = "#abb2bf"
+
+diagnostic_error = "#e06c75"
+diagnostic_warn = "#e5c07b"
+diagnostic_info = "#61afef"
+diagnostic_hint = "#56b6c2"
+diagnostic_underline_error = "#e06c75"
+diagnostic_underline_warn = "#e5c07b"
+diagnostic_underline_info = "#61afef"
+diagnostic_underline_hint = "#56b6c2"
+
+[terminal]
+black = "#3e4451"
+red = "#e06c75"
+green = "#98c379"
+yellow = "#e5c07b"
+blue = "#61afef"
+magenta = "#c678dd"
+cyan = "#56b6c2"
+white = "#abb2bf"
+bright_black = "#5c6370"
+bright_red = "#be5046"
+bright_green = "#98c379"
+bright_yellow = "#d19a66"
+bright_blue = "#61afef"
+bright_magenta = "#c678dd"
+bright_cyan = "#56b6c2"
+bright_white = "#ffffff"
+
+[platform.terminal]
+background = "#21252b"
+foreground = "#abb2bf"
+
+[platform.web]
+background = "#282c34"
+foreground = "#abb2bf"
+
+[palette]
+mono1 = "#abb2bf"
+mono2 = "#818896"
+mono3 = "#5c6370"
+hue1 = "#56b6c2"
+hue2 = "#61afef"
+hue3 = "#c678dd"
+hue4 = "#98c379"
+hue5 = "#e06c75"
+hue5_2 = "#be5046"
+hue6 = "#d19a66"
+hue6_2 = "#e5c07b"
