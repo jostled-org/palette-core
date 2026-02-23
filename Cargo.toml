@@ -23,10 +23,9 @@ serde_json = { version = "1", optional = true }
 default = []
 terminal = ["dep:ratatui"]
 egui = ["dep:egui"]
-editor = []
 snapshot = ["dep:serde_json"]
 platform = []
-full = ["terminal", "egui", "editor", "snapshot", "platform"]
+full = ["terminal", "egui", "snapshot", "platform"]
 
 [package.metadata.docs.rs]
 all-features = true

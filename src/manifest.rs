@@ -6,6 +6,7 @@ use serde::Deserialize;
 use crate::error::PaletteError;
 
 pub type ManifestSection = BTreeMap<Arc<str>, Arc<str>>;
+pub type PlatformSections = BTreeMap<Arc<str>, ManifestSection>;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct ManifestMeta {
@@ -31,6 +32,8 @@ pub struct PaletteManifest {
     pub syntax: ManifestSection,
     pub editor: ManifestSection,
     pub terminal: ManifestSection,
+    #[cfg(feature = "platform")]
+    pub platform: PlatformSections,
 }
 
 impl PaletteManifest {
@@ -49,6 +52,8 @@ impl PaletteManifest {
                 syntax: raw.syntax,
                 editor: raw.editor,
                 terminal: raw.terminal,
+                #[cfg(feature = "platform")]
+                platform: raw.platform,
             }),
         }
     }
@@ -78,4 +83,7 @@ struct RawManifest {
     editor: ManifestSection,
     #[serde(default)]
     terminal: ManifestSection,
+    #[cfg(feature = "platform")]
+    #[serde(default)]
+    platform: PlatformSections,
 }

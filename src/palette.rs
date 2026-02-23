@@ -25,6 +25,7 @@ macro_rules! color_group {
     ($(#[$meta:meta])* $name:ident { $($field:ident),+ $(,)? }) => {
         $(#[$meta])*
         #[derive(Debug, Clone, PartialEq, Eq)]
+        #[cfg_attr(feature = "snapshot", derive(serde::Serialize))]
         pub struct $name {
             $(pub $field: Option<Color>,)+
         }
@@ -173,6 +174,7 @@ color_group!(TerminalAnsiColors {
 });
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "snapshot", derive(serde::Serialize))]
 pub struct PaletteMeta {
     pub name: Arc<str>,
     pub preset_id: Arc<str>,
@@ -180,6 +182,7 @@ pub struct PaletteMeta {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "snapshot", derive(serde::Serialize))]
 pub struct Palette {
     pub meta: Option<PaletteMeta>,
     pub base: BaseColors,
@@ -190,6 +193,8 @@ pub struct Palette {
     pub syntax: SyntaxColors,
     pub editor: EditorColors,
     pub terminal_ansi: TerminalAnsiColors,
+    #[cfg(feature = "platform")]
+    pub platform: crate::platform::PlatformOverrides,
 }
 
 impl Palette {
@@ -210,6 +215,8 @@ impl Palette {
             syntax: SyntaxColors::from_section(&manifest.syntax, "syntax")?,
             editor: EditorColors::from_section(&manifest.editor, "editor")?,
             terminal_ansi: TerminalAnsiColors::from_section(&manifest.terminal, "terminal")?,
+            #[cfg(feature = "platform")]
+            platform: crate::platform::from_sections(&manifest.platform)?,
         })
     }
 }

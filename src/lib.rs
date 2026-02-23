@@ -12,5 +12,11 @@ pub mod css;
 #[cfg(feature = "terminal")]
 pub mod terminal;
 
+#[cfg(feature = "platform")]
+pub mod platform;
+
+#[cfg(feature = "snapshot")]
+pub mod snapshot;
+
 #[cfg(feature = "egui")]
 pub mod egui;

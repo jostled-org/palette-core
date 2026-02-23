@@ -22,5 +22,7 @@ pub fn manifest_with_base(base: BTreeMap<Arc<str>, Arc<str>>) -> PaletteManifest
         syntax: BTreeMap::new(),
         editor: BTreeMap::new(),
         terminal: BTreeMap::new(),
+        #[cfg(feature = "platform")]
+        platform: BTreeMap::new(),
     }
 }

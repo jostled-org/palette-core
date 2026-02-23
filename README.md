@@ -41,7 +41,8 @@ ctx.set_visuals(to_egui_visuals(&palette));
 |---------|------------|--------------|
 | `terminal` | `ratatui` | `Palette` → `ratatui::style::Color` maps |
 | `egui` | `egui` | `Palette` → `egui::Visuals` |
-| `snapshot` | `serde_json` | JSON serialization |
+| `snapshot` | `serde_json` | JSON serialization of `Palette` |
+| `platform` | — | Parse `[platform.terminal]` / `[platform.web]` overrides |
 | `full` | all of the above | Everything |
 
 Core functionality (parsing, merge, CSS export) has no optional dependencies.

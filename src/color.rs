@@ -15,6 +15,8 @@ impl fmt::Display for InvalidHex {
 impl std::error::Error for InvalidHex {}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "snapshot", derive(serde::Serialize))]
+#[cfg_attr(feature = "snapshot", serde(into = "String"))]
 pub struct Color {
     pub r: u8,
     pub g: u8,
@@ -40,5 +42,11 @@ impl Color {
 
     pub fn to_hex(&self) -> String {
         format!("#{:02X}{:02X}{:02X}", self.r, self.g, self.b)
+    }
+}
+
+impl From<Color> for String {
+    fn from(color: Color) -> Self {
+        color.to_hex()
     }
 }
