@@ -1,9 +1,18 @@
+use std::fmt;
 use std::sync::Arc;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InvalidHex {
     pub value: Arc<str>,
 }
+
+impl fmt::Display for InvalidHex {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "invalid hex color: {}", self.value)
+    }
+}
+
+impl std::error::Error for InvalidHex {}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Color {
@@ -15,7 +24,7 @@ pub struct Color {
 impl Color {
     pub fn from_hex(hex: &str) -> Result<Self, InvalidHex> {
         let digits = match hex.strip_prefix('#') {
-            Some(d) if d.len() == 6 => d,
+            Some(d) if d.len() == 6 && d.is_ascii() => d,
             _ => return Err(InvalidHex { value: Arc::from(hex) }),
         };
 

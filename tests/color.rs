@@ -67,3 +67,8 @@ fn roundtrip() {
     let parsed = Color::from_hex(&hex).unwrap();
     assert_eq!(parsed, original);
 }
+
+#[test]
+fn from_hex_non_ascii_returns_error() {
+    assert!(Color::from_hex("#café00").is_err());
+}
