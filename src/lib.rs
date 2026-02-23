@@ -7,6 +7,7 @@ pub mod merge;
 pub mod palette;
 pub mod registry;
 
+pub mod contrast;
 pub mod css;
 
 #[cfg(feature = "terminal")]

@@ -43,6 +43,18 @@ impl Color {
     pub fn to_hex(&self) -> String {
         format!("#{:02X}{:02X}{:02X}", self.r, self.g, self.b)
     }
+
+    /// WCAG 2.1 relative luminance. Returns a value in `[0.0, 1.0]`.
+    pub fn relative_luminance(&self) -> f64 {
+        let linearize = |channel: u8| {
+            let s = f64::from(channel) / 255.0;
+            match s <= 0.04045 {
+                true => s / 12.92,
+                false => ((s + 0.055) / 1.055).powf(2.4),
+            }
+        };
+        0.2126 * linearize(self.r) + 0.7152 * linearize(self.g) + 0.0722 * linearize(self.b)
+    }
 }
 
 impl From<Color> for String {
