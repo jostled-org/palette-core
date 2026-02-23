@@ -33,10 +33,6 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    if: >-
-      github.event_name == 'push'
-      && github.ref == 'refs/heads/main'
-      && contains(github.event.head_commit.message, 'chore: release')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
