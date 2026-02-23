@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-02-22
+
+### Added
+
+- 18 new theme presets: Ayu (dark/light/mirage), Dracula, Everforest (dark/light), Gruvbox (dark/light), Kanagawa, Monokai, Nord, One (dark/light), Rose Pine (base/dawn/moon), Solarized (dark/light)
+- `Display` and `Error` impls for `InvalidHex`
+
+### Fixed
+
+- Panic on non-ASCII hex input in `Color::from_hex`
+
+### Changed
+
+- Preset registry unified via macro (single source of truth)
+- egui mapping uses `apply_color!` macro, reducing repetition
+- CSS generation writes RGB directly to buffer (no intermediate allocation)
+- Shared test helpers extracted to `tests/common.rs`
+
 ## [0.1.0] - 2026-02-22
 
 Initial release.
@@ -13,7 +31,7 @@ Initial release.
 
 - TOML-defined palette manifest with 8 sections (base, semantic, diff, surface, typography, syntax, editor, terminal)
 - Palette inheritance and manifest merging
-- 28 built-in presets (Catppuccin, Tokyo Night, Dracula, Nord, Gruvbox, etc.)
+- 10 built-in presets (Catppuccin variants, GitHub, Tokyo Night variants)
 - CSS custom property export
 - egui `Visuals` mapping (feature: `egui`)
 - ratatui terminal theme mapping (feature: `terminal`)
