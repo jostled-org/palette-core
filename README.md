@@ -16,12 +16,22 @@ let palette = load_preset("tokyonight_storm")?;
 
 ```rust
 use palette_core::css::to_css_custom_properties;
+use palette_core::registry::{load_preset, preset_ids};
 
+// Single theme
 let props = to_css_custom_properties(&palette, "app");
 let css = format!(":root {{\n{props}}}");
+
+// Multiple themes for live switching
+let mut css = String::new();
+for id in preset_ids() {
+    let palette = load_preset(id)?;
+    let props = to_css_custom_properties(&palette, "app");
+    css.push_str(&format!("[data-theme=\"{id}\"] {{\n{props}}}\n"));
+}
 ```
 
-This produces a stylesheet you can write to a file or inject as a `<style>` element:
+Single-theme output:
 
 ```css
 :root {
@@ -32,13 +42,23 @@ This produces a stylesheet you can write to a file or inject as a `<style>` elem
 }
 ```
 
+Multi-theme output scopes each theme under a `data-theme` attribute. Switch themes by setting the attribute on `<html>`:
+
+```html
+<html data-theme="tokyonight">
+```
+
+```js
+document.documentElement.dataset.theme = "catppuccin";
+```
+
 Then reference the variables in your components:
 
 ```css
 body { background: var(--app-base-background); color: var(--app-base-foreground); }
 ```
 
-The `prefix` argument namespaces every variable, so multiple themes can coexist.
+The `prefix` argument namespaces every variable, so multiple palettes can coexist.
 
 ### Terminal (ratatui)
 
