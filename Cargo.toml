@@ -7,7 +7,7 @@ description = "TOML-defined theme system with inheritance, CSS export, and multi
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/jkoshiel/palette-core"
 readme = "README.md"
-keywords = ["theme", "palette", "color", "toml", "egui", "ratatui"]
+keywords = ["theme", "color", "css", "egui", "ratatui"]
 categories = ["gui", "config", "rendering"]
 exclude = ["docs/", "scripts/", ".claude/"]
 
