@@ -1,0 +1,68 @@
+palette-core includes color palettes derived from the following projects.
+All palettes are MIT-licensed unless noted otherwise.
+
+Ayu
+  Author: Ike Ku (dempfi)
+  Source: https://github.com/ayu-theme/ayu-colors
+  License: MIT
+
+Catppuccin
+  Author: Catppuccin Org
+  Source: https://github.com/catppuccin/catppuccin
+  License: MIT
+
+Dracula
+  Author: Zeno Rocha
+  Source: https://github.com/dracula/dracula-theme
+  License: MIT
+
+Everforest
+  Author: Sainnhe Park
+  Source: https://github.com/sainnhe/everforest
+  License: MIT
+
+GitHub Theme
+  Author: GitHub Inc. / Primer
+  Source: https://github.com/primer/github-vscode-theme
+  License: MIT
+
+Gruvbox
+  Author: Pavel Pertsev (morhetz)
+  Source: https://github.com/morhetz/gruvbox
+  License: MIT/X11 (per README)
+
+Kanagawa
+  Author: rebelot
+  Source: https://github.com/rebelot/kanagawa.nvim
+  License: MIT
+
+Monokai
+  Author: Wimer Hazenberg
+  Note: The original Monokai palette has no formal open-source license file.
+        Color values here are sourced from common community references.
+
+Nord
+  Author: Sven Greb
+  Source: https://github.com/nordtheme/nord
+  License: MIT
+
+One Dark / One Light
+  Author: GitHub Inc. (Atom)
+  Source: https://github.com/atom/one-dark-syntax
+          https://github.com/atom/one-light-syntax
+  License: MIT
+
+Rose Pine
+  Author: mvllow
+  Source: https://github.com/rose-pine/rose-pine-theme
+  License: MIT
+
+Solarized
+  Author: Ethan Schoonover
+  Source: https://github.com/altercation/solarized
+  License: MIT
+
+Tokyo Night
+  Author: Folke Lemaitre
+  Source: https://github.com/folke/tokyonight.nvim
+  License: Apache-2.0
