@@ -195,7 +195,7 @@ fn file_preset_missing_parent_returns_error() {
 #[test]
 fn registry_lists_all_builtins() {
     let reg = Registry::new();
-    let themes = reg.list();
+    let themes: Vec<_> = reg.list().collect();
     assert_eq!(themes.len(), 28);
     for info in themes {
         assert!(!info.id.is_empty());
@@ -229,10 +229,9 @@ fn registry_add_file_custom_theme() {
     let mut reg = Registry::new();
     reg.add_file(&path).unwrap();
 
-    assert_eq!(reg.list().len(), 29);
+    assert_eq!(reg.list().count(), 29);
 
-    let list = reg.list();
-    let last = list.last().unwrap();
+    let last = reg.list().last().unwrap();
     assert_eq!(last.id.as_ref(), "test_theme");
     assert_eq!(last.name.as_ref(), "Test Theme");
     assert_eq!(last.style.as_ref(), "dark");
@@ -303,7 +302,7 @@ fn registry_add_dir_loads_all_toml_files() {
     let mut reg = Registry::new();
     reg.add_dir(dir.path()).unwrap();
 
-    assert_eq!(reg.list().len(), 30);
+    assert_eq!(reg.list().count(), 30);
 }
 
 #[test]
@@ -328,10 +327,9 @@ foreground = "#112233"
     reg.add_file(&path).unwrap();
 
     // Count should stay 28 (replaced, not appended)
-    assert_eq!(reg.list().len(), 28);
+    assert_eq!(reg.list().count(), 28);
 
-    let list = reg.list();
-    let dracula = list.iter().find(|t| t.id.as_ref() == "dracula").unwrap();
+    let dracula = reg.list().find(|t| t.id.as_ref() == "dracula").unwrap();
     assert_eq!(dracula.name.as_ref(), "Custom Dracula");
     assert_eq!(dracula.style.as_ref(), "custom-dark");
 
@@ -345,7 +343,7 @@ foreground = "#112233"
 #[test]
 fn registry_by_style_returns_matching_themes() {
     let reg = Registry::new();
-    let dark = reg.by_style("dark");
+    let dark: Vec<_> = reg.by_style("dark").collect();
     assert!(!dark.is_empty());
     assert!(dark.iter().all(|t| t.style.as_ref() == "dark"));
 }
@@ -353,30 +351,27 @@ fn registry_by_style_returns_matching_themes() {
 #[test]
 fn registry_by_style_nonexistent_returns_empty() {
     let reg = Registry::new();
-    assert!(reg.by_style("nonexistent").is_empty());
+    assert_eq!(reg.by_style("nonexistent").count(), 0);
 }
 
 #[test]
 fn registry_add_toml_registers_custom_theme() {
     let mut reg = Registry::new();
     reg.add_toml(MINIMAL_TOML.to_owned()).unwrap();
-    assert_eq!(reg.list().len(), 29);
+    assert_eq!(reg.list().count(), 29);
 
-    let list = reg.list();
-    let last = list.last().unwrap();
+    let last = reg.list().last().unwrap();
     assert_eq!(last.id.as_ref(), "test_theme");
 }
 
 #[test]
 fn registry_builtin_metadata_matches_expected() {
     let reg = Registry::new();
-    let list = reg.list();
-    let tokyonight = list
-        .iter()
+    let tokyonight = reg.list()
         .find(|t| t.id.as_ref() == "tokyonight")
         .unwrap();
     assert_eq!(
-        **tokyonight,
+        *tokyonight,
         ThemeInfo {
             id: Arc::from("tokyonight"),
             name: Arc::from("TokyoNight (Night)"),

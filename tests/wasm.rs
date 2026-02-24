@@ -112,8 +112,15 @@ fn load_preset_unknown_delegates_to_registry() {
 
 #[test]
 fn load_preset_css_contains_variable() {
-    let css = load_preset_css("tokyonight", "prefix").unwrap();
-    assert!(css.contains("--prefix-base-background"));
+    let css = load_preset_css("tokyonight", Some("prefix".to_owned())).unwrap();
+    assert!(css.contains("--prefix-bg:"));
+}
+
+#[test]
+fn load_preset_css_no_prefix() {
+    let css = load_preset_css("tokyonight", None).unwrap();
+    assert!(css.contains("--bg:"));
+    assert!(!css.contains("--prefix-"));
 }
 
 #[test]

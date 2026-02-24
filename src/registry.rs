@@ -178,8 +178,8 @@ impl Registry {
     }
 
     /// All registered themes in insertion order (built-ins first, then custom).
-    pub fn list(&self) -> Vec<&ThemeInfo> {
-        self.entries.iter().map(|e| &e.info).collect()
+    pub fn list(&self) -> impl Iterator<Item = &ThemeInfo> {
+        self.entries.iter().map(|e| &e.info)
     }
 
     /// Load a palette by ID, resolving inheritance within the registry.
@@ -189,12 +189,11 @@ impl Registry {
     }
 
     /// Filter registered themes by style (e.g. "dark", "light").
-    pub fn by_style(&self, style: &str) -> Vec<&ThemeInfo> {
+    pub fn by_style(&self, style: &str) -> impl Iterator<Item = &ThemeInfo> {
         self.entries
             .iter()
-            .filter(|e| e.info.style.as_ref() == style)
+            .filter(move |e| e.info.style.as_ref() == style)
             .map(|e| &e.info)
-            .collect()
     }
 
     /// Register a custom theme from a TOML file on disk.

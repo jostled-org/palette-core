@@ -1,11 +1,9 @@
 use crate::manifest::{ManifestSection, PaletteManifest};
 
 fn merge_sections(primary: &ManifestSection, fallback: &ManifestSection) -> ManifestSection {
-    let mut merged = primary.clone();
-    for (key, value) in fallback {
-        if !merged.contains_key(key) {
-            merged.insert(key.clone(), value.clone());
-        }
+    let mut merged = fallback.clone();
+    for (key, value) in primary {
+        merged.insert(key.clone(), value.clone());
     }
     merged
 }

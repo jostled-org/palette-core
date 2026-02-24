@@ -1,18 +1,11 @@
 use std::fmt;
 use std::sync::Arc;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
+#[error("invalid hex color: {value}")]
 pub struct InvalidHex {
     pub value: Arc<str>,
 }
-
-impl fmt::Display for InvalidHex {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "invalid hex color: {}", self.value)
-    }
-}
-
-impl std::error::Error for InvalidHex {}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "snapshot", derive(serde::Serialize))]

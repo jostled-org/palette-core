@@ -15,6 +15,15 @@ macro_rules! apply_color {
             None => {}
         }
     };
+    ($field:expr => Some $($target:expr),+) => {
+        match $field {
+            Some(c) => {
+                let color = to_color32(c);
+                $($target = Some(color);)+
+            }
+            None => {}
+        }
+    };
 }
 
 macro_rules! apply_stroke {
@@ -39,12 +48,8 @@ pub fn to_egui_visuals(palette: &Palette) -> ::egui::Visuals {
         v.extreme_bg_color, v.code_bg_color);
 
     // Text colors
-    if let Some(fg) = &palette.base.foreground {
-        v.override_text_color = Some(to_color32(fg));
-    }
-    if let Some(fg_dark) = &palette.base.foreground_dark {
-        v.weak_text_color = Some(to_color32(fg_dark));
-    }
+    apply_color!(&palette.base.foreground => Some v.override_text_color);
+    apply_color!(&palette.base.foreground_dark => Some v.weak_text_color);
 
     // Semantic colors
     apply_color!(&palette.semantic.error => v.error_fg_color);

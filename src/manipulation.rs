@@ -68,60 +68,36 @@ fn hsl_to_rgb(hsl: Hsl) -> Color {
     }
 }
 
+fn adjust_hsl(color: Color, amount: f64, adjust: fn(&mut Hsl, f64)) -> Color {
+    match amount.is_finite() {
+        true => {
+            let mut hsl = rgb_to_hsl(color);
+            adjust(&mut hsl, amount);
+            hsl_to_rgb(hsl)
+        }
+        false => color,
+    }
+}
+
 impl Color {
     pub fn lighten(self, amount: f64) -> Self {
-        match amount.is_finite() {
-            true => {
-                let mut hsl = rgb_to_hsl(self);
-                hsl.l = (hsl.l + amount).clamp(0.0, 1.0);
-                hsl_to_rgb(hsl)
-            }
-            false => self,
-        }
+        adjust_hsl(self, amount, |hsl, a| hsl.l = (hsl.l + a).clamp(0.0, 1.0))
     }
 
     pub fn darken(self, amount: f64) -> Self {
-        match amount.is_finite() {
-            true => {
-                let mut hsl = rgb_to_hsl(self);
-                hsl.l = (hsl.l - amount).clamp(0.0, 1.0);
-                hsl_to_rgb(hsl)
-            }
-            false => self,
-        }
+        adjust_hsl(self, amount, |hsl, a| hsl.l = (hsl.l - a).clamp(0.0, 1.0))
     }
 
     pub fn saturate(self, amount: f64) -> Self {
-        match amount.is_finite() {
-            true => {
-                let mut hsl = rgb_to_hsl(self);
-                hsl.s = (hsl.s + amount).clamp(0.0, 1.0);
-                hsl_to_rgb(hsl)
-            }
-            false => self,
-        }
+        adjust_hsl(self, amount, |hsl, a| hsl.s = (hsl.s + a).clamp(0.0, 1.0))
     }
 
     pub fn desaturate(self, amount: f64) -> Self {
-        match amount.is_finite() {
-            true => {
-                let mut hsl = rgb_to_hsl(self);
-                hsl.s = (hsl.s - amount).clamp(0.0, 1.0);
-                hsl_to_rgb(hsl)
-            }
-            false => self,
-        }
+        adjust_hsl(self, amount, |hsl, a| hsl.s = (hsl.s - a).clamp(0.0, 1.0))
     }
 
     pub fn rotate_hue(self, degrees: f64) -> Self {
-        match degrees.is_finite() {
-            true => {
-                let mut hsl = rgb_to_hsl(self);
-                hsl.h = (hsl.h + degrees).rem_euclid(360.0);
-                hsl_to_rgb(hsl)
-            }
-            false => self,
-        }
+        adjust_hsl(self, degrees, |hsl, d| hsl.h = (hsl.h + d).rem_euclid(360.0))
     }
 }
 
