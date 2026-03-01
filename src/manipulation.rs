@@ -80,28 +80,34 @@ fn adjust_hsl(color: Color, amount: f64, adjust: fn(&mut Hsl, f64)) -> Color {
 }
 
 impl Color {
+    /// Increase lightness by `amount` (0.0–1.0) in HSL space.
     pub fn lighten(self, amount: f64) -> Self {
         adjust_hsl(self, amount, |hsl, a| hsl.l = (hsl.l + a).clamp(0.0, 1.0))
     }
 
+    /// Decrease lightness by `amount` (0.0–1.0) in HSL space.
     pub fn darken(self, amount: f64) -> Self {
         adjust_hsl(self, amount, |hsl, a| hsl.l = (hsl.l - a).clamp(0.0, 1.0))
     }
 
+    /// Increase saturation by `amount` (0.0–1.0) in HSL space.
     pub fn saturate(self, amount: f64) -> Self {
         adjust_hsl(self, amount, |hsl, a| hsl.s = (hsl.s + a).clamp(0.0, 1.0))
     }
 
+    /// Decrease saturation by `amount` (0.0–1.0) in HSL space.
     pub fn desaturate(self, amount: f64) -> Self {
         adjust_hsl(self, amount, |hsl, a| hsl.s = (hsl.s - a).clamp(0.0, 1.0))
     }
 
+    /// Rotate hue by `degrees` on the HSL color wheel.
     pub fn rotate_hue(self, degrees: f64) -> Self {
         adjust_hsl(self, degrees, |hsl, d| hsl.h = (hsl.h + d).rem_euclid(360.0))
     }
 }
 
 impl Color {
+    /// Alpha-composite `self` over `bg`. See [`blend`].
     pub fn blend(self, bg: Color, alpha: f64) -> Color {
         blend(self, bg, alpha)
     }

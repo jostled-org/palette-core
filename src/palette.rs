@@ -40,6 +40,7 @@ macro_rules! color_group {
                 })
             }
 
+            /// Iterate over slots that have a color assigned.
             pub fn populated_slots(&self) -> impl Iterator<Item = (&'static str, &Color)> {
                 [$(
                     (stringify!($field), self.$field.as_ref()),
@@ -58,7 +59,9 @@ macro_rules! color_group {
 /// additions stay in sync at compile time.
 macro_rules! color_fields {
     ($macro_name:ident) => {
-        $macro_name!(BaseColors {
+        $macro_name!(
+            /// Core background, foreground, and border colors.
+            BaseColors {
             background,
             background_dark,
             background_highlight,
@@ -68,7 +71,9 @@ macro_rules! color_fields {
             border_highlight,
         });
 
-        $macro_name!(SemanticColors {
+        $macro_name!(
+            /// Status colors: success, warning, error, info, hint.
+            SemanticColors {
             success,
             warning,
             error,
@@ -76,7 +81,9 @@ macro_rules! color_fields {
             hint,
         });
 
-        $macro_name!(DiffColors {
+        $macro_name!(
+            /// Version-control diff highlighting: added, modified, removed.
+            DiffColors {
             added,
             added_bg,
             added_fg,
@@ -90,7 +97,9 @@ macro_rules! color_fields {
             ignored,
         });
 
-        $macro_name!(SurfaceColors {
+        $macro_name!(
+            /// UI surface colors: menus, sidebars, popups, overlays.
+            SurfaceColors {
             menu,
             sidebar,
             statusline,
@@ -103,7 +112,9 @@ macro_rules! color_fields {
             search,
         });
 
-        $macro_name!(TypographyColors {
+        $macro_name!(
+            /// Text chrome: comments, gutter, line numbers, links.
+            TypographyColors {
             comment,
             gutter,
             line_number,
@@ -112,7 +123,9 @@ macro_rules! color_fields {
             title,
         });
 
-        $macro_name!(SyntaxColors {
+        $macro_name!(
+            /// Syntax-highlighting token colors.
+            SyntaxColors {
             keywords,
             keywords_fn,
             functions,
@@ -141,7 +154,9 @@ macro_rules! color_fields {
             comments,
         });
 
-        $macro_name!(EditorColors {
+        $macro_name!(
+            /// Editor chrome: cursor, selections, diagnostics, inlay hints.
+            EditorColors {
             cursor,
             cursor_text,
             match_paren,
@@ -161,7 +176,9 @@ macro_rules! color_fields {
             diagnostic_underline_hint,
         });
 
-        $macro_name!(TerminalAnsiColors {
+        $macro_name!(
+            /// Standard 16-color ANSI terminal palette.
+            TerminalAnsiColors {
             black,
             red,
             green,
@@ -186,6 +203,7 @@ color_fields!(color_group);
 #[cfg(feature = "terminal")]
 pub(crate) use color_fields;
 
+/// Theme identity: name, preset ID, and style tag (e.g. "dark", "light").
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "snapshot", derive(serde::Serialize))]
 pub struct PaletteMeta {
@@ -194,6 +212,13 @@ pub struct PaletteMeta {
     pub style: Arc<str>,
 }
 
+/// Resolved color palette ready for rendering.
+///
+/// Built from a [`PaletteManifest`] (parsed TOML) via [`Palette::from_manifest`],
+/// or obtained directly from [`preset`](crate::preset), [`load_preset`](crate::load_preset),
+/// or [`Registry::load`](crate::Registry::load). Each field is a color group
+/// whose slots are `Option<Color>` — absent slots mean the theme defers to
+/// the renderer's default.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "snapshot", derive(serde::Serialize))]
 pub struct Palette {
@@ -256,6 +281,7 @@ impl Default for Palette {
 }
 
 impl Palette {
+    /// Build a palette from a parsed manifest, resolving hex strings to [`Color`] values.
     pub fn from_manifest(manifest: &PaletteManifest) -> Result<Self, PaletteError> {
         let meta = manifest.meta.as_ref().map(|m| PaletteMeta {
             name: Arc::clone(&m.name),

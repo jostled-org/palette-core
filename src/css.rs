@@ -163,6 +163,7 @@ impl Palette {
     }
 }
 
+/// Bare CSS custom-property declarations without a selector block.
 pub fn to_css_custom_properties(palette: &Palette, prefix: Option<&str>) -> String {
     let mut out = String::with_capacity(3072);
     write_section(&mut out, prefix, "base", palette.base.populated_slots());

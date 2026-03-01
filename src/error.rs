@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+/// Errors produced when loading or parsing theme manifests.
 #[derive(Debug, thiserror::Error)]
 pub enum PaletteError {
     #[error("failed to parse manifest: {0}")]

@@ -5,9 +5,13 @@ use serde::Deserialize;
 
 use crate::error::PaletteError;
 
+/// A single TOML section mapping slot names to hex color strings.
 pub type ManifestSection = BTreeMap<Arc<str>, Arc<str>>;
+
+/// Platform-keyed overrides, e.g. `[platform.macos]`.
 pub type PlatformSections = BTreeMap<Arc<str>, ManifestSection>;
 
+/// The `[meta]` section of a theme TOML file.
 #[derive(Debug, Clone, Deserialize)]
 pub struct ManifestMeta {
     pub name: Arc<str>,
@@ -21,6 +25,11 @@ pub struct ManifestMeta {
     pub upstream_repo: Option<Arc<str>>,
 }
 
+/// Parsed but unresolved theme manifest.
+///
+/// Holds raw hex strings grouped by section. Convert to a [`Palette`](crate::Palette)
+/// via [`Palette::from_manifest`](crate::Palette::from_manifest) after resolving
+/// inheritance with [`merge_manifests`](crate::merge::merge_manifests).
 #[derive(Debug, Clone)]
 pub struct PaletteManifest {
     pub meta: Option<ManifestMeta>,
@@ -37,6 +46,7 @@ pub struct PaletteManifest {
 }
 
 impl PaletteManifest {
+    /// Parse a TOML string into a manifest. Requires a `[base]` section.
     pub fn from_toml(s: &str) -> Result<Self, PaletteError> {
         let raw: RawManifest = toml::from_str(s)?;
 
@@ -58,6 +68,7 @@ impl PaletteManifest {
         }
     }
 
+    /// The parent preset ID if this manifest uses inheritance.
     pub fn inherits_from(&self) -> Option<&str> {
         self.meta.as_ref().and_then(|m| m.inherits.as_deref())
     }

@@ -1,12 +1,18 @@
 use std::fmt;
 use std::sync::Arc;
 
+/// Returned when a hex string cannot be parsed as an RGB color.
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
 #[error("invalid hex color: {value}")]
 pub struct InvalidHex {
+    /// The original string that failed to parse.
     pub value: Arc<str>,
 }
 
+/// 8-bit RGB color.
+///
+/// Constructed from a `#RRGGBB` hex string via [`Color::from_hex`] or directly
+/// from field values. Displays as uppercase hex (`#1A1A2E`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "snapshot", derive(serde::Serialize))]
 #[cfg_attr(feature = "snapshot", serde(into = "String"))]
@@ -23,6 +29,7 @@ impl fmt::Display for Color {
 }
 
 impl Color {
+    /// Parse a `#RRGGBB` hex string into a [`Color`].
     pub fn from_hex(hex: &str) -> Result<Self, InvalidHex> {
         let digits = match hex.strip_prefix('#') {
             Some(d) if d.len() == 6 && d.is_ascii() => d,
@@ -39,6 +46,7 @@ impl Color {
         }
     }
 
+    /// Format as a `#RRGGBB` hex string.
     pub fn to_hex(&self) -> String {
         self.to_string()
     }

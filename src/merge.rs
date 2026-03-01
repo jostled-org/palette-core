@@ -21,6 +21,7 @@ fn merge_platform_sections(
     merged
 }
 
+/// Overlay `variant` onto `base`, filling missing slots from the parent.
 pub fn merge_manifests(variant: &PaletteManifest, base: &PaletteManifest) -> PaletteManifest {
     PaletteManifest {
         meta: variant.meta.clone(),

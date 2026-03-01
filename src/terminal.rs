@@ -1,14 +1,17 @@
+//! Ratatui integration: convert a [`Palette`] into terminal-native colors.
+
 use ratatui::style::Color as RatatuiColor;
 
 use crate::color::Color;
 use crate::palette::Palette;
 
+/// Convert a [`Color`] to a ratatui RGB color.
 pub fn to_ratatui_color(color: &Color) -> RatatuiColor {
     RatatuiColor::Rgb(color.r, color.g, color.b)
 }
 
 macro_rules! terminal_group {
-    ($color_type:ident { $($field:ident),+ $(,)? }) => {
+    ($(#[$_meta:meta])* $color_type:ident { $($field:ident),+ $(,)? }) => {
         paste::paste! {
             #[derive(Debug, Clone)]
             pub struct [<Terminal $color_type>] {
@@ -28,6 +31,7 @@ macro_rules! terminal_group {
 
 crate::palette::color_fields!(terminal_group);
 
+/// Complete ratatui-native theme mirroring every [`Palette`] color group.
 #[derive(Debug, Clone)]
 pub struct TerminalTheme {
     pub base: TerminalBaseColors,
@@ -40,6 +44,7 @@ pub struct TerminalTheme {
     pub terminal_ansi: TerminalTerminalAnsiColors,
 }
 
+/// Convert an entire [`Palette`] into a [`TerminalTheme`].
 pub fn to_terminal_theme(palette: &Palette) -> TerminalTheme {
     TerminalTheme {
         base: TerminalBaseColors::from_palette(&palette.base),

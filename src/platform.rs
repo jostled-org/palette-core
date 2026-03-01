@@ -1,3 +1,5 @@
+//! Platform-specific color overrides (e.g. macOS, Windows, Linux).
+
 use std::collections::BTreeMap;
 use std::sync::Arc;
 
@@ -5,6 +7,7 @@ use crate::color::{Color, InvalidHex};
 use crate::error::PaletteError;
 use crate::manifest::PlatformSections;
 
+/// Background/foreground overrides for a single platform target.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "snapshot", derive(serde::Serialize))]
 pub struct PlatformOverride {
@@ -12,6 +15,7 @@ pub struct PlatformOverride {
     pub foreground: Option<Color>,
 }
 
+/// Map of platform name to its color overrides.
 pub type PlatformOverrides = BTreeMap<Arc<str>, PlatformOverride>;
 
 fn resolve_color(hex: &str, platform: &str, field: &str) -> Result<Color, PaletteError> {
@@ -22,6 +26,7 @@ fn resolve_color(hex: &str, platform: &str, field: &str) -> Result<Color, Palett
     })
 }
 
+/// Parse `[platform.*]` TOML sections into typed overrides.
 pub fn from_sections(sections: &PlatformSections) -> Result<PlatformOverrides, PaletteError> {
     sections
         .iter()

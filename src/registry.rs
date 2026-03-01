@@ -29,6 +29,7 @@ macro_rules! presets {
             }
         }
 
+        /// All built-in preset IDs, in declaration order.
         pub fn preset_ids() -> &'static [&'static str] {
             &[$($id),+]
         }
@@ -100,6 +101,8 @@ where
 // Standalone preset functions (existing API)
 // ---------------------------------------------------------------------------
 
+/// Load a theme from a TOML file on disk, resolving inheritance from sibling
+/// files or built-in presets.
 pub fn load_preset_file(path: &Path) -> Result<Palette, PaletteError> {
     let path_str: Arc<str> = Arc::from(path.to_string_lossy().as_ref());
     let toml = std::fs::read_to_string(path).map_err(|source| PaletteError::Io {
@@ -129,6 +132,10 @@ fn resolve_parent(child_path: &Path, parent_id: &str) -> Result<PaletteManifest,
     }
 }
 
+/// Load a built-in preset by ID, resolving inheritance.
+///
+/// Returns [`PaletteError::UnknownPreset`] if the ID is not recognized.
+/// For an infallible alternative, see [`preset`].
 pub fn load_preset(id: &str) -> Result<Palette, PaletteError> {
     let toml = preset_toml(id).ok_or_else(|| PaletteError::UnknownPreset(Arc::from(id)))?;
     resolve_with_inheritance(toml, |parent_id| {

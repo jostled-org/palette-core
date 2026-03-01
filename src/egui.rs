@@ -1,6 +1,9 @@
+//! egui integration: apply a [`Palette`] to egui's [`Visuals`](::egui::Visuals).
+
 use crate::color::Color;
 use crate::palette::Palette;
 
+/// Convert a [`Color`] to an egui [`Color32`](::egui::Color32).
 pub fn to_color32(color: &Color) -> ::egui::Color32 {
     ::egui::Color32::from_rgb(color.r, color.g, color.b)
 }
@@ -38,6 +41,10 @@ macro_rules! apply_stroke {
     };
 }
 
+/// Build an egui [`Visuals`](::egui::Visuals) from a palette.
+///
+/// Starts from [`Visuals::dark()`](::egui::Visuals::dark) and overrides
+/// panels, text, widgets, selections, and diagnostics from populated slots.
 pub fn to_egui_visuals(palette: &Palette) -> ::egui::Visuals {
     let mut v = ::egui::Visuals::dark();
 

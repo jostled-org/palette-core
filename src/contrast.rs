@@ -1,6 +1,7 @@
 use crate::color::Color;
 use crate::palette::Palette;
 
+/// WCAG 2.1 conformance level for contrast checking.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ContrastLevel {
     AaNormal,
@@ -10,6 +11,7 @@ pub enum ContrastLevel {
 }
 
 impl ContrastLevel {
+    /// Minimum contrast ratio required for this level.
     pub fn threshold(self) -> f64 {
         match self {
             Self::AaNormal | Self::AaaLarge => 4.5,
@@ -18,11 +20,13 @@ impl ContrastLevel {
         }
     }
 
+    /// Whether the given ratio meets this conformance level.
     pub fn passes(self, ratio: f64) -> bool {
         ratio >= self.threshold()
     }
 }
 
+/// A foreground/background pair that fails a contrast check.
 #[derive(Debug, Clone, PartialEq)]
 pub struct ContrastViolation {
     pub foreground_label: Box<str>,
@@ -44,15 +48,18 @@ pub fn contrast_ratio(a: &Color, b: &Color) -> f64 {
     (lighter + 0.05) / (darker + 0.05)
 }
 
+/// Whether `fg` over `bg` meets the given [`ContrastLevel`].
 pub fn meets_level(fg: &Color, bg: &Color, level: ContrastLevel) -> bool {
     level.passes(contrast_ratio(fg, bg))
 }
 
 impl Color {
+    /// WCAG 2.1 contrast ratio against another color.
     pub fn contrast_ratio(&self, other: &Color) -> f64 {
         contrast_ratio(self, other)
     }
 
+    /// Whether contrast against `other` meets the given [`ContrastLevel`].
     pub fn meets_level(&self, other: &Color, level: ContrastLevel) -> bool {
         meets_level(self, other, level)
     }
@@ -85,6 +92,9 @@ fn check_pair(
     }
 }
 
+/// Check all semantically paired slots in a palette for contrast violations.
+///
+/// Returns an empty `Vec` when every tested pair meets the given level.
 pub fn validate_palette(palette: &Palette, level: ContrastLevel) -> Vec<ContrastViolation> {
     let mut violations = Vec::new();
     let mut push = |v: Option<ContrastViolation>| {
