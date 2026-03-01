@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.3](https://github.com/jostled-org/palette-core/compare/v0.6.2...v0.6.3) - 2026-03-01
+
+### Fixed
+
+- *(ci)* quote expression in release job condition
+
+### Other
+
+- split release workflow into separate files
+- run release job only when release PR merges
+
 ## [0.6.2](https://github.com/jostled-org/palette-core/compare/v0.6.1...v0.6.2) - 2026-02-28
 
 ### Other
