@@ -35,4 +35,4 @@ full = ["terminal", "egui", "snapshot", "platform"]
 tempfile = "3"
 
 [package.metadata.docs.rs]
-all-features = true
+features = ["full"]
