@@ -79,10 +79,7 @@ presets! {
 // Shared inheritance resolution
 // ---------------------------------------------------------------------------
 
-fn resolve_with_inheritance<F>(
-    toml_str: &str,
-    resolve_parent: F,
-) -> Result<Palette, PaletteError>
+fn resolve_with_inheritance<F>(toml_str: &str, resolve_parent: F) -> Result<Palette, PaletteError>
 where
     F: FnOnce(&str) -> Result<PaletteManifest, PaletteError>,
 {
@@ -284,8 +281,9 @@ impl Registry {
     fn toml_for(&self, id: &str) -> Result<&str, PaletteError> {
         let entry = self.find_entry(id)?;
         match &entry.source {
-            Source::Builtin => preset_toml(id)
-                .ok_or_else(|| PaletteError::UnknownPreset(Arc::from(id))),
+            Source::Builtin => {
+                preset_toml(id).ok_or_else(|| PaletteError::UnknownPreset(Arc::from(id)))
+            }
             Source::Custom(toml) => Ok(toml),
         }
     }

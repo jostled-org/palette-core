@@ -11,13 +11,13 @@ fn resolve_color(
 ) -> Result<Option<Color>, PaletteError> {
     match section.get(field) {
         None => Ok(None),
-        Some(hex) => Color::from_hex(hex).map(Some).map_err(|InvalidHex { value }| {
-            PaletteError::InvalidHex {
+        Some(hex) => Color::from_hex(hex)
+            .map(Some)
+            .map_err(|InvalidHex { value }| PaletteError::InvalidHex {
                 section: Arc::from(section_name),
                 field: Arc::from(field),
                 value,
-            }
-        }),
+            }),
     }
 }
 

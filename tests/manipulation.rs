@@ -96,7 +96,10 @@ fn saturate_gray_uses_hue_zero() {
     // because the arbitrary hue takes effect once saturation > 0.
     let gray = color("#808080");
     let result = gray.saturate(0.5);
-    assert!(result.r > result.g, "saturated gray should lean red (hue=0): {result:?}");
+    assert!(
+        result.r > result.g,
+        "saturated gray should lean red (hue=0): {result:?}"
+    );
 }
 
 #[test]
@@ -171,7 +174,11 @@ fn blend_half_averages() {
     let fg = color("#FF0000");
     let bg = color("#0000FF");
     let result = blend(fg, bg, 0.5);
-    let expected = Color { r: 128, g: 0, b: 128 };
+    let expected = Color {
+        r: 128,
+        g: 0,
+        b: 128,
+    };
     assert_channel_eq(result, expected, 1, "blend alpha=0.5");
 }
 

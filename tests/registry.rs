@@ -396,9 +396,7 @@ fn registry_add_toml_registers_custom_theme() {
 #[test]
 fn registry_builtin_metadata_matches_expected() {
     let reg = Registry::new();
-    let tokyonight = reg.list()
-        .find(|t| t.id.as_ref() == "tokyonight")
-        .unwrap();
+    let tokyonight = reg.list().find(|t| t.id.as_ref() == "tokyonight").unwrap();
     assert_eq!(
         *tokyonight,
         ThemeInfo {

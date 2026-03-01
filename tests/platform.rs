@@ -27,7 +27,12 @@ fn base_preset_has_web_platform() {
 fn terminal_and_web_backgrounds_differ() {
     let palette = load_preset("tokyonight").unwrap();
 
-    let terminal_bg = palette.platform.get("terminal").unwrap().background.unwrap();
+    let terminal_bg = palette
+        .platform
+        .get("terminal")
+        .unwrap()
+        .background
+        .unwrap();
     let web_bg = palette.platform.get("web").unwrap().background.unwrap();
     assert_ne!(terminal_bg, web_bg);
 }
@@ -35,7 +40,9 @@ fn terminal_and_web_backgrounds_differ() {
 #[test]
 fn empty_manifest_has_no_platforms() {
     let manifest = common::manifest_with_base(
-        [("background".into(), "#112233".into())].into_iter().collect(),
+        [("background".into(), "#112233".into())]
+            .into_iter()
+            .collect(),
     );
     let palette = Palette::from_manifest(&manifest).unwrap();
 

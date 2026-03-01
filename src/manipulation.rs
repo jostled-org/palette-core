@@ -32,7 +32,11 @@ fn rgb_to_hsl(color: Color) -> Hsl {
         _ => (r - g) / delta + 4.0,
     };
 
-    Hsl { h: h_raw * 60.0, s, l }
+    Hsl {
+        h: h_raw * 60.0,
+        s,
+        l,
+    }
 }
 
 fn hue_to_channel(p: f64, q: f64, t: f64) -> f64 {
@@ -102,7 +106,9 @@ impl Color {
 
     /// Rotate hue by `degrees` on the HSL color wheel.
     pub fn rotate_hue(self, degrees: f64) -> Self {
-        adjust_hsl(self, degrees, |hsl, d| hsl.h = (hsl.h + d).rem_euclid(360.0))
+        adjust_hsl(self, degrees, |hsl, d| {
+            hsl.h = (hsl.h + d).rem_euclid(360.0)
+        })
     }
 }
 

@@ -49,7 +49,7 @@ pub use color::Color;
 pub use contrast::ContrastLevel;
 pub use error::PaletteError;
 pub use palette::{Palette, PaletteMeta};
-pub use registry::{load_preset, load_preset_file, preset, preset_ids, Registry, ThemeInfo};
+pub use registry::{Registry, ThemeInfo, load_preset, load_preset_file, preset, preset_ids};
 
 #[cfg(feature = "terminal")]
 pub mod terminal;

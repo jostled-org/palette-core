@@ -30,15 +30,9 @@ fn merged_variant_inherits() {
     let palette = Palette::from_manifest(&merged).unwrap();
 
     // Storm overrides background
-    assert_eq!(
-        palette.base.background.unwrap().to_hex(),
-        "#24283B",
-    );
+    assert_eq!(palette.base.background.unwrap().to_hex(), "#24283B",);
     // Inherits terminal colors from base (except black)
-    assert_eq!(
-        palette.terminal_ansi.red.unwrap().to_hex(),
-        "#F7768E",
-    );
+    assert_eq!(palette.terminal_ansi.red.unwrap().to_hex(), "#F7768E",);
 }
 
 #[test]
@@ -90,9 +84,10 @@ fn meta_propagates() {
 
 #[test]
 fn no_meta_yields_none() {
-    let manifest = common::manifest_with_base(
-        BTreeMap::from([(Arc::from("background"), Arc::from("#000000"))]),
-    );
+    let manifest = common::manifest_with_base(BTreeMap::from([(
+        Arc::from("background"),
+        Arc::from("#000000"),
+    )]));
     let palette = Palette::from_manifest(&manifest).unwrap();
     assert!(palette.meta.is_none());
 }

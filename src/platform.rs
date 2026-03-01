@@ -39,7 +39,13 @@ pub fn from_sections(sections: &PlatformSections) -> Result<PlatformOverrides, P
                 .get("foreground")
                 .map(|hex| resolve_color(hex, name, "foreground"))
                 .transpose()?;
-            Ok((name.clone(), PlatformOverride { background, foreground }))
+            Ok((
+                name.clone(),
+                PlatformOverride {
+                    background,
+                    foreground,
+                },
+            ))
         })
         .collect()
 }

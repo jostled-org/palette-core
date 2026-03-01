@@ -2,8 +2,8 @@
 
 use palette_core::contrast::ContrastLevel;
 use palette_core::wasm::{
-    blend_js, contrast_ratio_js, load_preset, load_preset_css, load_preset_json,
-    meets_contrast_level_js, parse_contrast_level, preset_ids_js, JsColor, JsRegistry,
+    JsColor, JsRegistry, blend_js, contrast_ratio_js, load_preset, load_preset_css,
+    load_preset_json, meets_contrast_level_js, parse_contrast_level, preset_ids_js,
 };
 
 // --- JsColor ---

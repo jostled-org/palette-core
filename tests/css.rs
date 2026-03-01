@@ -12,7 +12,10 @@ fn to_css_wraps_in_root_selector() {
     let palette = Palette::from_manifest(&manifest).unwrap();
     let css = palette.to_css();
 
-    assert!(css.starts_with(":root {\n"), "should start with :root {{, got:\n{css}");
+    assert!(
+        css.starts_with(":root {\n"),
+        "should start with :root {{, got:\n{css}"
+    );
     assert!(css.ends_with("}\n"), "should end with }}, got:\n{css}");
     assert!(css.contains("--bg: #"), "should contain variables");
 }
@@ -35,7 +38,10 @@ fn to_css_scoped_with_prefix() {
     let palette = Palette::from_manifest(&manifest).unwrap();
     let css = palette.to_css_scoped(":root", Some("app"));
 
-    assert!(css.contains("--app-bg: #"), "should have prefixed variables, got:\n{css}");
+    assert!(
+        css.contains("--app-bg: #"),
+        "should have prefixed variables, got:\n{css}"
+    );
 }
 
 #[test]
@@ -61,9 +67,14 @@ fn prefix_prepended_to_all_variables() {
         "expected prefixed --mx-bg variable, got:\n{css}",
     );
 
-    let var_lines: Vec<&str> = css.lines().filter(|l| l.trim_start().starts_with("--")).collect();
+    let var_lines: Vec<&str> = css
+        .lines()
+        .filter(|l| l.trim_start().starts_with("--"))
+        .collect();
     assert!(
-        var_lines.iter().all(|l| l.trim_start().starts_with("--mx-")),
+        var_lines
+            .iter()
+            .all(|l| l.trim_start().starts_with("--mx-")),
         "all variables should have --mx- prefix, got:\n{}",
         var_lines.join("\n"),
     );
@@ -90,9 +101,10 @@ fn all_populated_slots_present() {
 
 #[test]
 fn none_slots_absent() {
-    let manifest = common::manifest_with_base(
-        BTreeMap::from([(Arc::from("background"), Arc::from("#000000"))]),
-    );
+    let manifest = common::manifest_with_base(BTreeMap::from([(
+        Arc::from("background"),
+        Arc::from("#000000"),
+    )]));
     let palette = Palette::from_manifest(&manifest).unwrap();
     let css = to_css_custom_properties(&palette, None);
 
@@ -104,9 +116,10 @@ fn none_slots_absent() {
 
 #[test]
 fn field_names_map_to_short_css_names() {
-    let manifest = common::manifest_with_base(
-        BTreeMap::from([(Arc::from("background_dark"), Arc::from("#111111"))]),
-    );
+    let manifest = common::manifest_with_base(BTreeMap::from([(
+        Arc::from("background_dark"),
+        Arc::from("#111111"),
+    )]));
     let palette = Palette::from_manifest(&manifest).unwrap();
     let css = to_css_custom_properties(&palette, None);
 
@@ -114,7 +127,10 @@ fn field_names_map_to_short_css_names() {
         css.contains("--bg-dark:"),
         "background_dark should map to --bg-dark, got:\n{css}",
     );
-    assert!(!css.contains("background_dark"), "raw field names should not appear in CSS output");
+    assert!(
+        !css.contains("background_dark"),
+        "raw field names should not appear in CSS output"
+    );
 }
 
 #[test]
@@ -131,5 +147,8 @@ fn all_css_names_match_design_spec() {
     assert!(css.contains("--diff-added:"), "diff: --diff-added");
     assert!(css.contains("--ansi-red:"), "terminal: --ansi-red");
     assert!(css.contains("--ui-menu:"), "surface: --ui-menu");
-    assert!(css.contains("--text-comment:"), "typography: --text-comment");
+    assert!(
+        css.contains("--text-comment:"),
+        "typography: --text-comment"
+    );
 }

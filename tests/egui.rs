@@ -16,7 +16,11 @@ fn tokyonight_visuals() -> ::egui::Visuals {
 
 #[test]
 fn single_color_converts_to_color32() {
-    let color = Color { r: 26, g: 27, b: 42 };
+    let color = Color {
+        r: 26,
+        g: 27,
+        b: 42,
+    };
     assert_eq!(to_color32(&color), Color32::from_rgb(26, 27, 42));
 }
 
@@ -69,7 +73,10 @@ fn code_bg_maps_background_dark() {
 fn hovered_stroke_maps_border_highlight() {
     let v = tokyonight_visuals();
     // border_highlight = "#27a1b9" => (39, 161, 185)
-    assert_eq!(v.widgets.hovered.bg_stroke.color, Color32::from_rgb(39, 161, 185));
+    assert_eq!(
+        v.widgets.hovered.bg_stroke.color,
+        Color32::from_rgb(39, 161, 185)
+    );
 }
 
 #[test]

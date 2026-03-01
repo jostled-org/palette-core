@@ -5,19 +5,40 @@ use palette_core::color::{Color, InvalidHex};
 #[test]
 fn from_hex_lowercase() {
     let color = Color::from_hex("#1a1b2a").unwrap();
-    assert_eq!(color, Color { r: 26, g: 27, b: 42 });
+    assert_eq!(
+        color,
+        Color {
+            r: 26,
+            g: 27,
+            b: 42
+        }
+    );
 }
 
 #[test]
 fn from_hex_uppercase() {
     let color = Color::from_hex("#AABBCC").unwrap();
-    assert_eq!(color, Color { r: 170, g: 187, b: 204 });
+    assert_eq!(
+        color,
+        Color {
+            r: 170,
+            g: 187,
+            b: 204
+        }
+    );
 }
 
 #[test]
 fn from_hex_mixed_case() {
     let color = Color::from_hex("#aAbBcC").unwrap();
-    assert_eq!(color, Color { r: 170, g: 187, b: 204 });
+    assert_eq!(
+        color,
+        Color {
+            r: 170,
+            g: 187,
+            b: 204
+        }
+    );
 }
 
 #[test]
@@ -58,13 +79,21 @@ fn from_hex_empty() {
 
 #[test]
 fn to_hex_uppercase_format() {
-    let color = Color { r: 26, g: 27, b: 42 };
+    let color = Color {
+        r: 26,
+        g: 27,
+        b: 42,
+    };
     assert_eq!(color.to_hex(), "#1A1B2A");
 }
 
 #[test]
 fn roundtrip() {
-    let original = Color { r: 0, g: 128, b: 255 };
+    let original = Color {
+        r: 0,
+        g: 128,
+        b: 255,
+    };
     let hex = original.to_hex();
     let parsed = Color::from_hex(&hex).unwrap();
     assert_eq!(parsed, original);
@@ -77,13 +106,21 @@ fn from_hex_non_ascii_returns_error() {
 
 #[test]
 fn display_matches_to_hex() {
-    let color = Color { r: 26, g: 27, b: 42 };
+    let color = Color {
+        r: 26,
+        g: 27,
+        b: 42,
+    };
     assert_eq!(format!("{color}"), color.to_hex());
 }
 
 #[test]
 fn display_in_format_string() {
-    let color = Color { r: 255, g: 0, b: 128 };
+    let color = Color {
+        r: 255,
+        g: 0,
+        b: 128,
+    };
     let mut buf = String::new();
     write!(buf, "color: {color}").unwrap();
     assert_eq!(buf, "color: #FF0080");

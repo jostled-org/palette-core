@@ -13,7 +13,11 @@ mod common;
 
 #[test]
 fn single_color_converts_rgb() {
-    let color = Color { r: 26, g: 27, b: 42 };
+    let color = Color {
+        r: 26,
+        g: 27,
+        b: 42,
+    };
     assert_eq!(to_ratatui_color(&color), RatatuiColor::Rgb(26, 27, 42));
 }
 
@@ -23,17 +27,15 @@ fn base_background_matches_source() {
     let palette = Palette::from_manifest(&manifest).unwrap();
     let theme = to_terminal_theme(&palette);
 
-    assert_eq!(
-        theme.base.background,
-        Some(RatatuiColor::Rgb(26, 27, 42)),
-    );
+    assert_eq!(theme.base.background, Some(RatatuiColor::Rgb(26, 27, 42)),);
 }
 
 #[test]
 fn empty_sections_produce_none_fields() {
-    let manifest = common::manifest_with_base(
-        BTreeMap::from([(Arc::from("background"), Arc::from("#000000"))]),
-    );
+    let manifest = common::manifest_with_base(BTreeMap::from([(
+        Arc::from("background"),
+        Arc::from("#000000"),
+    )]));
     let palette = Palette::from_manifest(&manifest).unwrap();
     let theme = to_terminal_theme(&palette);
 

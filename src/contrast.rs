@@ -104,34 +104,154 @@ pub fn validate_palette(palette: &Palette, level: ContrastLevel) -> Vec<Contrast
     };
 
     // Core readability
-    push(check_pair("base", "foreground", "base", "background", palette.base.foreground.as_ref(), palette.base.background.as_ref(), level));
-    push(check_pair("base", "foreground_dark", "base", "background", palette.base.foreground_dark.as_ref(), palette.base.background.as_ref(), level));
-    push(check_pair("base", "foreground", "base", "background_dark", palette.base.foreground.as_ref(), palette.base.background_dark.as_ref(), level));
-    push(check_pair("base", "foreground", "base", "background_highlight", palette.base.foreground.as_ref(), palette.base.background_highlight.as_ref(), level));
+    push(check_pair(
+        "base",
+        "foreground",
+        "base",
+        "background",
+        palette.base.foreground.as_ref(),
+        palette.base.background.as_ref(),
+        level,
+    ));
+    push(check_pair(
+        "base",
+        "foreground_dark",
+        "base",
+        "background",
+        palette.base.foreground_dark.as_ref(),
+        palette.base.background.as_ref(),
+        level,
+    ));
+    push(check_pair(
+        "base",
+        "foreground",
+        "base",
+        "background_dark",
+        palette.base.foreground.as_ref(),
+        palette.base.background_dark.as_ref(),
+        level,
+    ));
+    push(check_pair(
+        "base",
+        "foreground",
+        "base",
+        "background_highlight",
+        palette.base.foreground.as_ref(),
+        palette.base.background_highlight.as_ref(),
+        level,
+    ));
 
     // Semantic over background
     for (name, color) in palette.semantic.populated_slots() {
-        push(check_pair("semantic", name, "base", "background", Some(color), palette.base.background.as_ref(), level));
+        push(check_pair(
+            "semantic",
+            name,
+            "base",
+            "background",
+            Some(color),
+            palette.base.background.as_ref(),
+            level,
+        ));
     }
 
     // Editor pairs
-    push(check_pair("editor", "selection_fg", "editor", "selection_bg", palette.editor.selection_fg.as_ref(), palette.editor.selection_bg.as_ref(), level));
-    push(check_pair("editor", "inlay_hint_fg", "editor", "inlay_hint_bg", palette.editor.inlay_hint_fg.as_ref(), palette.editor.inlay_hint_bg.as_ref(), level));
-    push(check_pair("editor", "search_fg", "editor", "search_bg", palette.editor.search_fg.as_ref(), palette.editor.search_bg.as_ref(), level));
-    push(check_pair("editor", "cursor_text", "editor", "cursor", palette.editor.cursor_text.as_ref(), palette.editor.cursor.as_ref(), level));
+    push(check_pair(
+        "editor",
+        "selection_fg",
+        "editor",
+        "selection_bg",
+        palette.editor.selection_fg.as_ref(),
+        palette.editor.selection_bg.as_ref(),
+        level,
+    ));
+    push(check_pair(
+        "editor",
+        "inlay_hint_fg",
+        "editor",
+        "inlay_hint_bg",
+        palette.editor.inlay_hint_fg.as_ref(),
+        palette.editor.inlay_hint_bg.as_ref(),
+        level,
+    ));
+    push(check_pair(
+        "editor",
+        "search_fg",
+        "editor",
+        "search_bg",
+        palette.editor.search_fg.as_ref(),
+        palette.editor.search_bg.as_ref(),
+        level,
+    ));
+    push(check_pair(
+        "editor",
+        "cursor_text",
+        "editor",
+        "cursor",
+        palette.editor.cursor_text.as_ref(),
+        palette.editor.cursor.as_ref(),
+        level,
+    ));
 
     // Diff pairs
-    push(check_pair("diff", "added_fg", "diff", "added_bg", palette.diff.added_fg.as_ref(), palette.diff.added_bg.as_ref(), level));
-    push(check_pair("diff", "modified_fg", "diff", "modified_bg", palette.diff.modified_fg.as_ref(), palette.diff.modified_bg.as_ref(), level));
-    push(check_pair("diff", "removed_fg", "diff", "removed_bg", palette.diff.removed_fg.as_ref(), palette.diff.removed_bg.as_ref(), level));
+    push(check_pair(
+        "diff",
+        "added_fg",
+        "diff",
+        "added_bg",
+        palette.diff.added_fg.as_ref(),
+        palette.diff.added_bg.as_ref(),
+        level,
+    ));
+    push(check_pair(
+        "diff",
+        "modified_fg",
+        "diff",
+        "modified_bg",
+        palette.diff.modified_fg.as_ref(),
+        palette.diff.modified_bg.as_ref(),
+        level,
+    ));
+    push(check_pair(
+        "diff",
+        "removed_fg",
+        "diff",
+        "removed_bg",
+        palette.diff.removed_fg.as_ref(),
+        palette.diff.removed_bg.as_ref(),
+        level,
+    ));
 
     // Typography over background
-    push(check_pair("typography", "comment", "base", "background", palette.typography.comment.as_ref(), palette.base.background.as_ref(), level));
-    push(check_pair("typography", "line_number", "base", "background", palette.typography.line_number.as_ref(), palette.base.background.as_ref(), level));
+    push(check_pair(
+        "typography",
+        "comment",
+        "base",
+        "background",
+        palette.typography.comment.as_ref(),
+        palette.base.background.as_ref(),
+        level,
+    ));
+    push(check_pair(
+        "typography",
+        "line_number",
+        "base",
+        "background",
+        palette.typography.line_number.as_ref(),
+        palette.base.background.as_ref(),
+        level,
+    ));
 
     // Syntax over background
     for (name, color) in palette.syntax.populated_slots() {
-        push(check_pair("syntax", name, "base", "background", Some(color), palette.base.background.as_ref(), level));
+        push(check_pair(
+            "syntax",
+            name,
+            "base",
+            "background",
+            Some(color),
+            palette.base.background.as_ref(),
+            level,
+        ));
     }
 
     violations

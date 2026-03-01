@@ -4,9 +4,7 @@ use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use palette_core::color::Color;
-use palette_core::contrast::{
-    contrast_ratio, meets_level, validate_palette, ContrastLevel,
-};
+use palette_core::contrast::{ContrastLevel, contrast_ratio, meets_level, validate_palette};
 use palette_core::manifest::PaletteManifest;
 use palette_core::palette::Palette;
 
@@ -31,10 +29,7 @@ fn luminance_white() {
 #[test]
 fn luminance_midgray() {
     let lum = color("#808080").relative_luminance();
-    assert!(
-        (lum - 0.2159).abs() < 0.001,
-        "expected ~0.2159, got {lum}"
-    );
+    assert!((lum - 0.2159).abs() < 0.001, "expected ~0.2159, got {lum}");
 }
 
 // --- Contrast ratio ---
@@ -65,7 +60,10 @@ fn ratio_order_independence() {
     let b = color("#FFCC00");
     let ab = contrast_ratio(&a, &b);
     let ba = contrast_ratio(&b, &a);
-    assert!((ab - ba).abs() < 1e-10, "ratio(a,b)={ab} != ratio(b,a)={ba}");
+    assert!(
+        (ab - ba).abs() < 1e-10,
+        "ratio(a,b)={ab} != ratio(b,a)={ba}"
+    );
 }
 
 // --- Compliance levels ---
@@ -153,7 +151,10 @@ fn bad_palette_produces_violations() {
     };
     let palette = Palette::from_manifest(&manifest).unwrap();
     let violations = validate_palette(&palette, ContrastLevel::AaNormal);
-    assert!(!violations.is_empty(), "bad palette should produce violations");
+    assert!(
+        !violations.is_empty(),
+        "bad palette should produce violations"
+    );
 
     let v = &violations[0];
     assert_eq!(v.foreground_label.as_ref(), "base.foreground");
@@ -179,5 +180,8 @@ fn none_fields_skipped_without_error() {
     };
     let palette = Palette::from_manifest(&manifest).unwrap();
     let violations = validate_palette(&palette, ContrastLevel::AaNormal);
-    assert!(violations.is_empty(), "empty palette should produce no violations");
+    assert!(
+        violations.is_empty(),
+        "empty palette should produce no violations"
+    );
 }

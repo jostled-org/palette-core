@@ -292,11 +292,16 @@ impl Default for JsRegistry {
 impl JsRegistry {
     #[wasm_bindgen(constructor)]
     pub fn new() -> Self {
-        Self { inner: Registry::new() }
+        Self {
+            inner: Registry::new(),
+        }
     }
 
     pub fn list(&self) -> Vec<JsThemeInfo> {
-        self.inner.list().map(JsThemeInfo::from_theme_info).collect()
+        self.inner
+            .list()
+            .map(JsThemeInfo::from_theme_info)
+            .collect()
     }
 
     pub fn load(&self, id: &str) -> Result<JsPalette, JsValue> {
@@ -308,13 +313,14 @@ impl JsRegistry {
 
     #[wasm_bindgen(js_name = "addToml")]
     pub fn add_toml(&mut self, toml: &str) -> Result<(), JsValue> {
-        self.inner
-            .add_toml(toml.to_owned())
-            .map_err(to_js_error)
+        self.inner.add_toml(toml.to_owned()).map_err(to_js_error)
     }
 
     #[wasm_bindgen(js_name = "byStyle")]
     pub fn by_style(&self, style: &str) -> Vec<JsThemeInfo> {
-        self.inner.by_style(style).map(JsThemeInfo::from_theme_info).collect()
+        self.inner
+            .by_style(style)
+            .map(JsThemeInfo::from_theme_info)
+            .collect()
     }
 }

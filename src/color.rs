@@ -33,7 +33,11 @@ impl Color {
     pub fn from_hex(hex: &str) -> Result<Self, InvalidHex> {
         let digits = match hex.strip_prefix('#') {
             Some(d) if d.len() == 6 && d.is_ascii() => d,
-            _ => return Err(InvalidHex { value: Arc::from(hex) }),
+            _ => {
+                return Err(InvalidHex {
+                    value: Arc::from(hex),
+                });
+            }
         };
 
         let r = u8::from_str_radix(&digits[0..2], 16);
@@ -42,7 +46,9 @@ impl Color {
 
         match (r, g, b) {
             (Ok(r), Ok(g), Ok(b)) => Ok(Self { r, g, b }),
-            _ => Err(InvalidHex { value: Arc::from(hex) }),
+            _ => Err(InvalidHex {
+                value: Arc::from(hex),
+            }),
         }
     }
 

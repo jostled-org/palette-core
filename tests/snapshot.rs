@@ -39,7 +39,9 @@ fn snapshot_includes_meta() {
 #[test]
 fn snapshot_omits_none_colors() {
     let manifest = common::manifest_with_base(
-        [("background".into(), "#112233".into())].into_iter().collect(),
+        [("background".into(), "#112233".into())]
+            .into_iter()
+            .collect(),
     );
     let palette = Palette::from_manifest(&manifest).unwrap();
     let value = to_json_value(&palette).unwrap();
