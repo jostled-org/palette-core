@@ -1,3 +1,4 @@
+[![CI](https://github.com/jostled-org/palette-core/actions/workflows/ci.yml/badge.svg)](https://github.com/jostled-org/palette-core/actions/workflows/ci.yml)
 [![Crates.io](https://img.shields.io/crates/v/palette-core)](https://crates.io/crates/palette-core)
 [![docs.rs](https://img.shields.io/docsrs/palette-core)](https://docs.rs/palette-core)
 [![License: MIT/Apache-2.0](https://img.shields.io/crates/l/palette-core)](LICENSE-MIT)
@@ -70,7 +71,7 @@ let violations = validate_palette(&palette, ContrastLevel::AaNormal);
 
 The [guide](docs/guide.md) covers rendering targets, theme switching, custom presets, color manipulation, platform overrides, and WASM bindings.
 
-28 presets ship built-in — Catppuccin, TokyoNight, Dracula, Nord, Gruvbox, and [more](docs/guide.md#bundled-presets). Optional [feature flags](docs/guide.md#feature-flags) enable `terminal`, `egui`, `snapshot`, `platform`, and `wasm` targets.
+31 presets ship built-in — Catppuccin, TokyoNight, Dracula, Nord, Gruvbox, and [more](docs/guide.md#bundled-presets). Golden Hour is an original warm-toned family (light, dusk, twilight) exclusive to palette-core. Optional [feature flags](docs/guide.md#feature-flags) enable `terminal`, `egui`, `snapshot`, `platform`, and `wasm` targets.
 
 ## License
 
