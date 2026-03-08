@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 use std::sync::Arc;
 
 use palette_core::error::PaletteError;
@@ -84,7 +84,7 @@ fn meta_propagates() {
 
 #[test]
 fn no_meta_yields_none() {
-    let manifest = common::manifest_with_base(BTreeMap::from([(
+    let manifest = common::manifest_with_base(HashMap::from([(
         Arc::from("background"),
         Arc::from("#000000"),
     )]));

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::color::{Color, InvalidHex};
+use crate::color::Color;
 use crate::error::PaletteError;
 use crate::manifest::{ManifestSection, PaletteManifest};
 
@@ -13,11 +13,7 @@ fn resolve_color(
         None => Ok(None),
         Some(hex) => Color::from_hex(hex)
             .map(Some)
-            .map_err(|InvalidHex { value }| PaletteError::InvalidHex {
-                section: Arc::from(section_name),
-                field: Arc::from(field),
-                value,
-            }),
+            .map_err(|e| e.into_palette_error(Arc::from(section_name), Arc::from(field))),
     }
 }
 
@@ -41,6 +37,13 @@ macro_rules! color_group {
                 Ok(Self {
                     $($field: resolve_color(section, section_name, stringify!($field))?,)+
                 })
+            }
+
+            /// Merge two groups, preferring `self` values over `fallback`.
+            pub fn merge(&self, fallback: &Self) -> Self {
+                Self {
+                    $($field: self.$field.or(fallback.$field),)+
+                }
             }
 
             /// Iterate over slots that have a color assigned.
@@ -203,7 +206,6 @@ macro_rules! color_fields {
 }
 
 color_fields!(color_group);
-#[cfg(feature = "terminal")]
 pub(crate) use color_fields;
 
 /// Theme identity: name, preset ID, and style tag (e.g. "dark", "light").
@@ -281,15 +283,103 @@ impl Default for Palette {
                 hint: c(0x70, 0x70, 0x88),
             },
             surface: SurfaceColors {
+                menu: c(0x1e, 0x1e, 0x32),
+                sidebar: c(0x1e, 0x1e, 0x32),
+                statusline: c(0x1e, 0x1e, 0x32),
+                float: c(0x1e, 0x1e, 0x32),
+                popup: c(0x1e, 0x1e, 0x32),
+                overlay: c(0x1e, 0x1e, 0x32),
                 highlight: c(0x2a, 0x2a, 0x44),
                 selection: c(0x30, 0x30, 0x50),
-                ..SurfaceColors::default()
+                focus: c(0x50, 0x90, 0xe0),
+                search: c(0xe0, 0xb0, 0x50),
             },
-            diff: DiffColors::default(),
-            typography: TypographyColors::default(),
-            syntax: SyntaxColors::default(),
-            editor: EditorColors::default(),
-            terminal_ansi: TerminalAnsiColors::default(),
+            diff: DiffColors {
+                added: c(0x50, 0xc8, 0x78),
+                added_bg: c(0x1e, 0x33, 0x2a),
+                added_fg: c(0x50, 0xc8, 0x78),
+                modified: c(0xe0, 0xb0, 0x50),
+                modified_bg: c(0x33, 0x2e, 0x1e),
+                modified_fg: c(0xe0, 0xb0, 0x50),
+                removed: c(0xe0, 0x50, 0x50),
+                removed_bg: c(0x33, 0x1e, 0x1e),
+                removed_fg: c(0xe0, 0x50, 0x50),
+                text_bg: c(0x30, 0x30, 0x50),
+                ignored: c(0x70, 0x70, 0x88),
+            },
+            typography: TypographyColors {
+                comment: c(0x70, 0x70, 0x88),
+                gutter: c(0x40, 0x40, 0x58),
+                line_number: c(0x50, 0x50, 0x68),
+                selection_text: c(0xd0, 0xd0, 0xd0),
+                link: c(0x50, 0x90, 0xe0),
+                title: c(0xd0, 0xd0, 0xd0),
+            },
+            syntax: SyntaxColors {
+                keywords: c(0xc0, 0x80, 0xe0),
+                keywords_fn: c(0xc0, 0x80, 0xe0),
+                functions: c(0x60, 0xa0, 0xe0),
+                variables: c(0xd0, 0xd0, 0xd0),
+                variables_builtin: c(0xe0, 0x80, 0x80),
+                parameters: c(0xd0, 0xb0, 0x80),
+                properties: c(0x80, 0xc0, 0xe0),
+                types: c(0x60, 0xd0, 0xb0),
+                types_builtin: c(0x60, 0xd0, 0xb0),
+                constants: c(0xe0, 0xb0, 0x50),
+                numbers: c(0xe0, 0xb0, 0x50),
+                booleans: c(0xe0, 0xb0, 0x50),
+                strings: c(0x80, 0xc8, 0x80),
+                strings_doc: c(0x70, 0x70, 0x88),
+                strings_escape: c(0xe0, 0x80, 0x80),
+                strings_regex: c(0xe0, 0x80, 0x80),
+                operators: c(0xd0, 0xd0, 0xd0),
+                punctuation: c(0xa0, 0xa0, 0xb0),
+                punctuation_bracket: c(0xa0, 0xa0, 0xb0),
+                annotations: c(0xe0, 0xb0, 0x50),
+                attributes: c(0xe0, 0xb0, 0x50),
+                constructor: c(0x60, 0xd0, 0xb0),
+                tag: c(0xe0, 0x80, 0x80),
+                tag_delimiter: c(0xa0, 0xa0, 0xb0),
+                tag_attribute: c(0xd0, 0xb0, 0x80),
+                comments: c(0x70, 0x70, 0x88),
+            },
+            editor: EditorColors {
+                cursor: c(0xd0, 0xd0, 0xd0),
+                cursor_text: c(0x1a, 0x1a, 0x2e),
+                match_paren: c(0xe0, 0xb0, 0x50),
+                selection_bg: c(0x30, 0x30, 0x50),
+                selection_fg: c(0xd0, 0xd0, 0xd0),
+                inlay_hint_bg: c(0x24, 0x24, 0x3e),
+                inlay_hint_fg: c(0x70, 0x70, 0x88),
+                search_bg: c(0x50, 0x40, 0x20),
+                search_fg: c(0xe0, 0xb0, 0x50),
+                diagnostic_error: c(0xe0, 0x50, 0x50),
+                diagnostic_warn: c(0xe0, 0xb0, 0x50),
+                diagnostic_info: c(0x50, 0x90, 0xe0),
+                diagnostic_hint: c(0x70, 0x70, 0x88),
+                diagnostic_underline_error: c(0xe0, 0x50, 0x50),
+                diagnostic_underline_warn: c(0xe0, 0xb0, 0x50),
+                diagnostic_underline_info: c(0x50, 0x90, 0xe0),
+                diagnostic_underline_hint: c(0x70, 0x70, 0x88),
+            },
+            terminal_ansi: TerminalAnsiColors {
+                black: c(0x1a, 0x1a, 0x2e),
+                red: c(0xe0, 0x50, 0x50),
+                green: c(0x50, 0xc8, 0x78),
+                yellow: c(0xe0, 0xb0, 0x50),
+                blue: c(0x50, 0x90, 0xe0),
+                magenta: c(0xc0, 0x80, 0xe0),
+                cyan: c(0x60, 0xd0, 0xb0),
+                white: c(0xd0, 0xd0, 0xd0),
+                bright_black: c(0x50, 0x50, 0x68),
+                bright_red: c(0xf0, 0x70, 0x70),
+                bright_green: c(0x70, 0xe0, 0x98),
+                bright_yellow: c(0xf0, 0xc8, 0x70),
+                bright_blue: c(0x70, 0xb0, 0xf0),
+                bright_magenta: c(0xd8, 0xa0, 0xf0),
+                bright_cyan: c(0x80, 0xe8, 0xd0),
+                bright_white: c(0xf0, 0xf0, 0xf0),
+            },
             #[cfg(feature = "platform")]
             platform: crate::platform::PlatformOverrides::default(),
         }

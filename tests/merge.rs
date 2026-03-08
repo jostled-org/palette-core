@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 use std::sync::Arc;
 
 use palette_core::manifest::{ManifestSection, PaletteManifest};
@@ -12,7 +12,7 @@ fn section(pairs: &[(&str, &str)]) -> ManifestSection {
 }
 
 fn empty() -> ManifestSection {
-    BTreeMap::new()
+    HashMap::new()
 }
 
 fn make_manifest(

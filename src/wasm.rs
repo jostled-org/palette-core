@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use wasm_bindgen::prelude::*;
 
 use crate::color::Color;
@@ -244,17 +246,17 @@ pub fn blend_js(fg: &JsColor, bg: &JsColor, alpha: f64) -> JsColor {
 
 #[wasm_bindgen]
 pub struct JsThemeInfo {
-    id: Box<str>,
-    name: Box<str>,
-    style: Box<str>,
+    id: Arc<str>,
+    name: Arc<str>,
+    style: Arc<str>,
 }
 
 impl JsThemeInfo {
     fn from_theme_info(info: &ThemeInfo) -> Self {
         Self {
-            id: Box::from(info.id.as_ref()),
-            name: Box::from(info.name.as_ref()),
-            style: Box::from(info.style.as_ref()),
+            id: Arc::clone(&info.id),
+            name: Arc::clone(&info.name),
+            style: Arc::clone(&info.style),
         }
     }
 }

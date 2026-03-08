@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::sync::Arc;
 
 use serde::Deserialize;
@@ -6,7 +6,7 @@ use serde::Deserialize;
 use crate::error::PaletteError;
 
 /// A single TOML section mapping slot names to hex color strings.
-pub type ManifestSection = BTreeMap<Arc<str>, Arc<str>>;
+pub type ManifestSection = HashMap<Arc<str>, Arc<str>>;
 
 /// Platform-keyed overrides, e.g. `[platform.macos]`.
 pub type PlatformSections = BTreeMap<Arc<str>, ManifestSection>;

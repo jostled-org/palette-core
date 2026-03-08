@@ -1,9 +1,9 @@
 #![allow(dead_code)]
 
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 use std::sync::Arc;
 
-use palette_core::manifest::PaletteManifest;
+use palette_core::manifest::{ManifestSection, PaletteManifest};
 
 pub fn load_preset(name: &str) -> PaletteManifest {
     let path = format!("presets/{name}.toml");
@@ -11,18 +11,18 @@ pub fn load_preset(name: &str) -> PaletteManifest {
     PaletteManifest::from_toml(&content).unwrap()
 }
 
-pub fn manifest_with_base(base: BTreeMap<Arc<str>, Arc<str>>) -> PaletteManifest {
+pub fn manifest_with_base(base: ManifestSection) -> PaletteManifest {
     PaletteManifest {
         meta: None,
         base,
-        semantic: BTreeMap::new(),
-        diff: BTreeMap::new(),
-        surface: BTreeMap::new(),
-        typography: BTreeMap::new(),
-        syntax: BTreeMap::new(),
-        editor: BTreeMap::new(),
-        terminal: BTreeMap::new(),
+        semantic: HashMap::new(),
+        diff: HashMap::new(),
+        surface: HashMap::new(),
+        typography: HashMap::new(),
+        syntax: HashMap::new(),
+        editor: HashMap::new(),
+        terminal: HashMap::new(),
         #[cfg(feature = "platform")]
-        platform: BTreeMap::new(),
+        platform: Default::default(),
     }
 }

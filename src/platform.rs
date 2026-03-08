@@ -3,7 +3,7 @@
 use std::collections::BTreeMap;
 use std::sync::Arc;
 
-use crate::color::{Color, InvalidHex};
+use crate::color::Color;
 use crate::error::PaletteError;
 use crate::manifest::PlatformSections;
 
@@ -21,10 +21,8 @@ pub struct PlatformOverride {
 pub type PlatformOverrides = BTreeMap<Arc<str>, PlatformOverride>;
 
 fn resolve_color(hex: &str, platform: &str, field: &str) -> Result<Color, PaletteError> {
-    Color::from_hex(hex).map_err(|InvalidHex { value }| PaletteError::InvalidHex {
-        section: Arc::from(format!("platform.{platform}")),
-        field: Arc::from(field),
-        value,
+    Color::from_hex(hex).map_err(|e| {
+        e.into_palette_error(Arc::from(format!("platform.{platform}")), Arc::from(field))
     })
 }
 

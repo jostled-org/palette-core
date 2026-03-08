@@ -16,10 +16,13 @@ fn rgb_to_hsl(color: Color) -> Hsl {
     let l = (max + min) / 2.0;
     let delta = max - min;
 
-    if delta == 0.0 {
-        return Hsl { h: 0.0, s: 0.0, l };
+    match delta == 0.0 {
+        true => Hsl { h: 0.0, s: 0.0, l },
+        false => hsl_from_delta(r, g, b, max, l, delta),
     }
+}
 
+fn hsl_from_delta(r: f64, g: f64, b: f64, max: f64, l: f64, delta: f64) -> Hsl {
     let s = match l > 0.5 {
         true => delta / (2.0 - 2.0 * l),
         false => delta / (2.0 * l),
@@ -54,11 +57,16 @@ fn clamp_channel(v: f64) -> u8 {
 }
 
 fn hsl_to_rgb(hsl: Hsl) -> Color {
-    if hsl.s == 0.0 {
-        let v = clamp_channel(hsl.l);
-        return Color { r: v, g: v, b: v };
+    match hsl.s == 0.0 {
+        true => {
+            let v = clamp_channel(hsl.l);
+            Color { r: v, g: v, b: v }
+        }
+        false => hsl_chromatic_to_rgb(hsl),
     }
+}
 
+fn hsl_chromatic_to_rgb(hsl: Hsl) -> Color {
     let q = match hsl.l < 0.5 {
         true => hsl.l * (1.0 + hsl.s),
         false => hsl.l + hsl.s - hsl.l * hsl.s,

@@ -1,6 +1,8 @@
 use std::fmt;
 use std::sync::Arc;
 
+use crate::error::PaletteError;
+
 /// Returned when a hex string cannot be parsed as an RGB color.
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
 #[error("invalid hex color: {value}")]
@@ -9,11 +11,22 @@ pub struct InvalidHex {
     pub value: Arc<str>,
 }
 
+impl InvalidHex {
+    /// Convert into a [`PaletteError::InvalidHex`] with section and field context.
+    pub(crate) fn into_palette_error(self, section: Arc<str>, field: Arc<str>) -> PaletteError {
+        PaletteError::InvalidHex {
+            section,
+            field,
+            value: self.value,
+        }
+    }
+}
+
 /// 8-bit RGB color.
 ///
 /// Constructed from a `#RRGGBB` hex string via [`Color::from_hex`] or directly
 /// from field values. Displays as uppercase hex (`#1A1A2E`).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 #[cfg_attr(feature = "snapshot", derive(serde::Serialize))]
 #[cfg_attr(feature = "snapshot", serde(into = "String"))]
 pub struct Color {

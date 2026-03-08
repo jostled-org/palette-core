@@ -1,7 +1,7 @@
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 use std::sync::Arc;
 
-use palette_core::css::to_css_custom_properties;
+use palette_core::css::{css_name, to_css_custom_properties};
 use palette_core::palette::Palette;
 
 mod common;
@@ -101,7 +101,7 @@ fn all_populated_slots_present() {
 
 #[test]
 fn none_slots_absent() {
-    let manifest = common::manifest_with_base(BTreeMap::from([(
+    let manifest = common::manifest_with_base(HashMap::from([(
         Arc::from("background"),
         Arc::from("#000000"),
     )]));
@@ -116,7 +116,7 @@ fn none_slots_absent() {
 
 #[test]
 fn field_names_map_to_short_css_names() {
-    let manifest = common::manifest_with_base(BTreeMap::from([(
+    let manifest = common::manifest_with_base(HashMap::from([(
         Arc::from("background_dark"),
         Arc::from("#111111"),
     )]));
@@ -130,6 +130,72 @@ fn field_names_map_to_short_css_names() {
     assert!(
         !css.contains("background_dark"),
         "raw field names should not appear in CSS output"
+    );
+}
+
+#[test]
+fn all_fields_have_explicit_css_names() {
+    // Every populated_slots field in every group must have an explicit
+    // css_name mapping. This catches new fields added to color_fields!
+    // without a corresponding css_name entry.
+    let palette = Palette::default();
+
+    let groups: &[(&str, Vec<&str>)] = &[
+        (
+            "base",
+            palette.base.populated_slots().map(|(n, _)| n).collect(),
+        ),
+        (
+            "semantic",
+            palette.semantic.populated_slots().map(|(n, _)| n).collect(),
+        ),
+        (
+            "diff",
+            palette.diff.populated_slots().map(|(n, _)| n).collect(),
+        ),
+        (
+            "surface",
+            palette.surface.populated_slots().map(|(n, _)| n).collect(),
+        ),
+        (
+            "typography",
+            palette
+                .typography
+                .populated_slots()
+                .map(|(n, _)| n)
+                .collect(),
+        ),
+        (
+            "syntax",
+            palette.syntax.populated_slots().map(|(n, _)| n).collect(),
+        ),
+        (
+            "editor",
+            palette.editor.populated_slots().map(|(n, _)| n).collect(),
+        ),
+        (
+            "terminal",
+            palette
+                .terminal_ansi
+                .populated_slots()
+                .map(|(n, _)| n)
+                .collect(),
+        ),
+    ];
+
+    let mut missing = Vec::new();
+    for (section, fields) in groups {
+        for field in fields {
+            match css_name(section, field) {
+                None => missing.push(format!("{section}.{field}")),
+                Some(_) => {}
+            }
+        }
+    }
+
+    assert!(
+        missing.is_empty(),
+        "fields without explicit css_name mapping: {missing:?}",
     );
 }
 

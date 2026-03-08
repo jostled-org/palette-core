@@ -25,6 +25,9 @@ info = "#3a94c5"
 hint = "#35a77c"
 
 [diff]
+added = "#8da101"
+modified = "#f57d26"
+removed = "#f85552"
 added_bg = "#e5ebd4"
 modified_bg = "#f4f0d9"
 removed_bg = "#ebd4d4"

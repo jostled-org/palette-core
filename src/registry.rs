@@ -1,3 +1,5 @@
+use std::cell::RefCell;
+use std::collections::HashMap;
 use std::path::Path;
 use std::sync::Arc;
 
@@ -177,6 +179,8 @@ struct Entry {
 /// Custom themes are added via files or directories and stored as raw TOML.
 pub struct Registry {
     entries: Vec<Entry>,
+    index: HashMap<Arc<str>, usize>,
+    cache: RefCell<HashMap<Arc<str>, Palette>>,
 }
 
 impl Registry {
@@ -193,7 +197,16 @@ impl Registry {
                 source: Source::Builtin,
             })
             .collect();
-        Self { entries }
+        let index = entries
+            .iter()
+            .enumerate()
+            .map(|(i, e)| (Arc::clone(&e.info.id), i))
+            .collect();
+        Self {
+            entries,
+            index,
+            cache: RefCell::new(HashMap::new()),
+        }
     }
 
     /// All registered themes in insertion order (built-ins first, then custom).
@@ -203,8 +216,16 @@ impl Registry {
 
     /// Load a palette by ID, resolving inheritance within the registry.
     pub fn load(&self, id: &str) -> Result<Palette, PaletteError> {
+        if let Some(cached) = self.cache.borrow().get(id) {
+            return Ok(cached.clone());
+        }
         let toml_str = self.toml_for(id)?;
-        resolve_with_inheritance(toml_str, |parent_id| self.resolve_manifest(parent_id))
+        let palette =
+            resolve_with_inheritance(toml_str, |parent_id| self.resolve_manifest(parent_id))?;
+        self.cache
+            .borrow_mut()
+            .insert(Arc::from(id), palette.clone());
+        Ok(palette)
     }
 
     /// Filter registered themes by style (e.g. "dark", "light").
@@ -234,11 +255,15 @@ impl Registry {
         let info = extract_theme_info(&toml)?;
         let source = Source::Custom(toml.into_boxed_str());
 
-        match self.entries.iter().position(|e| e.info.id == info.id) {
+        self.cache.borrow_mut().remove(&info.id);
+
+        match self.index.get(&info.id).copied() {
             Some(idx) => {
                 self.entries[idx] = Entry { info, source };
             }
             None => {
+                let idx = self.entries.len();
+                self.index.insert(Arc::clone(&info.id), idx);
                 self.entries.push(Entry { info, source });
             }
         }
@@ -278,9 +303,9 @@ impl Default for Registry {
 
 impl Registry {
     fn find_entry(&self, id: &str) -> Result<&Entry, PaletteError> {
-        self.entries
-            .iter()
-            .rfind(|e| e.info.id.as_ref() == id)
+        self.index
+            .get(id)
+            .map(|&idx| &self.entries[idx])
             .ok_or_else(|| PaletteError::UnknownPreset(Arc::from(id)))
     }
 
@@ -300,8 +325,12 @@ impl Registry {
 }
 
 fn extract_theme_info(toml_str: &str) -> Result<ThemeInfo, PaletteError> {
-    let manifest = PaletteManifest::from_toml(toml_str)?;
-    let meta = manifest.meta.ok_or(PaletteError::MissingMeta)?;
+    #[derive(serde::Deserialize)]
+    struct MetaOnly {
+        meta: Option<crate::manifest::ManifestMeta>,
+    }
+    let partial: MetaOnly = toml::from_str(toml_str)?;
+    let meta = partial.meta.ok_or(PaletteError::MissingMeta)?;
     Ok(ThemeInfo {
         id: meta.preset_id,
         name: meta.name,

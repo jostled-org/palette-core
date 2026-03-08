@@ -17,6 +17,11 @@ border = "#393552"
 [semantic]
 info = "#3e8fb0"
 
+[diff]
+added = "#9ccfd8"
+modified = "#f6c177"
+removed = "#eb6f92"
+
 [surface]
 menu = "#2a273f"
 sidebar = "#2a273f"

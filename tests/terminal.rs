@@ -1,13 +1,13 @@
 #![cfg(feature = "terminal")]
 
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 use std::sync::Arc;
 
 use ratatui::style::Color as RatatuiColor;
 
 use palette_core::color::Color;
 use palette_core::palette::Palette;
-use palette_core::terminal::{to_ratatui_color, to_terminal_theme};
+use palette_core::terminal::{to_ratatui_color, to_resolved_terminal_theme, to_terminal_theme};
 
 mod common;
 
@@ -32,7 +32,7 @@ fn base_background_matches_source() {
 
 #[test]
 fn empty_sections_produce_none_fields() {
-    let manifest = common::manifest_with_base(BTreeMap::from([(
+    let manifest = common::manifest_with_base(HashMap::from([(
         Arc::from("background"),
         Arc::from("#000000"),
     )]));
@@ -76,4 +76,44 @@ fn terminal_ansi_maps_all_16_colors() {
     assert!(theme.terminal_ansi.bright_magenta.is_some());
     assert!(theme.terminal_ansi.bright_cyan.is_some());
     assert!(theme.terminal_ansi.bright_white.is_some());
+}
+
+#[test]
+fn resolved_terminal_theme_has_no_options() {
+    let palette = Palette::from_manifest(&common::load_preset("tokyonight")).unwrap();
+    let resolved = palette.resolve();
+    let theme = to_resolved_terminal_theme(&resolved);
+
+    // Every field is a bare RatatuiColor, no Option wrapper.
+    assert_eq!(
+        theme.base.background,
+        RatatuiColor::Rgb(
+            resolved.base.background.r,
+            resolved.base.background.g,
+            resolved.base.background.b
+        )
+    );
+    assert_eq!(
+        theme.terminal_ansi.black,
+        RatatuiColor::Rgb(
+            resolved.terminal_ansi.black.r,
+            resolved.terminal_ansi.black.g,
+            resolved.terminal_ansi.black.b
+        )
+    );
+}
+
+#[test]
+fn resolved_terminal_matches_original_when_populated() {
+    let palette = Palette::from_manifest(&common::load_preset("tokyonight")).unwrap();
+    let original = to_terminal_theme(&palette);
+    let resolved = to_resolved_terminal_theme(&palette.resolve());
+
+    // For populated slots, resolved and original should match.
+    assert_eq!(original.base.background.unwrap(), resolved.base.background);
+    assert_eq!(original.base.foreground.unwrap(), resolved.base.foreground);
+    assert_eq!(
+        original.terminal_ansi.red.unwrap(),
+        resolved.terminal_ansi.red
+    );
 }

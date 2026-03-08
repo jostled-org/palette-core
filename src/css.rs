@@ -4,7 +4,11 @@ use std::fmt::Write;
 use crate::color::Color;
 use crate::palette::Palette;
 
-fn css_name(section: &str, field: &str) -> Option<&'static str> {
+/// Map a section/field pair to its short CSS custom property name.
+///
+/// Returns `None` if no explicit name is registered, in which case
+/// `write_section` falls back to `{section}-{field_kebab}`.
+pub fn css_name(section: &str, field: &str) -> Option<&'static str> {
     match (section, field) {
         // Core — base (no section prefix)
         ("base", "background") => Some("bg"),

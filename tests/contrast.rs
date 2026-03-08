@@ -1,6 +1,6 @@
 mod common;
 
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 use std::sync::Arc;
 
 use palette_core::color::Color;
@@ -188,22 +188,22 @@ fn tokyonight_fg_bg_passes_aa() {
 
 #[test]
 fn bad_palette_produces_violations() {
-    let mut base = BTreeMap::new();
+    let mut base = HashMap::new();
     // Nearly identical colors — guaranteed to fail
     base.insert(Arc::from("foreground"), Arc::from("#111111"));
     base.insert(Arc::from("background"), Arc::from("#121212"));
     let manifest = PaletteManifest {
         meta: None,
         base,
-        semantic: BTreeMap::new(),
-        diff: BTreeMap::new(),
-        surface: BTreeMap::new(),
-        typography: BTreeMap::new(),
-        syntax: BTreeMap::new(),
-        editor: BTreeMap::new(),
-        terminal: BTreeMap::new(),
+        semantic: HashMap::new(),
+        diff: HashMap::new(),
+        surface: HashMap::new(),
+        typography: HashMap::new(),
+        syntax: HashMap::new(),
+        editor: HashMap::new(),
+        terminal: HashMap::new(),
         #[cfg(feature = "platform")]
-        platform: BTreeMap::new(),
+        platform: Default::default(),
     };
     let palette = Palette::from_manifest(&manifest).unwrap();
     let violations = validate_palette(&palette, ContrastLevel::AaNormal);
@@ -220,19 +220,80 @@ fn bad_palette_produces_violations() {
 }
 
 #[test]
+fn fg_bg_pairs_covered_by_validation() {
+    // Verify that validate_palette checks all _fg/_bg suffix pairs in editor and diff.
+    // Build a palette where every slot has the same color so every pair produces a
+    // violation (ratio 1:1), then assert the expected pair labels appear.
+    let palette = palette_core::preset("tokyonight").unwrap();
+    let mut same = palette.clone();
+
+    let grey = Color::from_hex("#808080").unwrap();
+    // Set all editor paired fields to the same color
+    same.editor.selection_fg = Some(grey);
+    same.editor.selection_bg = Some(grey);
+    same.editor.inlay_hint_fg = Some(grey);
+    same.editor.inlay_hint_bg = Some(grey);
+    same.editor.search_fg = Some(grey);
+    same.editor.search_bg = Some(grey);
+    same.editor.cursor_text = Some(grey);
+    same.editor.cursor = Some(grey);
+    same.diff.added_fg = Some(grey);
+    same.diff.added_bg = Some(grey);
+    same.diff.modified_fg = Some(grey);
+    same.diff.modified_bg = Some(grey);
+    same.diff.removed_fg = Some(grey);
+    same.diff.removed_bg = Some(grey);
+
+    let violations = validate_palette(&same, ContrastLevel::AaNormal);
+    let labels: Vec<&str> = violations
+        .iter()
+        .map(|v| v.foreground_label.as_ref())
+        .collect();
+
+    // Editor pairs
+    assert!(
+        labels.contains(&"editor.selection_fg"),
+        "missing editor.selection_fg"
+    );
+    assert!(
+        labels.contains(&"editor.inlay_hint_fg"),
+        "missing editor.inlay_hint_fg"
+    );
+    assert!(
+        labels.contains(&"editor.search_fg"),
+        "missing editor.search_fg"
+    );
+    assert!(
+        labels.contains(&"editor.cursor_text"),
+        "missing editor.cursor_text"
+    );
+
+    // Diff pairs
+    assert!(labels.contains(&"diff.added_fg"), "missing diff.added_fg");
+    assert!(
+        labels.contains(&"diff.modified_fg"),
+        "missing diff.modified_fg"
+    );
+    assert!(
+        labels.contains(&"diff.removed_fg"),
+        "missing diff.removed_fg"
+    );
+}
+
+#[test]
 fn none_fields_skipped_without_error() {
     let manifest = PaletteManifest {
         meta: None,
-        base: BTreeMap::new(),
-        semantic: BTreeMap::new(),
-        diff: BTreeMap::new(),
-        surface: BTreeMap::new(),
-        typography: BTreeMap::new(),
-        syntax: BTreeMap::new(),
-        editor: BTreeMap::new(),
-        terminal: BTreeMap::new(),
+        base: HashMap::new(),
+        semantic: HashMap::new(),
+        diff: HashMap::new(),
+        surface: HashMap::new(),
+        typography: HashMap::new(),
+        syntax: HashMap::new(),
+        editor: HashMap::new(),
+        terminal: HashMap::new(),
         #[cfg(feature = "platform")]
-        platform: BTreeMap::new(),
+        platform: Default::default(),
     };
     let palette = Palette::from_manifest(&manifest).unwrap();
     let violations = validate_palette(&palette, ContrastLevel::AaNormal);

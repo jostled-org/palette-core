@@ -15,6 +15,9 @@ border = "#1d202f"
 border_highlight = "#29a4bd"
 
 [diff]
+added = "#449dab"
+modified = "#6183bb"
+removed = "#914c54"
 added_bg = "#2b485a"
 modified_bg = "#272d43"
 removed_bg = "#52313f"

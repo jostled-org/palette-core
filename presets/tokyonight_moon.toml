@@ -24,6 +24,9 @@ error = "#c53b53"
 hint = "#4fd6be"
 
 [diff]
+added = "#b8db87"
+modified = "#7ca1f2"
+removed = "#e26a75"
 added_bg = "#2a4556"
 modified_bg = "#252a3f"
 removed_bg = "#4b2a3d"
