@@ -109,6 +109,28 @@ let theme = to_resolved_terminal_theme(&resolved);
 // theme.base.background is RatatuiColor, not Option<RatatuiColor>
 ```
 
+#### Accent color cycling
+
+`chromatic()` returns the 12 non-grayscale ANSI colors for cycling across panels or chart series:
+
+```rust
+let colors = theme.terminal_ansi.chromatic();
+for (i, panel) in panels.iter().enumerate() {
+    let accent = colors[i % colors.len()];
+    // ...
+}
+```
+
+#### Style builder
+
+`style(fg, bg)` is shorthand for `Style::default().fg(fg).bg(bg)`:
+
+```rust
+use palette_core::terminal::style;
+
+let base = style(theme.base.foreground, theme.base.background);
+```
+
 ### egui
 
 Requires the `egui` feature.

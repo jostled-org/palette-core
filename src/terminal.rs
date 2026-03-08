@@ -115,6 +115,33 @@ pub struct ResolvedTerminalTheme {
     pub terminal_ansi: ResolvedTerminalTerminalAnsiColors,
 }
 
+impl ResolvedTerminalTerminalAnsiColors {
+    /// The 12 chromatic ANSI colors, skipping black/white/bright_black/bright_white.
+    ///
+    /// Useful for cycling distinct accent colors across panels, tabs, or chart series.
+    pub fn chromatic(&self) -> [RatatuiColor; 12] {
+        [
+            self.red,
+            self.green,
+            self.yellow,
+            self.blue,
+            self.magenta,
+            self.cyan,
+            self.bright_red,
+            self.bright_green,
+            self.bright_yellow,
+            self.bright_blue,
+            self.bright_magenta,
+            self.bright_cyan,
+        ]
+    }
+}
+
+/// Build a [`ratatui::style::Style`] from a foreground and background color.
+pub fn style(fg: RatatuiColor, bg: RatatuiColor) -> ratatui::style::Style {
+    ratatui::style::Style::default().fg(fg).bg(bg)
+}
+
 /// Convert a [`ResolvedPalette`](crate::resolved::ResolvedPalette) into a [`ResolvedTerminalTheme`].
 pub fn to_resolved_terminal_theme(
     resolved: &crate::resolved::ResolvedPalette,

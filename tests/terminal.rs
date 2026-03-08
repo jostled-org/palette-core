@@ -7,7 +7,9 @@ use ratatui::style::Color as RatatuiColor;
 
 use palette_core::color::Color;
 use palette_core::palette::Palette;
-use palette_core::terminal::{to_ratatui_color, to_resolved_terminal_theme, to_terminal_theme};
+use palette_core::terminal::{
+    style, to_ratatui_color, to_resolved_terminal_theme, to_terminal_theme,
+};
 
 mod common;
 
@@ -116,4 +118,29 @@ fn resolved_terminal_matches_original_when_populated() {
         original.terminal_ansi.red.unwrap(),
         resolved.terminal_ansi.red
     );
+}
+
+#[test]
+fn chromatic_returns_12_non_grayscale_colors() {
+    let palette = Palette::from_manifest(&common::load_preset("tokyonight")).unwrap();
+    let theme = to_resolved_terminal_theme(&palette.resolve());
+    let colors = theme.terminal_ansi.chromatic();
+
+    assert_eq!(colors.len(), 12);
+    assert_eq!(colors[0], theme.terminal_ansi.red);
+    assert_eq!(colors[11], theme.terminal_ansi.bright_cyan);
+    assert!(!colors.contains(&theme.terminal_ansi.black));
+    assert!(!colors.contains(&theme.terminal_ansi.white));
+    assert!(!colors.contains(&theme.terminal_ansi.bright_black));
+    assert!(!colors.contains(&theme.terminal_ansi.bright_white));
+}
+
+#[test]
+fn style_builder_sets_fg_and_bg() {
+    let fg = RatatuiColor::Rgb(0xC0, 0xCA, 0xF5);
+    let bg = RatatuiColor::Rgb(0x1A, 0x1B, 0x2A);
+    let s = style(fg, bg);
+
+    assert_eq!(s.fg, Some(fg));
+    assert_eq!(s.bg, Some(bg));
 }
