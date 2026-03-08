@@ -1,10 +1,10 @@
 # CSS variables reference
 
-`palette.to_css(prefix)` exports up to 95 CSS custom properties. The prefix is optional — omit it for clean names, or pass one to avoid collisions with other variable systems on the same page.
+`palette.to_css()` exports up to 98 CSS custom properties. Use `to_css_scoped` for a custom selector or prefix to avoid collisions with other variable systems on the same page.
 
 ```rust
-let css = palette.to_css(None);          // --bg, --fg, --error
-let css = palette.to_css(Some("app"));   // --app-bg, --app-fg, --app-error
+let css = palette.to_css();                              // --bg, --fg, --error
+let css = palette.to_css_scoped(":root", Some("app"));   // --app-bg, --app-fg, --app-error
 ```
 
 ## When to use a prefix

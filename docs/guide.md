@@ -47,6 +47,25 @@ let palette = preset(&user_choice)
 
 The default palette covers `base`, `semantic`, and `surface` slots. Syntax, editor, terminal, and diff slots are `None` — downstream renderers should apply their own defaults for those.
 
+## Resolved palettes
+
+`Palette` fields are `Option<Color>` — absent slots mean the theme defers to the renderer. Call `resolve()` to fill all gaps from `Palette::default()`, producing a `ResolvedPalette` where every slot is a concrete `Color`.
+
+```rust
+use palette_core::preset;
+
+let palette = preset("tokyonight").expect("builtin preset");
+let resolved = palette.resolve();
+// resolved.base.background is Color, not Option<Color>
+```
+
+Use `resolve_with()` to fill gaps from a custom fallback instead of the built-in default.
+
+```rust
+let custom_fallback = palette_core::preset("nord").expect("builtin preset");
+let resolved = palette.resolve_with(&custom_fallback);
+```
+
 ## Rendering targets
 
 ### CSS
@@ -78,6 +97,16 @@ use palette_core::terminal::to_terminal_theme;
 let palette = preset("catppuccin").expect("builtin preset");
 let theme = to_terminal_theme(&palette);
 // theme.base.background, theme.syntax.keywords, etc.
+```
+
+For a resolved theme where every slot is a concrete `RatatuiColor`:
+
+```rust
+use palette_core::terminal::to_resolved_terminal_theme;
+
+let resolved = palette.resolve();
+let theme = to_resolved_terminal_theme(&resolved);
+// theme.base.background is RatatuiColor, not Option<RatatuiColor>
 ```
 
 ### egui
