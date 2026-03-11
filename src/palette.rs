@@ -291,7 +291,7 @@ impl Default for Palette {
                 overlay: c(0x1e, 0x1e, 0x32),
                 highlight: c(0x2a, 0x2a, 0x44),
                 selection: c(0x30, 0x30, 0x50),
-                focus: c(0x50, 0x90, 0xe0),
+                focus: c(0x2a, 0x2a, 0x3f),
                 search: c(0xe0, 0xb0, 0x50),
             },
             diff: DiffColors {

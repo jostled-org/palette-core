@@ -1,9 +1,7 @@
 #![allow(dead_code)]
 
-use std::collections::HashMap;
-use std::sync::Arc;
-
 use palette_core::manifest::{ManifestSection, PaletteManifest};
+use std::collections::HashMap;
 
 pub fn load_preset(name: &str) -> PaletteManifest {
     let path = format!("presets/{name}.toml");

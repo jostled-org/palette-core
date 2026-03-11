@@ -31,6 +31,7 @@ popup = "#2a273f"
 overlay = "#393552"
 highlight = "#44415a"
 selection = "#44415a"
+focus = "#53496B"
 
 [syntax]
 keywords_fn = "#3e8fb0"

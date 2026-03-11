@@ -53,6 +53,7 @@ overlay = "#001e27"
 highlight = "#073642"
 selection = "#073642"
 search = "#268bd2"
+focus = "#0B4865"
 
 [typography]
 comment = "#586e75"

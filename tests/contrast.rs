@@ -302,3 +302,19 @@ fn none_fields_skipped_without_error() {
         "empty palette should produce no violations"
     );
 }
+
+#[test]
+fn all_presets_focus_passes_aa_large() {
+    for id in palette_core::preset_ids() {
+        let palette = palette_core::preset(id).unwrap();
+        let resolved = palette.resolve();
+        let ratio = resolved
+            .base
+            .foreground
+            .contrast_ratio(&resolved.surface.focus);
+        assert!(
+            ContrastLevel::AaLarge.passes(ratio),
+            "{id}: base.foreground on surface.focus = {ratio:.2}:1 (need >= 3.0)"
+        );
+    }
+}

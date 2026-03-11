@@ -30,6 +30,7 @@ float = "#1f2335"
 popup = "#1f2335"
 overlay = "#1f2335"
 selection = "#2e3c64"
+focus = "#264D62"
 
 [syntax]
 types_builtin = "#29a4bd"

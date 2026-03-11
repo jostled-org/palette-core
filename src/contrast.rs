@@ -151,6 +151,17 @@ pub fn validate_palette(palette: &Palette, level: ContrastLevel) -> Vec<Contrast
         level,
     ));
 
+    // Focus surface
+    push(check_pair(
+        "base",
+        "foreground",
+        "surface",
+        "focus",
+        palette.base.foreground.as_ref(),
+        palette.surface.focus.as_ref(),
+        level,
+    ));
+
     // Semantic over background
     for (name, color) in palette.semantic.populated_slots() {
         push(check_pair(

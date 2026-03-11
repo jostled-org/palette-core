@@ -51,6 +51,7 @@ popup = "#EDEFF2"
 overlay = "#D8DEE2"
 selection = "#B6E3FF"
 search = "#54AEFF"
+focus = "#C5E2FC"
 
 [typography]
 comment = "#57606A"
