@@ -23,7 +23,7 @@ let css = palette.to_css();
   --error: #DB4B4B;
   --syn-keyword: #BB9AF7;
   --ed-cursor: #C0CAF5;
-  /* ... 98 variables total */
+  /* ... 136+ variables total */
 }
 ```
 

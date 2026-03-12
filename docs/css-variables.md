@@ -1,6 +1,6 @@
 # CSS variables reference
 
-`palette.to_css()` exports up to 98 CSS custom properties. Use `to_css_scoped` for a custom selector or prefix to avoid collisions with other variable systems on the same page.
+`palette.to_css()` exports CSS custom properties for all populated color and style slots. Use `to_css_scoped` for a custom selector or prefix to avoid collisions with other variable systems on the same page.
 
 ```rust
 let css = palette.to_css();                              // --bg, --fg, --error
@@ -55,11 +55,27 @@ comment gutter line-num sel link title
 ### Syntax: `--[prefix-]syn-{name}`
 
 ```
-keyword keyword-fn fn var var-builtin param prop type
-type-builtin const number bool string string-doc string-esc
-string-re op punct punct-bracket annotation attr ctor tag
-tag-delim tag-attr comment
+keyword keyword-fn keyword-ctrl keyword-import keyword-op
+fn fn-builtin fn-method fn-macro
+var var-builtin param prop
+type type-builtin
+const const-char number bool
+string string-doc string-esc string-re
+op punct punct-bracket punct-special
+annotation attr attr-builtin ctor module label
+tag tag-delim tag-attr comment comment-doc
 ```
+
+### Syntax styles: `--[prefix-]syn-{name}-style`
+
+Non-empty style modifiers emit a `-style` variable alongside the color. Values are space-separated: `bold`, `italic`, `underline`, or combinations like `bold italic`.
+
+```
+--syn-keyword-style: italic;
+--syn-comment-doc-style: bold italic;
+```
+
+Only populated, non-empty style slots are emitted.
 
 ### Editor: `--[prefix-]ed-{name}`
 

@@ -66,6 +66,30 @@ let custom_fallback = palette_core::preset("nord").expect("builtin preset");
 let resolved = palette.resolve_with(&custom_fallback);
 ```
 
+## Style modifiers
+
+Syntax tokens can carry bold, italic, and underline modifiers alongside their colors. These live in the `[syntax_style]` TOML section and the `Palette.syntax_style` field.
+
+```toml
+[syntax_style]
+keywords = "italic"
+comments = "italic"
+comments_doc = "bold,italic"
+```
+
+```rust
+use palette_core::preset;
+
+let palette = preset("tokyonight").expect("builtin preset");
+for (name, style) in palette.syntax_style.populated_slots() {
+    println!("{name}: {style}");
+}
+```
+
+Style modifiers follow the same parent→child fallback chain as syntax colors. Setting `keywords = "italic"` applies italic to `keywords_control`, `keywords_import`, and `keywords_operator` unless they have their own explicit style.
+
+Resolved styles (`ResolvedSyntaxStyles`) fill absent slots with `StyleModifiers::default()` (no modifiers). CSS export appends `--syn-*-style` variables for non-empty modifiers.
+
 ## Rendering targets
 
 ### CSS
@@ -432,7 +456,7 @@ inherits = "my_theme"
 background = "#24283b"
 ```
 
-Sections: `base`, `semantic`, `diff`, `surface`, `typography`, `syntax`, `editor`, `terminal`.
+Sections: `base`, `semantic`, `diff`, `surface`, `typography`, `syntax`, `editor`, `terminal`, `syntax_style`.
 
 ## Feature flags
 
