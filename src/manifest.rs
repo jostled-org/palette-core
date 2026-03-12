@@ -57,6 +57,8 @@ pub struct PaletteManifest {
     pub editor: ManifestSection,
     /// ANSI terminal color hex values.
     pub terminal: ManifestSection,
+    /// Syntax token style modifiers (bold, italic, underline).
+    pub syntax_style: ManifestSection,
     /// Per-platform color overrides.
     #[cfg(feature = "platform")]
     pub platform: PlatformSections,
@@ -79,6 +81,7 @@ impl PaletteManifest {
                 syntax: raw.syntax,
                 editor: raw.editor,
                 terminal: raw.terminal,
+                syntax_style: raw.syntax_style,
                 #[cfg(feature = "platform")]
                 platform: raw.platform,
             }),
@@ -89,6 +92,193 @@ impl PaletteManifest {
     pub fn inherits_from(&self) -> Option<&str> {
         self.meta.as_ref().and_then(|m| m.inherits.as_deref())
     }
+}
+
+/// A field key present in a manifest section that is not recognized.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UnknownField {
+    /// The TOML section name (e.g. `"syntax"`).
+    pub section: Box<str>,
+    /// The unrecognized field key.
+    pub field: Box<str>,
+}
+
+impl std::fmt::Display for UnknownField {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "[{}].{}", self.section, self.field)
+    }
+}
+
+/// Check every section key against the known field set.
+///
+/// This is opt-in validation for theme lint tooling — not called during
+/// normal [`PaletteManifest::from_manifest`](crate::Palette::from_manifest).
+pub fn validate_fields(manifest: &PaletteManifest) -> Vec<UnknownField> {
+    macro_rules! known_fields {
+        ($(#[$_meta:meta])* $name:ident { $($field:ident),+ $(,)? }) => {
+            &[$(stringify!($field)),+]
+        };
+    }
+
+    let checks: &[(&str, &ManifestSection, &[&str])] = &[
+        (
+            "base",
+            &manifest.base,
+            known_fields!(BaseColors {
+                background,
+                background_dark,
+                background_highlight,
+                foreground,
+                foreground_dark,
+                border,
+                border_highlight,
+            }),
+        ),
+        (
+            "semantic",
+            &manifest.semantic,
+            known_fields!(SemanticColors {
+                success,
+                warning,
+                error,
+                info,
+                hint,
+            }),
+        ),
+        (
+            "diff",
+            &manifest.diff,
+            known_fields!(DiffColors {
+                added,
+                added_bg,
+                added_fg,
+                modified,
+                modified_bg,
+                modified_fg,
+                removed,
+                removed_bg,
+                removed_fg,
+                text_bg,
+                ignored,
+            }),
+        ),
+        (
+            "surface",
+            &manifest.surface,
+            known_fields!(SurfaceColors {
+                menu,
+                sidebar,
+                statusline,
+                float,
+                popup,
+                overlay,
+                highlight,
+                selection,
+                focus,
+                search,
+            }),
+        ),
+        (
+            "typography",
+            &manifest.typography,
+            known_fields!(TypographyColors {
+                comment,
+                gutter,
+                line_number,
+                selection_text,
+                link,
+                title,
+            }),
+        ),
+        (
+            "editor",
+            &manifest.editor,
+            known_fields!(EditorColors {
+                cursor,
+                cursor_text,
+                match_paren,
+                selection_bg,
+                selection_fg,
+                inlay_hint_bg,
+                inlay_hint_fg,
+                search_bg,
+                search_fg,
+                diagnostic_error,
+                diagnostic_warn,
+                diagnostic_info,
+                diagnostic_hint,
+                diagnostic_underline_error,
+                diagnostic_underline_warn,
+                diagnostic_underline_info,
+                diagnostic_underline_hint,
+            }),
+        ),
+        (
+            "terminal",
+            &manifest.terminal,
+            known_fields!(TerminalAnsiColors {
+                black,
+                red,
+                green,
+                yellow,
+                blue,
+                magenta,
+                cyan,
+                white,
+                bright_black,
+                bright_red,
+                bright_green,
+                bright_yellow,
+                bright_blue,
+                bright_magenta,
+                bright_cyan,
+                bright_white,
+            }),
+        ),
+    ];
+
+    // Syntax fields via syntax_fields! macro
+    macro_rules! syntax_known {
+        ($(#[$_meta:meta])* $_name:ident { $($field:ident),+ $(,)? }) => {
+            const SYNTAX_FIELDS: &[&str] = &[$(stringify!($field)),+];
+        };
+    }
+    crate::palette::syntax_fields!(syntax_known);
+
+    let mut unknowns = Vec::new();
+
+    for (section_name, section, known) in checks {
+        for key in section.keys() {
+            if !known.contains(&key.as_ref()) {
+                unknowns.push(UnknownField {
+                    section: Box::from(*section_name),
+                    field: Box::from(key.as_ref()),
+                });
+            }
+        }
+    }
+
+    // Check syntax section
+    for key in manifest.syntax.keys() {
+        if !SYNTAX_FIELDS.contains(&key.as_ref()) {
+            unknowns.push(UnknownField {
+                section: Box::from("syntax"),
+                field: Box::from(key.as_ref()),
+            });
+        }
+    }
+
+    // Check syntax_style section (same field names as syntax)
+    for key in manifest.syntax_style.keys() {
+        if !SYNTAX_FIELDS.contains(&key.as_ref()) {
+            unknowns.push(UnknownField {
+                section: Box::from("syntax_style"),
+                field: Box::from(key.as_ref()),
+            });
+        }
+    }
+
+    unknowns
 }
 
 #[derive(Deserialize)]
@@ -111,6 +301,8 @@ struct RawManifest {
     editor: ManifestSection,
     #[serde(default)]
     terminal: ManifestSection,
+    #[serde(default)]
+    syntax_style: ManifestSection,
     #[cfg(feature = "platform")]
     #[serde(default)]
     platform: PlatformSections,

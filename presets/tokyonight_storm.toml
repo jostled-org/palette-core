@@ -35,6 +35,7 @@ focus = "#264D62"
 [syntax]
 types_builtin = "#29a4bd"
 comments = "#565f89"
+comments_doc = "#565f89"
 
 [editor]
 cursor_text = "#24283b"

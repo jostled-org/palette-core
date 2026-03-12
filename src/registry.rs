@@ -87,6 +87,11 @@ presets! {
 // Shared inheritance resolution
 // ---------------------------------------------------------------------------
 
+/// Resolve a TOML theme string into a [`Palette`], applying single-level
+/// inheritance if the manifest declares `inherits`.
+///
+/// Only one level of inheritance is supported: a variant may inherit from
+/// a base, but the base itself must be self-contained.
 fn resolve_with_inheritance<F>(toml_str: &str, resolve_parent: F) -> Result<Palette, PaletteError>
 where
     F: FnOnce(&str) -> Result<PaletteManifest, PaletteError>,
@@ -102,12 +107,36 @@ where
     Palette::from_manifest(&resolved)
 }
 
+/// Resolve a pre-parsed manifest into a [`Palette`], applying single-level
+/// inheritance if the manifest declares `inherits`.
+///
+/// Only one level of inheritance is supported.
+fn resolve_manifest_with_inheritance<F>(
+    manifest: &PaletteManifest,
+    resolve_parent: F,
+) -> Result<Palette, PaletteError>
+where
+    F: FnOnce(&str) -> Result<PaletteManifest, PaletteError>,
+{
+    let resolved = match manifest.inherits_from() {
+        None => return Palette::from_manifest(manifest),
+        Some(parent_id) => {
+            let parent = resolve_parent(parent_id)?;
+            merge_manifests(manifest, &parent)
+        }
+    };
+    Palette::from_manifest(&resolved)
+}
+
 // ---------------------------------------------------------------------------
 // Standalone preset functions (existing API)
 // ---------------------------------------------------------------------------
 
-/// Load a theme from a TOML file on disk, resolving inheritance from sibling
-/// files or built-in presets.
+/// Load a theme from a TOML file on disk, resolving single-level inheritance
+/// from sibling files or built-in presets.
+///
+/// Only one level of inheritance is supported: a variant may inherit from
+/// a base, but the base itself must be self-contained.
 pub fn load_preset_file(path: &Path) -> Result<Palette, PaletteError> {
     let path_str: Arc<str> = Arc::from(path.to_string_lossy().as_ref());
     let toml = std::fs::read_to_string(path).map_err(|source| PaletteError::Io {
@@ -137,7 +166,7 @@ fn resolve_parent(child_path: &Path, parent_id: &str) -> Result<PaletteManifest,
     }
 }
 
-/// Load a built-in preset by ID, resolving inheritance.
+/// Load a built-in preset by ID, resolving single-level inheritance.
 ///
 /// Returns [`PaletteError::UnknownPreset`] if the ID is not recognized.
 /// For an infallible alternative, see [`preset`].
@@ -165,7 +194,7 @@ pub fn preset(id: &str) -> Option<Palette> {
 
 enum Source {
     Builtin,
-    Custom(Box<str>),
+    Custom(Box<PaletteManifest>),
 }
 
 struct Entry {
@@ -176,7 +205,15 @@ struct Entry {
 /// Unified theme registry combining built-in presets with custom themes.
 ///
 /// Built-in themes carry static metadata (name, style) without parsing TOML.
-/// Custom themes are added via files or directories and stored as raw TOML.
+/// Custom themes are added via files or directories and stored as pre-parsed
+/// manifests, avoiding a second TOML parse on load.
+///
+/// # Thread safety
+///
+/// `Registry` is `Send` but not `Sync` (interior `RefCell` cache). This is
+/// intentional: users can build a registry on one thread and move it to a
+/// render thread. Do not replace `Arc` with `Rc` for internal keys — that
+/// would make `Registry` `!Send`, pinning it to a single thread.
 pub struct Registry {
     entries: Vec<Entry>,
     index: HashMap<Arc<str>, usize>,
@@ -214,14 +251,26 @@ impl Registry {
         self.entries.iter().map(|e| &e.info)
     }
 
-    /// Load a palette by ID, resolving inheritance within the registry.
+    /// Load a palette by ID, resolving single-level inheritance within the
+    /// registry.
+    ///
+    /// Only one level of inheritance is supported: a variant may inherit
+    /// from a base, but the base itself must be self-contained.
     pub fn load(&self, id: &str) -> Result<Palette, PaletteError> {
         if let Some(cached) = self.cache.borrow().get(id) {
             return Ok(cached.clone());
         }
-        let toml_str = self.toml_for(id)?;
-        let palette =
-            resolve_with_inheritance(toml_str, |parent_id| self.resolve_manifest(parent_id))?;
+        let entry = self.find_entry(id)?;
+        let palette = match &entry.source {
+            Source::Builtin => {
+                let toml_str =
+                    preset_toml(id).ok_or_else(|| PaletteError::UnknownPreset(Arc::from(id)))?;
+                resolve_with_inheritance(toml_str, |parent_id| self.resolve_manifest(parent_id))?
+            }
+            Source::Custom(manifest) => resolve_manifest_with_inheritance(manifest, |parent_id| {
+                self.resolve_manifest(parent_id)
+            })?,
+        };
         self.cache
             .borrow_mut()
             .insert(Arc::from(id), palette.clone());
@@ -249,25 +298,13 @@ impl Registry {
 
     /// Register a custom theme from a TOML string.
     ///
-    /// Useful for WASM targets (no filesystem), network-fetched themes, or
-    /// embedded resources.
+    /// Parses the manifest once and stores it. Subsequent [`load`](Self::load)
+    /// calls use the pre-parsed manifest directly.
     pub fn add_toml(&mut self, toml: String) -> Result<(), PaletteError> {
-        let info = extract_theme_info(&toml)?;
-        let source = Source::Custom(toml.into_boxed_str());
-
+        let manifest = PaletteManifest::from_toml(&toml)?;
+        let info = theme_info_from_manifest(&manifest)?;
         self.cache.borrow_mut().remove(&info.id);
-
-        match self.index.get(&info.id).copied() {
-            Some(idx) => {
-                self.entries[idx] = Entry { info, source };
-            }
-            None => {
-                let idx = self.entries.len();
-                self.index.insert(Arc::clone(&info.id), idx);
-                self.entries.push(Entry { info, source });
-            }
-        }
-
+        self.upsert_entry(info, Source::Custom(Box::new(manifest)));
         Ok(())
     }
 
@@ -309,31 +346,37 @@ impl Registry {
             .ok_or_else(|| PaletteError::UnknownPreset(Arc::from(id)))
     }
 
-    fn toml_for(&self, id: &str) -> Result<&str, PaletteError> {
+    fn resolve_manifest(&self, id: &str) -> Result<PaletteManifest, PaletteError> {
         let entry = self.find_entry(id)?;
         match &entry.source {
             Source::Builtin => {
-                preset_toml(id).ok_or_else(|| PaletteError::UnknownPreset(Arc::from(id)))
+                let toml_str =
+                    preset_toml(id).ok_or_else(|| PaletteError::UnknownPreset(Arc::from(id)))?;
+                PaletteManifest::from_toml(toml_str)
             }
-            Source::Custom(toml) => Ok(toml),
+            Source::Custom(manifest) => Ok(PaletteManifest::clone(manifest)),
         }
     }
 
-    fn resolve_manifest(&self, id: &str) -> Result<PaletteManifest, PaletteError> {
-        PaletteManifest::from_toml(self.toml_for(id)?)
+    fn upsert_entry(&mut self, info: ThemeInfo, source: Source) {
+        match self.index.get(&info.id).copied() {
+            Some(idx) => {
+                self.entries[idx] = Entry { info, source };
+            }
+            None => {
+                let idx = self.entries.len();
+                self.index.insert(Arc::clone(&info.id), idx);
+                self.entries.push(Entry { info, source });
+            }
+        }
     }
 }
 
-fn extract_theme_info(toml_str: &str) -> Result<ThemeInfo, PaletteError> {
-    #[derive(serde::Deserialize)]
-    struct MetaOnly {
-        meta: Option<crate::manifest::ManifestMeta>,
-    }
-    let partial: MetaOnly = toml::from_str(toml_str)?;
-    let meta = partial.meta.ok_or(PaletteError::MissingMeta)?;
+fn theme_info_from_manifest(manifest: &PaletteManifest) -> Result<ThemeInfo, PaletteError> {
+    let meta = manifest.meta.as_ref().ok_or(PaletteError::MissingMeta)?;
     Ok(ThemeInfo {
-        id: meta.preset_id,
-        name: meta.name,
-        style: meta.style,
+        id: Arc::clone(&meta.preset_id),
+        name: Arc::clone(&meta.name),
+        style: Arc::clone(&meta.style),
     })
 }

@@ -1,7 +1,10 @@
 use crate::manifest::{ManifestSection, PaletteManifest};
 
 fn merge_sections(primary: &ManifestSection, fallback: &ManifestSection) -> ManifestSection {
-    let mut merged = primary.clone();
+    let mut merged = ManifestSection::with_capacity(primary.len() + fallback.len());
+    for (key, value) in primary {
+        merged.insert(key.clone(), value.clone());
+    }
     for (key, value) in fallback {
         merged.entry(key.clone()).or_insert_with(|| value.clone());
     }
@@ -33,6 +36,7 @@ pub fn merge_manifests(variant: &PaletteManifest, base: &PaletteManifest) -> Pal
         syntax: merge_sections(&variant.syntax, &base.syntax),
         editor: merge_sections(&variant.editor, &base.editor),
         terminal: merge_sections(&variant.terminal, &base.terminal),
+        syntax_style: merge_sections(&variant.syntax_style, &base.syntax_style),
         #[cfg(feature = "platform")]
         platform: merge_platform_sections(&variant.platform, &base.platform),
     }

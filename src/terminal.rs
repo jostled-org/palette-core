@@ -1,9 +1,11 @@
 //! Ratatui integration: convert a [`Palette`] into terminal-native colors.
 
 use ratatui::style::Color as RatatuiColor;
+use ratatui::style::Modifier;
 
 use crate::color::Color;
 use crate::palette::Palette;
+use crate::style::{ResolvedSyntaxStyles, StyleModifiers, SyntaxStyles};
 
 /// Convert a [`Color`] to a ratatui RGB color.
 pub fn to_ratatui_color(color: &Color) -> RatatuiColor {
@@ -59,6 +61,71 @@ macro_rules! resolved_terminal_group {
 crate::palette::color_fields!(terminal_group);
 crate::palette::color_fields!(resolved_terminal_group);
 
+/// Convert a [`StyleModifiers`] to a ratatui [`Modifier`] bitset.
+pub fn to_ratatui_modifier(style: &StyleModifiers) -> Modifier {
+    let mut m = Modifier::empty();
+    if style.bold {
+        m |= Modifier::BOLD;
+    }
+    if style.italic {
+        m |= Modifier::ITALIC;
+    }
+    if style.underline {
+        m |= Modifier::UNDERLINED;
+    }
+    m
+}
+
+/// Ratatui-native syntax style modifiers (each slot `Option<Modifier>`).
+#[derive(Debug, Clone)]
+pub struct TerminalSyntaxStyles {
+    /// Raw style modifier slots, keyed by syntax field name.
+    slots: Box<[(&'static str, Option<Modifier>)]>,
+}
+
+impl TerminalSyntaxStyles {
+    fn from_palette(styles: &SyntaxStyles) -> Self {
+        let slots: Vec<_> = styles
+            .populated_slots()
+            .map(|(name, s)| (name, Some(to_ratatui_modifier(s))))
+            .collect();
+        Self {
+            slots: slots.into_boxed_slice(),
+        }
+    }
+
+    /// Iterate over populated style slots.
+    pub fn populated_slots(&self) -> impl Iterator<Item = (&'static str, Modifier)> + '_ {
+        self.slots
+            .iter()
+            .filter_map(|(name, m)| m.map(|modifier| (*name, modifier)))
+    }
+}
+
+/// Resolved ratatui-native syntax style modifiers (every slot a concrete [`Modifier`]).
+#[derive(Debug, Clone)]
+pub struct ResolvedTerminalSyntaxStyles {
+    /// All 38 resolved style modifier slots.
+    slots: Box<[(&'static str, Modifier)]>,
+}
+
+impl ResolvedTerminalSyntaxStyles {
+    fn from_resolved(styles: &ResolvedSyntaxStyles) -> Self {
+        let slots: Vec<_> = styles
+            .all_slots()
+            .map(|(name, s)| (name, to_ratatui_modifier(s)))
+            .collect();
+        Self {
+            slots: slots.into_boxed_slice(),
+        }
+    }
+
+    /// Iterate over all style slots.
+    pub fn all_slots(&self) -> impl Iterator<Item = (&'static str, Modifier)> + '_ {
+        self.slots.iter().copied()
+    }
+}
+
 /// Complete ratatui-native theme mirroring every [`Palette`] color group.
 #[derive(Debug, Clone)]
 pub struct TerminalTheme {
@@ -78,6 +145,8 @@ pub struct TerminalTheme {
     pub editor: TerminalEditorColors,
     /// Standard 16-color ANSI terminal palette.
     pub terminal_ansi: TerminalTerminalAnsiColors,
+    /// Syntax token style modifiers.
+    pub syntax_style: TerminalSyntaxStyles,
 }
 
 /// Convert an entire [`Palette`] into a [`TerminalTheme`].
@@ -91,6 +160,7 @@ pub fn to_terminal_theme(palette: &Palette) -> TerminalTheme {
         syntax: TerminalSyntaxColors::from_palette(&palette.syntax),
         editor: TerminalEditorColors::from_palette(&palette.editor),
         terminal_ansi: TerminalTerminalAnsiColors::from_palette(&palette.terminal_ansi),
+        syntax_style: TerminalSyntaxStyles::from_palette(&palette.syntax_style),
     }
 }
 
@@ -113,6 +183,8 @@ pub struct ResolvedTerminalTheme {
     pub editor: ResolvedTerminalEditorColors,
     /// Standard 16-color ANSI terminal palette.
     pub terminal_ansi: ResolvedTerminalTerminalAnsiColors,
+    /// Syntax token style modifiers.
+    pub syntax_style: ResolvedTerminalSyntaxStyles,
 }
 
 impl ResolvedTerminalTerminalAnsiColors {
@@ -155,5 +227,6 @@ pub fn to_resolved_terminal_theme(
         syntax: ResolvedTerminalSyntaxColors::from_resolved(&resolved.syntax),
         editor: ResolvedTerminalEditorColors::from_resolved(&resolved.editor),
         terminal_ansi: ResolvedTerminalTerminalAnsiColors::from_resolved(&resolved.terminal_ansi),
+        syntax_style: ResolvedTerminalSyntaxStyles::from_resolved(&resolved.syntax_style),
     }
 }

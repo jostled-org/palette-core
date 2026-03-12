@@ -3,6 +3,7 @@ use palette_core::palette::{
     BaseColors, DiffColors, EditorColors, Palette, SemanticColors, SurfaceColors, SyntaxColors,
     TerminalAnsiColors, TypographyColors,
 };
+use palette_core::style::SyntaxStyles;
 use palette_core::{preset, preset_ids};
 
 mod common;
@@ -65,6 +66,7 @@ fn sparse_palette_fills_gaps_from_default() {
         syntax: SyntaxColors::default(),
         editor: EditorColors::default(),
         terminal_ansi: TerminalAnsiColors::default(),
+        syntax_style: SyntaxStyles::default(),
         #[cfg(feature = "platform")]
         platform: Default::default(),
     };
@@ -127,6 +129,7 @@ fn resolve_with_custom_fallback_precedence() {
         syntax: SyntaxColors::default(),
         editor: EditorColors::default(),
         terminal_ansi: TerminalAnsiColors::default(),
+        syntax_style: SyntaxStyles::default(),
         #[cfg(feature = "platform")]
         platform: Default::default(),
     };
@@ -145,6 +148,7 @@ fn resolve_with_custom_fallback_precedence() {
         syntax: SyntaxColors::default(),
         editor: EditorColors::default(),
         terminal_ansi: TerminalAnsiColors::default(),
+        syntax_style: SyntaxStyles::default(),
         #[cfg(feature = "platform")]
         platform: Default::default(),
     };
@@ -169,7 +173,7 @@ fn all_slots_count_matches_expected_per_group() {
     assert_eq!(resolved.diff.all_slots().count(), 11);
     assert_eq!(resolved.surface.all_slots().count(), 10);
     assert_eq!(resolved.typography.all_slots().count(), 6);
-    assert_eq!(resolved.syntax.all_slots().count(), 26);
+    assert_eq!(resolved.syntax.all_slots().count(), 38);
     assert_eq!(resolved.editor.all_slots().count(), 17);
     assert_eq!(resolved.terminal_ansi.all_slots().count(), 16);
 }
@@ -202,7 +206,7 @@ fn default_palette_completeness() {
     );
     assert_eq!(
         default.syntax.populated_slots().count(),
-        26,
+        38,
         "syntax incomplete"
     );
     assert_eq!(
@@ -286,4 +290,101 @@ fn merge_prefers_self_over_fallback() {
             b: 60
         })
     );
+}
+
+#[test]
+fn syntax_fallback_resolves_from_parent() {
+    let red = Color {
+        r: 0xFF,
+        g: 0,
+        b: 0,
+    };
+    let palette = Palette {
+        syntax: SyntaxColors {
+            keywords: Some(red),
+            ..SyntaxColors::default()
+        },
+        ..Palette::default()
+    };
+    // Use an empty fallback so the default palette doesn't fill keywords_control.
+    let empty = Palette {
+        syntax: SyntaxColors::default(),
+        ..Palette::default()
+    };
+
+    let resolved = palette.resolve_with(&empty);
+    assert_eq!(resolved.syntax.keywords_control, red);
+}
+
+#[test]
+fn syntax_fallback_explicit_overrides_parent() {
+    let red = Color {
+        r: 0xFF,
+        g: 0,
+        b: 0,
+    };
+    let blue = Color {
+        r: 0,
+        g: 0,
+        b: 0xFF,
+    };
+    let palette = Palette {
+        syntax: SyntaxColors {
+            keywords: Some(red),
+            keywords_control: Some(blue),
+            ..SyntaxColors::default()
+        },
+        ..Palette::default()
+    };
+    let empty = Palette {
+        syntax: SyntaxColors::default(),
+        ..Palette::default()
+    };
+
+    let resolved = palette.resolve_with(&empty);
+    assert_eq!(resolved.syntax.keywords_control, blue);
+}
+
+#[test]
+fn syntax_fallback_all_sub_tokens_resolve_from_parent() {
+    let green = Color {
+        r: 0,
+        g: 0xFF,
+        b: 0,
+    };
+
+    let palette = Palette {
+        syntax: SyntaxColors {
+            keywords: Some(green),
+            functions: Some(green),
+            types: Some(green),
+            variables: Some(green),
+            punctuation: Some(green),
+            comments: Some(green),
+            constants: Some(green),
+            attributes: Some(green),
+            ..SyntaxColors::default()
+        },
+        ..Palette::default()
+    };
+    // Empty syntax fallback so sub-tokens exercise the intra-group chain.
+    let empty = Palette {
+        syntax: SyntaxColors::default(),
+        ..Palette::default()
+    };
+
+    let resolved = palette.resolve_with(&empty);
+
+    assert_eq!(resolved.syntax.keywords_control, green);
+    assert_eq!(resolved.syntax.keywords_import, green);
+    assert_eq!(resolved.syntax.keywords_operator, green);
+    assert_eq!(resolved.syntax.functions_builtin, green);
+    assert_eq!(resolved.syntax.functions_method, green);
+    assert_eq!(resolved.syntax.functions_macro, green);
+    assert_eq!(resolved.syntax.modules, green);
+    assert_eq!(resolved.syntax.labels, green);
+    assert_eq!(resolved.syntax.punctuation_special, green);
+    assert_eq!(resolved.syntax.comments_doc, green);
+    assert_eq!(resolved.syntax.constants_char, green);
+    assert_eq!(resolved.syntax.attributes_builtin, green);
 }

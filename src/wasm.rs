@@ -187,6 +187,21 @@ impl JsPalette {
     pub fn terminal_ansi_slots(&self) -> js_sys::Map {
         slots_to_js_map(self.inner.terminal_ansi.populated_slots())
     }
+
+    /// Style modifier slots as a `Map<string, string>` (e.g. `"bold,italic"`).
+    #[wasm_bindgen(js_name = "syntaxStyleSlots")]
+    pub fn syntax_style_slots(&self) -> js_sys::Map {
+        let map = js_sys::Map::new();
+        for (name, style) in self.inner.syntax_style.populated_slots() {
+            if !style.is_empty() {
+                map.set(
+                    &JsValue::from_str(name),
+                    &JsValue::from_str(style.to_css_value()),
+                );
+            }
+        }
+        map
+    }
 }
 
 #[wasm_bindgen(js_name = "loadPreset")]

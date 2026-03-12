@@ -73,6 +73,18 @@ pub fn css_name(section: &str, field: &str) -> Option<&'static str> {
         ("syntax", "tag_delimiter") => Some("syn-tag-delim"),
         ("syntax", "tag_attribute") => Some("syn-tag-attr"),
         ("syntax", "comments") => Some("syn-comment"),
+        ("syntax", "keywords_control") => Some("syn-keyword-ctrl"),
+        ("syntax", "keywords_import") => Some("syn-keyword-import"),
+        ("syntax", "keywords_operator") => Some("syn-keyword-op"),
+        ("syntax", "functions_builtin") => Some("syn-fn-builtin"),
+        ("syntax", "functions_method") => Some("syn-fn-method"),
+        ("syntax", "functions_macro") => Some("syn-fn-macro"),
+        ("syntax", "modules") => Some("syn-module"),
+        ("syntax", "labels") => Some("syn-label"),
+        ("syntax", "punctuation_special") => Some("syn-punct-special"),
+        ("syntax", "comments_doc") => Some("syn-comment-doc"),
+        ("syntax", "constants_char") => Some("syn-const-char"),
+        ("syntax", "attributes_builtin") => Some("syn-attr-builtin"),
 
         // Editor — ed-
         ("editor", "cursor") => Some("ed-cursor"),
@@ -198,5 +210,26 @@ pub fn to_css_custom_properties(palette: &Palette, prefix: Option<&str>) -> Stri
         "terminal",
         palette.terminal_ansi.populated_slots(),
     );
+    write_style_section(&mut out, prefix, &palette.syntax_style);
     out
+}
+
+fn write_style_section(
+    out: &mut String,
+    prefix: Option<&str>,
+    styles: &crate::style::SyntaxStyles,
+) {
+    for (field, style) in styles.populated_slots() {
+        if style.is_empty() {
+            continue;
+        }
+        let slot: Cow<'static, str> = match css_name("syntax", field) {
+            Some(name) => Cow::Borrowed(name),
+            None => Cow::Owned(fallback_slot("syntax", field)),
+        };
+        let _ = match prefix {
+            Some(p) => writeln!(out, "  --{p}-{slot}-style: {};", style.to_css_value()),
+            None => writeln!(out, "  --{slot}-style: {};", style.to_css_value()),
+        };
+    }
 }

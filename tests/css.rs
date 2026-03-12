@@ -86,6 +86,11 @@ fn all_populated_slots_present() {
     let palette = Palette::from_manifest(&manifest).unwrap();
     let css = to_css_custom_properties(&palette, None);
 
+    let style_count = palette
+        .syntax_style
+        .populated_slots()
+        .filter(|(_, s)| !s.is_empty())
+        .count();
     let populated_count = palette.base.populated_slots().count()
         + palette.semantic.populated_slots().count()
         + palette.diff.populated_slots().count()
@@ -93,7 +98,8 @@ fn all_populated_slots_present() {
         + palette.typography.populated_slots().count()
         + palette.syntax.populated_slots().count()
         + palette.editor.populated_slots().count()
-        + palette.terminal_ansi.populated_slots().count();
+        + palette.terminal_ansi.populated_slots().count()
+        + style_count;
 
     let css_line_count = css.lines().filter(|l| l.contains("--")).count();
     assert_eq!(css_line_count, populated_count);

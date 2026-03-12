@@ -36,11 +36,15 @@ focus = "#53496B"
 [syntax]
 keywords_fn = "#3e8fb0"
 functions = "#ea9a97"
+functions_builtin = "#eb6f92"
+functions_method = "#ea9a97"
+functions_macro = "#c4a7e7"
 properties = "#ea9a97"
 types_builtin = "#3e8fb0"
 booleans = "#ea9a97"
 tag = "#ea9a97"
 comments = "#6e6a86"
+comments_doc = "#6e6a86"
 
 [editor]
 cursor_text = "#232136"

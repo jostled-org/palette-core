@@ -60,9 +60,13 @@ pub use error::PaletteError;
 pub use palette::{Palette, PaletteMeta};
 pub use registry::{Registry, ThemeInfo, load_preset, load_preset_file, preset, preset_ids};
 
+/// Text style modifiers for syntax tokens.
+pub mod style;
+
 /// Resolved palette types with concrete Color fields.
 pub mod resolved;
 pub use resolved::ResolvedPalette;
+pub use style::StyleModifiers;
 
 #[cfg(feature = "terminal")]
 pub mod terminal;

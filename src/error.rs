@@ -35,6 +35,17 @@ pub enum PaletteError {
         value: Arc<str>,
     },
 
+    /// A style modifier string in the manifest is malformed.
+    #[error("invalid style `{value}` in [{section}].{field}")]
+    InvalidStyle {
+        /// TOML section containing the bad value.
+        section: Arc<str>,
+        /// Field name within the section.
+        field: Arc<str>,
+        /// The malformed style string.
+        value: Arc<str>,
+    },
+
     /// No built-in or registered preset matches the given ID.
     #[error("unknown preset: {0}")]
     UnknownPreset(Arc<str>),

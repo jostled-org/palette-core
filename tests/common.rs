@@ -20,6 +20,7 @@ pub fn manifest_with_base(base: ManifestSection) -> PaletteManifest {
         syntax: HashMap::new(),
         editor: HashMap::new(),
         terminal: HashMap::new(),
+        syntax_style: HashMap::new(),
         #[cfg(feature = "platform")]
         platform: Default::default(),
     }

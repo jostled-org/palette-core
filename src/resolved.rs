@@ -9,6 +9,7 @@ use std::sync::LazyLock;
 
 use crate::color::Color;
 use crate::palette::Palette;
+use crate::style::ResolvedSyntaxStyles;
 
 static DEFAULT_PALETTE: LazyLock<Palette> = LazyLock::new(Palette::default);
 
@@ -51,6 +52,24 @@ macro_rules! resolved_group {
 
 crate::palette::color_fields!(resolved_group);
 
+impl ResolvedSyntaxColors {
+    /// Build from an optional-field group, resolving sub-token slots through
+    /// their fallback parent before falling back to [`Color::default`].
+    ///
+    /// For the 12 sub-token slots (e.g. `keywords_control`), resolution order
+    /// is: `self.slot → self.parent → Color::default()`.
+    pub fn from_group_with_fallback(group: &crate::palette::SyntaxColors) -> Self {
+        let mut resolved = Self::from_group(group);
+        macro_rules! apply_fallback {
+            ($($child:ident => $parent:ident),+ $(,)?) => {
+                $(resolved.$child = group.$child.or(group.$parent).unwrap_or_default();)+
+            };
+        }
+        crate::palette::syntax_fallback!(apply_fallback);
+        resolved
+    }
+}
+
 /// Fully resolved palette where every color slot is a concrete [`Color`].
 ///
 /// Built via [`Palette::resolve`] or [`Palette::resolve_with`].
@@ -75,6 +94,8 @@ pub struct ResolvedPalette {
     pub editor: ResolvedEditorColors,
     /// Standard 16-color ANSI terminal palette.
     pub terminal_ansi: ResolvedTerminalAnsiColors,
+    /// Syntax token style modifiers.
+    pub syntax_style: ResolvedSyntaxStyles,
 }
 
 impl Palette {
@@ -98,10 +119,15 @@ impl Palette {
             typography: ResolvedTypographyColors::from_group(
                 &self.typography.merge(&fallback.typography),
             ),
-            syntax: ResolvedSyntaxColors::from_group(&self.syntax.merge(&fallback.syntax)),
+            syntax: ResolvedSyntaxColors::from_group_with_fallback(
+                &self.syntax.merge(&fallback.syntax),
+            ),
             editor: ResolvedEditorColors::from_group(&self.editor.merge(&fallback.editor)),
             terminal_ansi: ResolvedTerminalAnsiColors::from_group(
                 &self.terminal_ansi.merge(&fallback.terminal_ansi),
+            ),
+            syntax_style: ResolvedSyntaxStyles::from_group_with_fallback(
+                &self.syntax_style.merge(&fallback.syntax_style),
             ),
         }
     }

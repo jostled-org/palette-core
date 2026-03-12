@@ -61,6 +61,7 @@ selection_text = "#24292F"
 
 [syntax]
 comments = "#57606A"
+comments_doc = "#57606A"
 
 [platform.terminal]
 background = "#EDEFF2"

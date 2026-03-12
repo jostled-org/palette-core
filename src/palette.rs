@@ -3,6 +3,7 @@ use std::sync::Arc;
 use crate::color::Color;
 use crate::error::PaletteError;
 use crate::manifest::{ManifestSection, PaletteManifest};
+use crate::style::SyntaxStyles;
 
 fn resolve_color(
     section: &ManifestSection,
@@ -57,6 +58,83 @@ macro_rules! color_group {
         }
     };
 }
+
+/// Single source of truth for syntax-highlighting token field names.
+///
+/// Consumed by `color_fields!` (for `SyntaxColors`), `style_group!`
+/// (for `SyntaxStyles`), and validation macros.
+macro_rules! syntax_fields {
+    ($macro_name:ident) => {
+        $macro_name!(
+            /// Syntax-highlighting token colors.
+            SyntaxColors {
+            keywords,
+            keywords_fn,
+            keywords_control,
+            keywords_import,
+            keywords_operator,
+            functions,
+            functions_builtin,
+            functions_method,
+            functions_macro,
+            variables,
+            variables_builtin,
+            parameters,
+            properties,
+            types,
+            types_builtin,
+            constants,
+            constants_char,
+            numbers,
+            booleans,
+            strings,
+            strings_doc,
+            strings_escape,
+            strings_regex,
+            operators,
+            punctuation,
+            punctuation_bracket,
+            punctuation_special,
+            annotations,
+            attributes,
+            attributes_builtin,
+            constructor,
+            modules,
+            labels,
+            tag,
+            tag_delimiter,
+            tag_attribute,
+            comments,
+            comments_doc,
+        });
+    };
+}
+pub(crate) use syntax_fields;
+
+/// Single source of truth for syntax sub-token fallback chains.
+///
+/// Each `child => parent` pair means: when `child` is absent, inherit
+/// from `parent` before defaulting. Used by both `ResolvedSyntaxColors`
+/// and `ResolvedSyntaxStyles`.
+macro_rules! syntax_fallback {
+    ($mac:ident) => {
+        $mac! {
+            keywords_control => keywords,
+            keywords_import => keywords,
+            keywords_operator => keywords,
+            functions_builtin => functions,
+            functions_method => functions,
+            functions_macro => functions,
+            constants_char => constants,
+            punctuation_special => punctuation,
+            attributes_builtin => attributes,
+            modules => types,
+            labels => variables,
+            comments_doc => comments,
+        }
+    };
+}
+pub(crate) use syntax_fallback;
 
 /// Single source of truth for color group field lists.
 ///
@@ -129,36 +207,7 @@ macro_rules! color_fields {
             title,
         });
 
-        $macro_name!(
-            /// Syntax-highlighting token colors.
-            SyntaxColors {
-            keywords,
-            keywords_fn,
-            functions,
-            variables,
-            variables_builtin,
-            parameters,
-            properties,
-            types,
-            types_builtin,
-            constants,
-            numbers,
-            booleans,
-            strings,
-            strings_doc,
-            strings_escape,
-            strings_regex,
-            operators,
-            punctuation,
-            punctuation_bracket,
-            annotations,
-            attributes,
-            constructor,
-            tag,
-            tag_delimiter,
-            tag_attribute,
-            comments,
-        });
+        $crate::palette::syntax_fields!($macro_name);
 
         $macro_name!(
             /// Editor chrome: cursor, selections, diagnostics, inlay hints.
@@ -248,6 +297,8 @@ pub struct Palette {
     pub editor: EditorColors,
     /// Standard 16-color ANSI terminal palette.
     pub terminal_ansi: TerminalAnsiColors,
+    /// Syntax token style modifiers (bold, italic, underline).
+    pub syntax_style: SyntaxStyles,
     /// Per-platform color overrides.
     #[cfg(feature = "platform")]
     pub platform: crate::platform::PlatformOverrides,
@@ -318,7 +369,13 @@ impl Default for Palette {
             syntax: SyntaxColors {
                 keywords: c(0xc0, 0x80, 0xe0),
                 keywords_fn: c(0xc0, 0x80, 0xe0),
+                keywords_control: c(0xc0, 0x80, 0xe0),
+                keywords_import: c(0xc0, 0x80, 0xe0),
+                keywords_operator: c(0xc0, 0x80, 0xe0),
                 functions: c(0x60, 0xa0, 0xe0),
+                functions_builtin: c(0x60, 0xa0, 0xe0),
+                functions_method: c(0x60, 0xa0, 0xe0),
+                functions_macro: c(0x60, 0xa0, 0xe0),
                 variables: c(0xd0, 0xd0, 0xd0),
                 variables_builtin: c(0xe0, 0x80, 0x80),
                 parameters: c(0xd0, 0xb0, 0x80),
@@ -326,6 +383,7 @@ impl Default for Palette {
                 types: c(0x60, 0xd0, 0xb0),
                 types_builtin: c(0x60, 0xd0, 0xb0),
                 constants: c(0xe0, 0xb0, 0x50),
+                constants_char: c(0xe0, 0xb0, 0x50),
                 numbers: c(0xe0, 0xb0, 0x50),
                 booleans: c(0xe0, 0xb0, 0x50),
                 strings: c(0x80, 0xc8, 0x80),
@@ -335,13 +393,18 @@ impl Default for Palette {
                 operators: c(0xd0, 0xd0, 0xd0),
                 punctuation: c(0xa0, 0xa0, 0xb0),
                 punctuation_bracket: c(0xa0, 0xa0, 0xb0),
+                punctuation_special: c(0xa0, 0xa0, 0xb0),
                 annotations: c(0xe0, 0xb0, 0x50),
                 attributes: c(0xe0, 0xb0, 0x50),
+                attributes_builtin: c(0xe0, 0xb0, 0x50),
                 constructor: c(0x60, 0xd0, 0xb0),
+                modules: c(0x60, 0xd0, 0xb0),
+                labels: c(0xd0, 0xd0, 0xd0),
                 tag: c(0xe0, 0x80, 0x80),
                 tag_delimiter: c(0xa0, 0xa0, 0xb0),
                 tag_attribute: c(0xd0, 0xb0, 0x80),
                 comments: c(0x70, 0x70, 0x88),
+                comments_doc: c(0x70, 0x70, 0x88),
             },
             editor: EditorColors {
                 cursor: c(0xd0, 0xd0, 0xd0),
@@ -362,6 +425,7 @@ impl Default for Palette {
                 diagnostic_underline_info: c(0x50, 0x90, 0xe0),
                 diagnostic_underline_hint: c(0x70, 0x70, 0x88),
             },
+            syntax_style: SyntaxStyles::default(),
             terminal_ansi: TerminalAnsiColors {
                 black: c(0x1a, 0x1a, 0x2e),
                 red: c(0xe0, 0x50, 0x50),
@@ -405,6 +469,7 @@ impl Palette {
             syntax: SyntaxColors::from_section(&manifest.syntax, "syntax")?,
             editor: EditorColors::from_section(&manifest.editor, "editor")?,
             terminal_ansi: TerminalAnsiColors::from_section(&manifest.terminal, "terminal")?,
+            syntax_style: SyntaxStyles::from_section(&manifest.syntax_style, "syntax_style")?,
             #[cfg(feature = "platform")]
             platform: crate::platform::from_sections(&manifest.platform)?,
         })
