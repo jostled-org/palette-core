@@ -77,4 +77,4 @@ The [guide](docs/guide.md) covers rendering targets, theme switching, custom pre
 
 ## License
 
-Licensed under [Apache-2.0](LICENSE-APACHE) or [MIT](LICENSE-MIT). Contributions welcome via pull request.
+Licensed under [Apache-2.0](LICENSE-APACHE) or [MIT](LICENSE-MIT) at your option.
