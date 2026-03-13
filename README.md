@@ -78,6 +78,10 @@ The [guide](docs/guide.md) covers rendering targets, theme switching, custom pre
 
 31 presets ship built-in — Catppuccin, TokyoNight, Dracula, Nord, Gruvbox, and [more](docs/guide.md#bundled-presets). Golden Hour is an original warm-toned family (light, dusk, twilight) exclusive to palette-core. Optional [feature flags](docs/guide.md#feature-flags) enable `terminal`, `egui`, `snapshot`, `platform`, and `wasm` targets.
 
+## Demos
+
+See [p3-demo](https://github.com/jostled-org/p3-demo) for a TUI theme picker and a side-by-side CSS preview, with a WASM demo in progress.
+
 ## License
 
 Licensed under [Apache-2.0](LICENSE-APACHE) or [MIT](LICENSE-MIT) at your option.
