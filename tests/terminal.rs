@@ -7,9 +7,7 @@ use ratatui::style::Color as RatatuiColor;
 
 use palette_core::color::Color;
 use palette_core::palette::Palette;
-use palette_core::terminal::{
-    to_ratatui_color, to_resolved_terminal_theme, to_terminal_theme,
-};
+use palette_core::terminal::{to_ratatui_color, to_resolved_terminal_theme, to_terminal_theme};
 
 mod common;
 
@@ -128,4 +126,3 @@ fn chromatic_returns_12_non_grayscale_colors() {
     assert!(!colors.contains(&theme.terminal.bright_black));
     assert!(!colors.contains(&theme.terminal.bright_white));
 }
-
