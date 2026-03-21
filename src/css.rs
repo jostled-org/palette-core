@@ -144,7 +144,7 @@ fn write_property(
     out: &mut String,
     prefix: Option<&str>,
     slot: &str,
-    value: &dyn std::fmt::Display,
+    value: &impl std::fmt::Display,
 ) {
     // String::write_fmt is infallible
     let _ = match prefix {
@@ -225,7 +225,11 @@ fn write_style_section(
             Some(name) => name,
             None => field,
         };
-        let suffix_slot = format!("{slot}-style");
-        write_property(out, prefix, &suffix_slot, &style.to_css_value());
+        let css_value = style.to_css_value();
+        // Write the -style suffix directly, avoiding a format! allocation.
+        let _ = match prefix {
+            Some(p) => writeln!(out, "  --{p}-{slot}-style: {css_value};"),
+            None => writeln!(out, "  --{slot}-style: {css_value};"),
+        };
     }
 }

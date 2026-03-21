@@ -26,11 +26,16 @@ fn resolve_color(hex: &str, platform: &str, field: &str) -> Result<Color, Palett
     })
 }
 
+const VALID_FIELDS: &[&str] = &["background", "foreground"];
+
 /// Parse `[platform.*]` TOML sections into typed overrides.
+///
+/// Returns an error for any unrecognized key in a platform section.
 pub fn from_sections(sections: &PlatformSections) -> Result<PlatformOverrides, PaletteError> {
     sections
         .iter()
         .map(|(name, section)| {
+            validate_platform_keys(name, section)?;
             let background = section
                 .get("background")
                 .map(|hex| resolve_color(hex, name, "background"))
@@ -48,4 +53,22 @@ pub fn from_sections(sections: &PlatformSections) -> Result<PlatformOverrides, P
             ))
         })
         .collect()
+}
+
+fn validate_platform_keys(
+    platform: &str,
+    section: &crate::manifest::ManifestSection,
+) -> Result<(), PaletteError> {
+    for key in section.keys() {
+        match VALID_FIELDS.contains(&key.as_ref()) {
+            true => {}
+            false => {
+                return Err(PaletteError::UnknownField {
+                    section: Arc::from(format!("platform.{platform}")),
+                    field: Arc::clone(key),
+                });
+            }
+        }
+    }
+    Ok(())
 }

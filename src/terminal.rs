@@ -207,6 +207,13 @@ impl ResolvedTerminalAnsiColors {
     }
 }
 
+/// Build a [`Style`](ratatui::style::Style) with foreground and background colors.
+///
+/// Convenience helper so consumers don't need to import `ratatui::style::Style` directly.
+pub fn style(fg: ratatui::style::Color, bg: ratatui::style::Color) -> ratatui::style::Style {
+    ratatui::style::Style::default().fg(fg).bg(bg)
+}
+
 /// Convert a [`ResolvedPalette`](crate::resolved::ResolvedPalette) into a [`ResolvedTerminalTheme`].
 pub fn to_resolved_terminal_theme(
     resolved: &crate::resolved::ResolvedPalette,

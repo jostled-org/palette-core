@@ -196,13 +196,18 @@ pub fn validate_palette(palette: &Palette, level: ContrastLevel) -> Box<[Contras
 ///
 /// Only HSL lightness is modified; hue and saturation are preserved.
 pub fn nudge_foreground(fg: Color, bg: Color, level: ContrastLevel) -> Color {
-    let threshold = level.threshold();
-    if contrast_ratio(&fg, &bg) >= threshold {
-        return fg;
-    }
+    nudge_foreground_with_bg_lum(fg, bg.relative_luminance(), level)
+}
 
+/// Like [`nudge_foreground`] but accepts a pre-computed background luminance,
+/// avoiding redundant calls to `relative_luminance()` in hot loops.
+pub(crate) fn nudge_foreground_with_bg_lum(fg: Color, bg_lum: f64, level: ContrastLevel) -> Color {
+    let threshold = level.threshold();
     let fg_lum = fg.relative_luminance();
-    let bg_lum = bg.relative_luminance();
+    match contrast_ratio_with_lum(fg_lum, bg_lum) >= threshold {
+        true => return fg,
+        false => {}
+    }
 
     // Try the natural direction first: lighter fg if fg is lighter, darker otherwise.
     let primary_lighten = fg_lum >= bg_lum;
@@ -217,9 +222,10 @@ fn nudge_direction(fg: Color, bg_lum: f64, threshold: f64, lighten: bool) -> Opt
 
     let base_hsl = rgb_to_hsl(fg);
 
+    // HSL lightness extremes: full white (1.0) or full black (0.0).
     let extreme_l = match lighten {
-        true => (base_hsl.l + 1.0).clamp(0.0, 1.0),
-        false => (base_hsl.l - 1.0).clamp(0.0, 1.0),
+        true => 1.0,
+        false => 0.0,
     };
     let extreme = hsl_to_rgb(Hsl {
         h: base_hsl.h,
@@ -275,14 +281,12 @@ pub fn adjust_contrast(resolved: &mut ResolvedPalette, level: ContrastLevel) {
 
     for_each_static_pair!(adjust_static_pair!(resolved, level));
 
-    // Semantic over background (dynamic — all resolved slots)
-    let bg = resolved.base.background;
+    // Semantic and syntax over background — cache bg luminance once.
+    let bg_lum = resolved.base.background.relative_luminance();
     for (_, slot) in resolved.semantic.all_slots_mut() {
-        *slot = nudge_foreground(*slot, bg, level);
+        *slot = nudge_foreground_with_bg_lum(*slot, bg_lum, level);
     }
-
-    // Syntax over background (dynamic — cached bg luminance via nudge_foreground)
     for (_, slot) in resolved.syntax.all_slots_mut() {
-        *slot = nudge_foreground(*slot, bg, level);
+        *slot = nudge_foreground_with_bg_lum(*slot, bg_lum, level);
     }
 }

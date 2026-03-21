@@ -164,10 +164,10 @@ pub fn validate_fields(manifest: &PaletteManifest) -> Box<[UnknownField]> {
         }
     }
 
-    fn sort_fields<'a>(fields: &'a [&'a str]) -> Vec<&'a str> {
+    fn sort_fields<'a>(fields: &'a [&'a str]) -> Box<[&'a str]> {
         let mut sorted = fields.to_vec();
         sorted.sort_unstable();
-        sorted
+        sorted.into_boxed_slice()
     }
 
     // Sort each known-field slice once up front.

@@ -46,6 +46,15 @@ pub enum PaletteError {
         value: Arc<str>,
     },
 
+    /// A field key in the manifest is not recognized for its section.
+    #[error("unknown field `{field}` in [{section}]")]
+    UnknownField {
+        /// TOML section containing the unrecognized key.
+        section: Arc<str>,
+        /// The unrecognized field name.
+        field: Arc<str>,
+    },
+
     /// No built-in or registered preset matches the given ID.
     #[error("unknown preset: {0}")]
     UnknownPreset(Arc<str>),

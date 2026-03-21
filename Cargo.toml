@@ -31,6 +31,36 @@ platform = []
 wasm = ["dep:wasm-bindgen", "dep:js-sys", "snapshot"]
 full = ["terminal", "egui", "snapshot", "platform"]
 
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+single_match = "allow"
+single_match_else = "allow"
+needless_match = "warn"
+needless_late_init = "warn"
+redundant_pattern_matching = "warn"
+redundant_pattern = "warn"
+redundant_guards = "warn"
+collapsible_match = "warn"
+match_single_binding = "warn"
+match_same_arms = "warn"
+match_ref_pats = "warn"
+needless_bool = "deny"
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+unreachable = "deny"
+todo = "deny"
+unimplemented = "deny"
+
+[profile.dev]
+incremental = true
+debug = "line-tables-only"
+
+[profile.test]
+incremental = true
+
 [dev-dependencies]
 tempfile = "3"
 

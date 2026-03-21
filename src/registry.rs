@@ -97,14 +97,7 @@ where
     F: FnOnce(&str) -> Result<PaletteManifest, PaletteError>,
 {
     let manifest = PaletteManifest::from_toml(toml_str)?;
-    let resolved = match manifest.inherits_from() {
-        None => manifest,
-        Some(parent_id) => {
-            let parent = resolve_parent(parent_id)?;
-            merge_manifests(&manifest, &parent)
-        }
-    };
-    Palette::from_manifest(&resolved)
+    resolve_manifest_impl(&manifest, resolve_parent)
 }
 
 /// Resolve a pre-parsed manifest into a [`Palette`], applying single-level
@@ -112,6 +105,17 @@ where
 ///
 /// Only one level of inheritance is supported.
 fn resolve_manifest_with_inheritance<F>(
+    manifest: &PaletteManifest,
+    resolve_parent: F,
+) -> Result<Palette, PaletteError>
+where
+    F: FnOnce(&str) -> Result<PaletteManifest, PaletteError>,
+{
+    resolve_manifest_impl(manifest, resolve_parent)
+}
+
+/// Shared body: check inheritance, merge if needed, build palette.
+fn resolve_manifest_impl<F>(
     manifest: &PaletteManifest,
     resolve_parent: F,
 ) -> Result<Palette, PaletteError>
@@ -298,15 +302,15 @@ impl Registry {
 
     /// Register all `.toml` files in a directory as custom themes.
     pub fn add_dir(&mut self, dir: &Path) -> Result<(), PaletteError> {
-        let dir_arc = || -> Arc<str> { Arc::from(dir.to_string_lossy().as_ref()) };
+        let dir_arc: Arc<str> = Arc::from(dir.to_string_lossy().as_ref());
         let read_dir = std::fs::read_dir(dir).map_err(|source| PaletteError::Io {
-            path: dir_arc(),
+            path: Arc::clone(&dir_arc),
             source,
         })?;
 
         for entry in read_dir {
             let entry = entry.map_err(|source| PaletteError::Io {
-                path: dir_arc(),
+                path: Arc::clone(&dir_arc),
                 source,
             })?;
             let path = entry.path();
