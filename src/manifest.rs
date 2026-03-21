@@ -40,7 +40,7 @@ pub struct ManifestMeta {
 #[derive(Debug, Clone)]
 pub struct PaletteManifest {
     /// Theme identity and inheritance metadata.
-    pub meta: Option<ManifestMeta>,
+    pub meta: Option<Arc<ManifestMeta>>,
     /// Core background/foreground hex values.
     pub base: ManifestSection,
     /// Status color hex values (success, error, etc.).
@@ -72,7 +72,7 @@ impl PaletteManifest {
         match raw.base {
             None => Err(PaletteError::MissingBase),
             Some(base) => Ok(Self {
-                meta: raw.meta,
+                meta: raw.meta.map(Arc::new),
                 base,
                 semantic: raw.semantic,
                 diff: raw.diff,
@@ -111,7 +111,7 @@ impl std::fmt::Display for UnknownField {
 
 /// Field-name arrays from [`color_fields!`](crate::palette::color_fields) --
 /// single source of truth for validation. Unsorted (semantic order);
-/// [`validate_fields`] sorts at call time for `binary_search`.
+/// [`validate_fields`] sorts once per call for `binary_search`.
 mod known_fields {
     macro_rules! emit {
         ($(#[$_meta:meta])* BaseColors { $($field:ident),+ $(,)? }) => {
@@ -151,10 +151,8 @@ pub fn validate_fields(manifest: &PaletteManifest) -> Box<[UnknownField]> {
         unknowns: &mut Vec<UnknownField>,
         section_name: &str,
         section: &ManifestSection,
-        known: &[&str],
+        sorted: &[&str],
     ) {
-        let mut sorted = known.to_vec();
-        sorted.sort_unstable();
         for key in section.keys() {
             match sorted.binary_search(&key.as_ref()) {
                 Ok(_) => {}
@@ -166,55 +164,46 @@ pub fn validate_fields(manifest: &PaletteManifest) -> Box<[UnknownField]> {
         }
     }
 
+    fn sort_fields<'a>(fields: &'a [&'a str]) -> Vec<&'a str> {
+        let mut sorted = fields.to_vec();
+        sorted.sort_unstable();
+        sorted
+    }
+
+    // Sort each known-field slice once up front.
+    let base = sort_fields(known_fields::BASE);
+    let semantic = sort_fields(known_fields::SEMANTIC);
+    let diff = sort_fields(known_fields::DIFF);
+    let surface = sort_fields(known_fields::SURFACE);
+    let typography = sort_fields(known_fields::TYPOGRAPHY);
+    let syntax = sort_fields(known_fields::SYNTAX);
+    let editor = sort_fields(known_fields::EDITOR);
+    let terminal = sort_fields(known_fields::TERMINAL);
+
     let mut unknowns = Vec::new();
 
     // Section-to-manifest mapping is manual; field lists come from
     // color_fields! via the known_fields module (single source of truth).
-    check_section(&mut unknowns, "base", &manifest.base, known_fields::BASE);
-    check_section(
-        &mut unknowns,
-        "semantic",
-        &manifest.semantic,
-        known_fields::SEMANTIC,
-    );
-    check_section(&mut unknowns, "diff", &manifest.diff, known_fields::DIFF);
-    check_section(
-        &mut unknowns,
-        "surface",
-        &manifest.surface,
-        known_fields::SURFACE,
-    );
+    check_section(&mut unknowns, "base", &manifest.base, &base);
+    check_section(&mut unknowns, "semantic", &manifest.semantic, &semantic);
+    check_section(&mut unknowns, "diff", &manifest.diff, &diff);
+    check_section(&mut unknowns, "surface", &manifest.surface, &surface);
     check_section(
         &mut unknowns,
         "typography",
         &manifest.typography,
-        known_fields::TYPOGRAPHY,
+        &typography,
     );
-    check_section(
-        &mut unknowns,
-        "editor",
-        &manifest.editor,
-        known_fields::EDITOR,
-    );
-    check_section(
-        &mut unknowns,
-        "terminal",
-        &manifest.terminal,
-        known_fields::TERMINAL,
-    );
+    check_section(&mut unknowns, "editor", &manifest.editor, &editor);
+    check_section(&mut unknowns, "terminal", &manifest.terminal, &terminal);
 
     // Syntax and syntax_style sections share the same valid field names.
-    check_section(
-        &mut unknowns,
-        "syntax",
-        &manifest.syntax,
-        known_fields::SYNTAX,
-    );
+    check_section(&mut unknowns, "syntax", &manifest.syntax, &syntax);
     check_section(
         &mut unknowns,
         "syntax_style",
         &manifest.syntax_style,
-        known_fields::SYNTAX,
+        &syntax,
     );
 
     unknowns.into_boxed_slice()

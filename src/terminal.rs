@@ -76,18 +76,18 @@ pub fn to_ratatui_modifier(style: &StyleModifiers) -> Modifier {
     m
 }
 
-/// Ratatui-native syntax style modifiers (each slot `Option<Modifier>`).
+/// Ratatui-native syntax style modifiers, keyed by syntax field name.
 #[derive(Debug, Clone)]
 pub struct TerminalSyntaxStyles {
-    /// Raw style modifier slots, keyed by syntax field name.
-    slots: Box<[(&'static str, Option<Modifier>)]>,
+    /// Populated style modifier slots.
+    slots: Box<[(&'static str, Modifier)]>,
 }
 
 impl TerminalSyntaxStyles {
     fn from_palette(styles: &SyntaxStyles) -> Self {
         let slots: Vec<_> = styles
             .populated_slots()
-            .map(|(name, s)| (name, Some(to_ratatui_modifier(s))))
+            .map(|(name, s)| (name, to_ratatui_modifier(s)))
             .collect();
         Self {
             slots: slots.into_boxed_slice(),
@@ -96,9 +96,7 @@ impl TerminalSyntaxStyles {
 
     /// Iterate over populated style slots.
     pub fn populated_slots(&self) -> impl Iterator<Item = (&'static str, Modifier)> + '_ {
-        self.slots
-            .iter()
-            .filter_map(|(name, m)| m.map(|modifier| (*name, modifier)))
+        self.slots.iter().copied()
     }
 }
 

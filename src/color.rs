@@ -91,6 +91,6 @@ impl Color {
 
 impl From<Color> for String {
     fn from(color: Color) -> Self {
-        color.to_string()
+        String::from(color.to_hex())
     }
 }

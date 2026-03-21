@@ -1,12 +1,12 @@
 use crate::color::Color;
 
-struct Hsl {
-    h: f64, // [0, 360)
-    s: f64, // [0, 1]
-    l: f64, // [0, 1]
+pub(crate) struct Hsl {
+    pub(crate) h: f64, // [0, 360)
+    pub(crate) s: f64, // [0, 1]
+    pub(crate) l: f64, // [0, 1]
 }
 
-fn rgb_to_hsl(color: Color) -> Hsl {
+pub(crate) fn rgb_to_hsl(color: Color) -> Hsl {
     let r = f64::from(color.r) / 255.0;
     let g = f64::from(color.g) / 255.0;
     let b = f64::from(color.b) / 255.0;
@@ -56,7 +56,7 @@ fn clamp_channel(v: f64) -> u8 {
     (v * 255.0).round().clamp(0.0, 255.0) as u8
 }
 
-fn hsl_to_rgb(hsl: Hsl) -> Color {
+pub(crate) fn hsl_to_rgb(hsl: Hsl) -> Color {
     match hsl.s == 0.0 {
         true => {
             let v = clamp_channel(hsl.l);

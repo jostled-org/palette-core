@@ -132,17 +132,24 @@ where
 // Standalone preset functions (existing API)
 // ---------------------------------------------------------------------------
 
+/// Read a TOML theme file, wrapping I/O errors with the file path.
+///
+/// The `Arc<str>` path allocation is deferred to the error path so the
+/// happy path pays nothing.
+fn read_theme_file(path: &Path) -> Result<String, PaletteError> {
+    std::fs::read_to_string(path).map_err(|source| PaletteError::Io {
+        path: Arc::from(path.to_string_lossy().as_ref()),
+        source,
+    })
+}
+
 /// Load a theme from a TOML file on disk, resolving single-level inheritance
 /// from sibling files or built-in presets.
 ///
 /// Only one level of inheritance is supported: a variant may inherit from
 /// a base, but the base itself must be self-contained.
 pub fn load_preset_file(path: &Path) -> Result<Palette, PaletteError> {
-    let path_str: Arc<str> = Arc::from(path.to_string_lossy().as_ref());
-    let toml = std::fs::read_to_string(path).map_err(|source| PaletteError::Io {
-        path: path_str,
-        source,
-    })?;
+    let toml = read_theme_file(path)?;
     resolve_with_inheritance(&toml, |parent_id| resolve_parent(path, parent_id))
 }
 
@@ -154,11 +161,7 @@ fn resolve_parent(child_path: &Path, parent_id: &str) -> Result<PaletteManifest,
 
     match (sibling, preset_toml(parent_id)) {
         (Some(path), _) => {
-            let path_str: Arc<str> = Arc::from(path.to_string_lossy().as_ref());
-            let toml = std::fs::read_to_string(&path).map_err(|source| PaletteError::Io {
-                path: path_str,
-                source,
-            })?;
+            let toml = read_theme_file(&path)?;
             PaletteManifest::from_toml(&toml)
         }
         (None, Some(embedded)) => PaletteManifest::from_toml(embedded),
@@ -277,12 +280,7 @@ impl Registry {
 
     /// Register a custom theme from a TOML file on disk.
     pub fn add_file(&mut self, path: &Path) -> Result<(), PaletteError> {
-        let path_str: Arc<str> = Arc::from(path.to_string_lossy().as_ref());
-        let toml = std::fs::read_to_string(path).map_err(|source| PaletteError::Io {
-            path: path_str,
-            source,
-        })?;
-
+        let toml = read_theme_file(path)?;
         self.add_toml(&toml)
     }
 
@@ -300,15 +298,15 @@ impl Registry {
 
     /// Register all `.toml` files in a directory as custom themes.
     pub fn add_dir(&mut self, dir: &Path) -> Result<(), PaletteError> {
-        let dir_str: Arc<str> = Arc::from(dir.to_string_lossy().as_ref());
+        let dir_arc = || -> Arc<str> { Arc::from(dir.to_string_lossy().as_ref()) };
         let read_dir = std::fs::read_dir(dir).map_err(|source| PaletteError::Io {
-            path: Arc::clone(&dir_str),
+            path: dir_arc(),
             source,
         })?;
 
         for entry in read_dir {
             let entry = entry.map_err(|source| PaletteError::Io {
-                path: Arc::clone(&dir_str),
+                path: dir_arc(),
                 source,
             })?;
             let path = entry.path();

@@ -280,7 +280,7 @@ pub struct PaletteMeta {
 #[cfg_attr(feature = "snapshot", derive(serde::Serialize))]
 pub struct Palette {
     /// Theme identity, if parsed from a manifest with `[meta]`.
-    pub meta: Option<PaletteMeta>,
+    pub meta: Option<Arc<PaletteMeta>>,
     /// Core background and foreground colors.
     pub base: BaseColors,
     /// Status colors (success, warning, error, info, hint).
@@ -453,10 +453,12 @@ impl Default for Palette {
 impl Palette {
     /// Build a palette from a parsed manifest, resolving hex strings to [`Color`] values.
     pub fn from_manifest(manifest: &PaletteManifest) -> Result<Self, PaletteError> {
-        let meta = manifest.meta.as_ref().map(|m| PaletteMeta {
-            name: Arc::clone(&m.name),
-            preset_id: Arc::clone(&m.preset_id),
-            style: Arc::clone(&m.style),
+        let meta = manifest.meta.as_ref().map(|m| {
+            Arc::new(PaletteMeta {
+                name: Arc::clone(&m.name),
+                preset_id: Arc::clone(&m.preset_id),
+                style: Arc::clone(&m.style),
+            })
         });
 
         Ok(Self {

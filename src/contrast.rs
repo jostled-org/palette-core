@@ -213,11 +213,19 @@ pub fn nudge_foreground(fg: Color, bg: Color, level: ContrastLevel) -> Color {
 }
 
 fn nudge_direction(fg: Color, bg_lum: f64, threshold: f64, lighten: bool) -> Option<Color> {
-    // Check if the extreme can reach the target at all.
-    let extreme = match lighten {
-        true => fg.lighten(1.0),
-        false => fg.darken(1.0),
+    use crate::manipulation::{Hsl, hsl_to_rgb, rgb_to_hsl};
+
+    let base_hsl = rgb_to_hsl(fg);
+
+    let extreme_l = match lighten {
+        true => (base_hsl.l + 1.0).clamp(0.0, 1.0),
+        false => (base_hsl.l - 1.0).clamp(0.0, 1.0),
     };
+    let extreme = hsl_to_rgb(Hsl {
+        h: base_hsl.h,
+        s: base_hsl.s,
+        l: extreme_l,
+    });
     match contrast_ratio_with_lum(extreme.relative_luminance(), bg_lum) >= threshold {
         true => {}
         false => return None,
@@ -228,13 +236,18 @@ fn nudge_direction(fg: Color, bg_lum: f64, threshold: f64, lighten: bool) -> Opt
     let mut best = extreme;
 
     // Binary search for the minimal lightness shift that meets the threshold.
-    // bg luminance is cached — it never changes across iterations.
+    // HSL h/s and bg luminance are invariant across iterations.
     for _ in 0..20 {
         let mid = (lo + hi) / 2.0;
-        let candidate = match lighten {
-            true => fg.lighten(mid),
-            false => fg.darken(mid),
+        let shifted_l = match lighten {
+            true => (base_hsl.l + mid).clamp(0.0, 1.0),
+            false => (base_hsl.l - mid).clamp(0.0, 1.0),
         };
+        let candidate = hsl_to_rgb(Hsl {
+            h: base_hsl.h,
+            s: base_hsl.s,
+            l: shifted_l,
+        });
         match contrast_ratio_with_lum(candidate.relative_luminance(), bg_lum) >= threshold {
             true => {
                 best = candidate;
@@ -263,19 +276,12 @@ pub fn adjust_contrast(resolved: &mut ResolvedPalette, level: ContrastLevel) {
     for_each_static_pair!(adjust_static_pair!(resolved, level));
 
     // Semantic over background (dynamic — all resolved slots)
-    resolved.semantic.success =
-        nudge_foreground(resolved.semantic.success, resolved.base.background, level);
-    resolved.semantic.warning =
-        nudge_foreground(resolved.semantic.warning, resolved.base.background, level);
-    resolved.semantic.error =
-        nudge_foreground(resolved.semantic.error, resolved.base.background, level);
-    resolved.semantic.info =
-        nudge_foreground(resolved.semantic.info, resolved.base.background, level);
-    resolved.semantic.hint =
-        nudge_foreground(resolved.semantic.hint, resolved.base.background, level);
+    let bg = resolved.base.background;
+    for (_, slot) in resolved.semantic.all_slots_mut() {
+        *slot = nudge_foreground(*slot, bg, level);
+    }
 
     // Syntax over background (dynamic — cached bg luminance via nudge_foreground)
-    let bg = resolved.base.background;
     for (_, slot) in resolved.syntax.all_slots_mut() {
         *slot = nudge_foreground(*slot, bg, level);
     }

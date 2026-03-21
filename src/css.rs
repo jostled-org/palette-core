@@ -139,6 +139,20 @@ pub fn css_name(section: &str, field: &str) -> Option<&'static str> {
     }
 }
 
+/// Write a single CSS custom property declaration.
+fn write_property(
+    out: &mut String,
+    prefix: Option<&str>,
+    slot: &str,
+    value: &dyn std::fmt::Display,
+) {
+    // String::write_fmt is infallible
+    let _ = match prefix {
+        Some(p) => writeln!(out, "  --{p}-{slot}: {value};"),
+        None => writeln!(out, "  --{slot}: {value};"),
+    };
+}
+
 fn write_section<'a>(
     out: &mut String,
     prefix: Option<&str>,
@@ -148,13 +162,9 @@ fn write_section<'a>(
     for (field, color) in slots {
         let slot = match css_name(section, field) {
             Some(name) => name,
-            None => field, // test guarantees every field has a css_name mapping
+            None => field,
         };
-        // String::write_fmt is infallible
-        let _ = match prefix {
-            Some(p) => writeln!(out, "  --{p}-{slot}: {color};"),
-            None => writeln!(out, "  --{slot}: {color};"),
-        };
+        write_property(out, prefix, slot, color);
     }
 }
 
@@ -169,44 +179,37 @@ impl Palette {
 
     /// Complete CSS block with a custom selector and optional prefix.
     pub fn to_css_scoped(&self, selector: &str, prefix: Option<&str>) -> String {
-        let declarations = to_css_custom_properties(self, prefix);
-        format!("{selector} {{\n{declarations}}}\n")
+        let mut out = String::with_capacity(1024);
+        let _ = writeln!(out, "{selector} {{");
+        write_declarations(&mut out, self, prefix);
+        let _ = writeln!(out, "}}");
+        out
     }
 }
 
 /// Bare CSS custom-property declarations without a selector block.
 pub fn to_css_custom_properties(palette: &Palette, prefix: Option<&str>) -> String {
     let mut out = String::with_capacity(1024);
-    write_section(&mut out, prefix, "base", palette.base.populated_slots());
+    write_declarations(&mut out, palette, prefix);
+    out
+}
+
+/// Write all palette declarations into an existing buffer.
+fn write_declarations(out: &mut String, palette: &Palette, prefix: Option<&str>) {
+    write_section(out, prefix, "base", palette.base.populated_slots());
+    write_section(out, prefix, "semantic", palette.semantic.populated_slots());
+    write_section(out, prefix, "diff", palette.diff.populated_slots());
+    write_section(out, prefix, "surface", palette.surface.populated_slots());
     write_section(
-        &mut out,
-        prefix,
-        "semantic",
-        palette.semantic.populated_slots(),
-    );
-    write_section(&mut out, prefix, "diff", palette.diff.populated_slots());
-    write_section(
-        &mut out,
-        prefix,
-        "surface",
-        palette.surface.populated_slots(),
-    );
-    write_section(
-        &mut out,
+        out,
         prefix,
         "typography",
         palette.typography.populated_slots(),
     );
-    write_section(&mut out, prefix, "syntax", palette.syntax.populated_slots());
-    write_section(&mut out, prefix, "editor", palette.editor.populated_slots());
-    write_section(
-        &mut out,
-        prefix,
-        "terminal",
-        palette.terminal.populated_slots(),
-    );
-    write_style_section(&mut out, prefix, &palette.syntax_style);
-    out
+    write_section(out, prefix, "syntax", palette.syntax.populated_slots());
+    write_section(out, prefix, "editor", palette.editor.populated_slots());
+    write_section(out, prefix, "terminal", palette.terminal.populated_slots());
+    write_style_section(out, prefix, &palette.syntax_style);
 }
 
 fn write_style_section(
@@ -220,11 +223,9 @@ fn write_style_section(
         }
         let slot = match css_name("syntax", field) {
             Some(name) => name,
-            None => field, // test guarantees every field has a css_name mapping
+            None => field,
         };
-        let _ = match prefix {
-            Some(p) => writeln!(out, "  --{p}-{slot}-style: {};", style.to_css_value()),
-            None => writeln!(out, "  --{slot}-style: {};", style.to_css_value()),
-        };
+        let suffix_slot = format!("{slot}-style");
+        write_property(out, prefix, &suffix_slot, &style.to_css_value());
     }
 }

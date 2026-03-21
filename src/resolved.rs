@@ -86,7 +86,7 @@ impl ResolvedSyntaxColors {
 #[cfg_attr(feature = "snapshot", derive(serde::Serialize))]
 pub struct ResolvedPalette {
     /// Theme identity, if the source palette had metadata.
-    pub meta: Option<crate::palette::PaletteMeta>,
+    pub meta: Option<std::sync::Arc<crate::palette::PaletteMeta>>,
     /// Core background and foreground colors.
     pub base: ResolvedBaseColors,
     /// Status colors (success, warning, error, info, hint).

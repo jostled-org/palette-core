@@ -198,7 +198,7 @@ impl JsPalette {
 
     #[wasm_bindgen(js_name = "toJson")]
     pub fn to_json(&self) -> Result<String, JsValue> {
-        crate::snapshot::to_json(&self.inner).map_err(to_js_error)
+        self.inner.to_json().map_err(to_js_error)
     }
 
     /// Style modifier slots as a `Map<string, string>` (e.g. `"bold,italic"`).
@@ -229,9 +229,7 @@ pub fn load_preset(id: &str) -> Result<JsPalette, JsValue> {
 /// Load a built-in preset by ID, returning `undefined` if not found.
 #[wasm_bindgen(js_name = "preset")]
 pub fn preset_js(id: &str) -> Option<JsPalette> {
-    crate::registry::load_preset(id)
-        .ok()
-        .map(|p| JsPalette { inner: p })
+    load_preset_palette(id).ok().map(|p| JsPalette { inner: p })
 }
 
 #[wasm_bindgen(js_name = "loadPresetCss")]
@@ -242,7 +240,7 @@ pub fn load_preset_css(id: &str) -> Result<String, JsValue> {
 #[wasm_bindgen(js_name = "loadPresetJson")]
 pub fn load_preset_json(id: &str) -> Result<String, JsValue> {
     let palette = load_preset_palette(id)?;
-    crate::snapshot::to_json(&palette).map_err(to_js_error)
+    palette.to_json().map_err(to_js_error)
 }
 
 #[wasm_bindgen(js_name = "presetIds")]

@@ -1,7 +1,6 @@
 #![cfg(feature = "snapshot")]
 
 use palette_core::palette::Palette;
-use palette_core::snapshot::{to_json, to_json_value};
 
 mod common;
 
@@ -9,7 +8,7 @@ mod common;
 fn palette_serializes_to_json() {
     let manifest = common::load_preset("tokyonight");
     let palette = Palette::from_manifest(&manifest).unwrap();
-    let json = to_json(&palette).unwrap();
+    let json = palette.to_json().unwrap();
 
     assert!(json.contains("\"background\""));
     assert!(json.contains("#1A1B2A"));
@@ -19,7 +18,7 @@ fn palette_serializes_to_json() {
 fn palette_serializes_to_json_value() {
     let manifest = common::load_preset("tokyonight");
     let palette = Palette::from_manifest(&manifest).unwrap();
-    let value = to_json_value(&palette).unwrap();
+    let value = palette.to_json_value().unwrap();
 
     let base = value.get("base").unwrap();
     let bg = base.get("background").unwrap().as_str().unwrap();
@@ -30,7 +29,7 @@ fn palette_serializes_to_json_value() {
 fn snapshot_includes_meta() {
     let manifest = common::load_preset("tokyonight");
     let palette = Palette::from_manifest(&manifest).unwrap();
-    let json = to_json(&palette).unwrap();
+    let json = palette.to_json().unwrap();
 
     assert!(json.contains("\"preset_id\""));
     assert!(json.contains("tokyonight"));
@@ -44,7 +43,7 @@ fn snapshot_omits_none_colors() {
             .collect(),
     );
     let palette = Palette::from_manifest(&manifest).unwrap();
-    let value = to_json_value(&palette).unwrap();
+    let value = palette.to_json_value().unwrap();
 
     let base = value.get("base").unwrap();
     assert!(base.get("background").unwrap().is_string());
