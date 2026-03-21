@@ -8,17 +8,19 @@
 //! # Quick start
 //!
 //! ```
-//! use palette_core::{preset, load_preset, Registry};
+//! use palette_core::{load_preset, Registry};
 //!
-//! // Infallible load of a built-in theme
-//! let palette = preset("catppuccin").unwrap();
+//! // Load a built-in theme (returns PaletteError on unknown ID)
+//! let palette = load_preset("catppuccin").unwrap();
 //!
-//! // Fallible load (returns PaletteError on unknown ID)
+//! // Same API, different preset
 //! let palette = load_preset("tokyonight").unwrap();
 //!
 //! // Registry: built-ins + custom themes from disk
 //! let mut reg = Registry::new();
-//! reg.add_dir("./my-themes".as_ref()).ok();
+//! if let Err(e) = reg.add_dir("./my-themes".as_ref()) {
+//!     eprintln!("failed to load custom themes: {e}");
+//! }
 //! for info in reg.list() {
 //!     println!("{}: {}", info.id, info.name);
 //! }
@@ -58,7 +60,7 @@ pub use color::Color;
 pub use contrast::ContrastLevel;
 pub use error::PaletteError;
 pub use palette::{Palette, PaletteMeta};
-pub use registry::{Registry, ThemeInfo, load_preset, load_preset_file, preset, preset_ids};
+pub use registry::{Registry, ThemeInfo, load_preset, load_preset_file, preset_ids};
 
 /// Text style modifiers for syntax tokens.
 pub mod style;

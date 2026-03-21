@@ -84,7 +84,7 @@ fn to_hex_uppercase_format() {
         g: 27,
         b: 42,
     };
-    assert_eq!(color.to_hex(), "#1A1B2A");
+    assert_eq!(&*color.to_hex(), "#1A1B2A");
 }
 
 #[test]
@@ -111,7 +111,7 @@ fn display_matches_to_hex() {
         g: 27,
         b: 42,
     };
-    assert_eq!(format!("{color}"), color.to_hex());
+    assert_eq!(format!("{color}"), &*color.to_hex());
 }
 
 #[test]

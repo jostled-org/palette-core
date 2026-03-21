@@ -144,7 +144,7 @@ pub struct TerminalTheme {
     /// Editor chrome (cursor, selections, diagnostics).
     pub editor: TerminalEditorColors,
     /// Standard 16-color ANSI terminal palette.
-    pub terminal_ansi: TerminalTerminalAnsiColors,
+    pub terminal: TerminalAnsiColors,
     /// Syntax token style modifiers.
     pub syntax_style: TerminalSyntaxStyles,
 }
@@ -159,7 +159,7 @@ pub fn to_terminal_theme(palette: &Palette) -> TerminalTheme {
         typography: TerminalTypographyColors::from_palette(&palette.typography),
         syntax: TerminalSyntaxColors::from_palette(&palette.syntax),
         editor: TerminalEditorColors::from_palette(&palette.editor),
-        terminal_ansi: TerminalTerminalAnsiColors::from_palette(&palette.terminal_ansi),
+        terminal: TerminalAnsiColors::from_palette(&palette.terminal),
         syntax_style: TerminalSyntaxStyles::from_palette(&palette.syntax_style),
     }
 }
@@ -182,12 +182,12 @@ pub struct ResolvedTerminalTheme {
     /// Editor chrome (cursor, selections, diagnostics).
     pub editor: ResolvedTerminalEditorColors,
     /// Standard 16-color ANSI terminal palette.
-    pub terminal_ansi: ResolvedTerminalTerminalAnsiColors,
+    pub terminal: ResolvedTerminalAnsiColors,
     /// Syntax token style modifiers.
     pub syntax_style: ResolvedTerminalSyntaxStyles,
 }
 
-impl ResolvedTerminalTerminalAnsiColors {
+impl ResolvedTerminalAnsiColors {
     /// The 12 chromatic ANSI colors, skipping black/white/bright_black/bright_white.
     ///
     /// Useful for cycling distinct accent colors across panels, tabs, or chart series.
@@ -209,11 +209,6 @@ impl ResolvedTerminalTerminalAnsiColors {
     }
 }
 
-/// Build a [`ratatui::style::Style`] from a foreground and background color.
-pub fn style(fg: RatatuiColor, bg: RatatuiColor) -> ratatui::style::Style {
-    ratatui::style::Style::default().fg(fg).bg(bg)
-}
-
 /// Convert a [`ResolvedPalette`](crate::resolved::ResolvedPalette) into a [`ResolvedTerminalTheme`].
 pub fn to_resolved_terminal_theme(
     resolved: &crate::resolved::ResolvedPalette,
@@ -226,7 +221,7 @@ pub fn to_resolved_terminal_theme(
         typography: ResolvedTerminalTypographyColors::from_resolved(&resolved.typography),
         syntax: ResolvedTerminalSyntaxColors::from_resolved(&resolved.syntax),
         editor: ResolvedTerminalEditorColors::from_resolved(&resolved.editor),
-        terminal_ansi: ResolvedTerminalTerminalAnsiColors::from_resolved(&resolved.terminal_ansi),
+        terminal: ResolvedTerminalAnsiColors::from_resolved(&resolved.terminal),
         syntax_style: ResolvedTerminalSyntaxStyles::from_resolved(&resolved.syntax_style),
     }
 }

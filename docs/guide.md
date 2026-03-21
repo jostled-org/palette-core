@@ -4,23 +4,15 @@ Presets, rendering targets, theme switching, custom themes, and utilities. For a
 
 ## Loading presets
 
-Built-in presets are compiled into the binary. `preset()` returns `Option<Palette>` — `None` only if the ID doesn't match a builtin.
+Built-in presets are compiled into the binary. `load_preset()` returns `Result<Palette, PaletteError>`.
 
 ```rust
-use palette_core::preset;
+use palette_core::load_preset;
 
-let palette = preset("tokyonight").expect("builtin preset");
+let palette = load_preset("tokyonight").unwrap();
 ```
 
-### `preset()` vs `load_preset()`
-
-| | `preset(id)` | `load_preset(id)` |
-|---|---|---|
-| Returns | `Option<Palette>` | `Result<Palette, PaletteError>` |
-| Unknown ID | `None` | `Err(UnknownPreset)` |
-| Use when | Loading a known builtin by name | You need the error type (e.g. to propagate with `?`) |
-
-Both resolve inheritance for variant presets (e.g. `tokyonight_storm` inherits from `tokyonight`).
+`load_preset()` resolves inheritance for variant presets (e.g. `tokyonight_storm` inherits from `tokyonight`). Returns `Err(UnknownPreset)` if the ID is not recognized.
 
 For user-provided TOML files, use `load_preset_file()` or a `Registry` — those paths can genuinely fail (missing file, bad TOML, broken inheritance chain).
 
@@ -34,14 +26,13 @@ use palette_core::Palette;
 let palette = reg.load(&user_choice).unwrap_or_default();
 ```
 
-Or combine with `preset()` for a two-tier fallback:
+Or combine with `load_preset()` for a two-tier fallback:
 
 ```rust
-use palette_core::preset;
-use palette_core::Palette;
+use palette_core::{load_preset, Palette};
 
-let palette = preset(&user_choice)
-    .or_else(|| preset("tokyonight"))
+let palette = load_preset(&user_choice)
+    .or_else(|_| load_preset("tokyonight"))
     .unwrap_or_default();
 ```
 
@@ -52,9 +43,9 @@ The default palette covers `base`, `semantic`, and `surface` slots. Syntax, edit
 `Palette` fields are `Option<Color>` — absent slots mean the theme defers to the renderer. Call `resolve()` to fill all gaps from `Palette::default()`, producing a `ResolvedPalette` where every slot is a concrete `Color`.
 
 ```rust
-use palette_core::preset;
+use palette_core::load_preset;
 
-let palette = preset("tokyonight").expect("builtin preset");
+let palette = load_preset("tokyonight").unwrap();
 let resolved = palette.resolve();
 // resolved.base.background is Color, not Option<Color>
 ```
@@ -62,7 +53,7 @@ let resolved = palette.resolve();
 Use `resolve_with()` to fill gaps from a custom fallback instead of the built-in default.
 
 ```rust
-let custom_fallback = palette_core::preset("nord").expect("builtin preset");
+let custom_fallback = palette_core::load_preset("nord").unwrap();
 let resolved = palette.resolve_with(&custom_fallback);
 ```
 
@@ -78,9 +69,9 @@ comments_doc = "bold,italic"
 ```
 
 ```rust
-use palette_core::preset;
+use palette_core::load_preset;
 
-let palette = preset("tokyonight").expect("builtin preset");
+let palette = load_preset("tokyonight").unwrap();
 for (name, style) in palette.syntax_style.populated_slots() {
     println!("{name}: {style}");
 }
@@ -95,9 +86,9 @@ Resolved styles (`ResolvedSyntaxStyles`) fill absent slots with `StyleModifiers:
 ### CSS
 
 ```rust
-use palette_core::preset;
+use palette_core::load_preset;
 
-let palette = preset("tokyonight").expect("builtin preset");
+let palette = load_preset("tokyonight").unwrap();
 let css = palette.to_css();
 ```
 
@@ -115,10 +106,10 @@ See the [CSS variables reference](css-variables.md) for the full variable list.
 Requires the `terminal` feature.
 
 ```rust
-use palette_core::preset;
+use palette_core::load_preset;
 use palette_core::terminal::to_terminal_theme;
 
-let palette = preset("catppuccin").expect("builtin preset");
+let palette = load_preset("catppuccin").unwrap();
 let theme = to_terminal_theme(&palette);
 // theme.base.background, theme.syntax.keywords, etc.
 ```
@@ -138,21 +129,11 @@ let theme = to_resolved_terminal_theme(&resolved);
 `chromatic()` returns the 12 non-grayscale ANSI colors for cycling across panels or chart series:
 
 ```rust
-let colors = theme.terminal_ansi.chromatic();
+let colors = theme.terminal.chromatic();
 for (i, panel) in panels.iter().enumerate() {
     let accent = colors[i % colors.len()];
     // ...
 }
-```
-
-#### Style builder
-
-`style(fg, bg)` is shorthand for `Style::default().fg(fg).bg(bg)`:
-
-```rust
-use palette_core::terminal::style;
-
-let base = style(theme.base.foreground, theme.base.background);
 ```
 
 ### egui
@@ -160,10 +141,10 @@ let base = style(theme.base.foreground, theme.base.background);
 Requires the `egui` feature.
 
 ```rust
-use palette_core::preset;
+use palette_core::load_preset;
 use palette_core::egui::to_egui_visuals;
 
-let palette = preset("github_dark").expect("builtin preset");
+let palette = load_preset("github_dark").unwrap();
 ctx.set_visuals(to_egui_visuals(&palette));
 ```
 
@@ -172,9 +153,9 @@ ctx.set_visuals(to_egui_visuals(&palette));
 Requires the `snapshot` feature.
 
 ```rust
-use palette_core::preset;
+use palette_core::load_preset;
 
-let palette = preset("nord").expect("builtin preset");
+let palette = load_preset("nord").unwrap();
 let json = palette.to_json()?;
 ```
 
@@ -401,10 +382,10 @@ const palette = reg.load("my_nord");
 Check foreground/background pairs against WCAG 2.1 contrast thresholds.
 
 ```rust
-use palette_core::{preset, ContrastLevel};
+use palette_core::{load_preset, ContrastLevel};
 use palette_core::contrast::validate_palette;
 
-let palette = preset("tokyonight").expect("builtin preset");
+let palette = load_preset("tokyonight").unwrap();
 let violations = validate_palette(&palette, ContrastLevel::AaNormal);
 for v in &violations {
     println!("{} on {}: {:.2}:1", v.foreground_label, v.background_label, v.ratio);
@@ -418,9 +399,9 @@ Available levels: `AaNormal`, `AaLarge`, `AaaNormal`, `AaaLarge`.
 `resolve_with_contrast` resolves a palette and nudges failing foreground colors until they meet the requested contrast level. Only HSL lightness is adjusted — hue and saturation are preserved. Background colors are never modified.
 
 ```rust
-use palette_core::{preset, ContrastLevel};
+use palette_core::{load_preset, ContrastLevel};
 
-let palette = preset("catppuccin").expect("builtin preset");
+let palette = load_preset("catppuccin").unwrap();
 let resolved = palette.resolve_with_contrast(ContrastLevel::AaNormal);
 // All foreground/background pairs now meet AA normal (≥ 4.5:1)
 ```

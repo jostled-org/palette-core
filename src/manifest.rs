@@ -109,176 +109,115 @@ impl std::fmt::Display for UnknownField {
     }
 }
 
+/// Field-name arrays from [`color_fields!`](crate::palette::color_fields) --
+/// single source of truth for validation. Unsorted (semantic order);
+/// [`validate_fields`] sorts at call time for `binary_search`.
+mod known_fields {
+    macro_rules! emit {
+        ($(#[$_meta:meta])* BaseColors { $($field:ident),+ $(,)? }) => {
+            pub(super) const BASE: &[&str] = &[$(stringify!($field)),+];
+        };
+        ($(#[$_meta:meta])* SemanticColors { $($field:ident),+ $(,)? }) => {
+            pub(super) const SEMANTIC: &[&str] = &[$(stringify!($field)),+];
+        };
+        ($(#[$_meta:meta])* DiffColors { $($field:ident),+ $(,)? }) => {
+            pub(super) const DIFF: &[&str] = &[$(stringify!($field)),+];
+        };
+        ($(#[$_meta:meta])* SurfaceColors { $($field:ident),+ $(,)? }) => {
+            pub(super) const SURFACE: &[&str] = &[$(stringify!($field)),+];
+        };
+        ($(#[$_meta:meta])* TypographyColors { $($field:ident),+ $(,)? }) => {
+            pub(super) const TYPOGRAPHY: &[&str] = &[$(stringify!($field)),+];
+        };
+        ($(#[$_meta:meta])* SyntaxColors { $($field:ident),+ $(,)? }) => {
+            pub(super) const SYNTAX: &[&str] = &[$(stringify!($field)),+];
+        };
+        ($(#[$_meta:meta])* EditorColors { $($field:ident),+ $(,)? }) => {
+            pub(super) const EDITOR: &[&str] = &[$(stringify!($field)),+];
+        };
+        ($(#[$_meta:meta])* AnsiColors { $($field:ident),+ $(,)? }) => {
+            pub(super) const TERMINAL: &[&str] = &[$(stringify!($field)),+];
+        };
+    }
+    crate::palette::color_fields!(emit);
+}
+
 /// Check every section key against the known field set.
 ///
-/// This is opt-in validation for theme lint tooling — not called during
+/// This is opt-in validation for theme lint tooling -- not called during
 /// normal [`PaletteManifest::from_manifest`](crate::Palette::from_manifest).
-pub fn validate_fields(manifest: &PaletteManifest) -> Vec<UnknownField> {
-    macro_rules! known_fields {
-        ($(#[$_meta:meta])* $name:ident { $($field:ident),+ $(,)? }) => {
-            &[$(stringify!($field)),+]
-        };
-    }
-
-    let checks: &[(&str, &ManifestSection, &[&str])] = &[
-        (
-            "base",
-            &manifest.base,
-            known_fields!(BaseColors {
-                background,
-                background_dark,
-                background_highlight,
-                foreground,
-                foreground_dark,
-                border,
-                border_highlight,
-            }),
-        ),
-        (
-            "semantic",
-            &manifest.semantic,
-            known_fields!(SemanticColors {
-                success,
-                warning,
-                error,
-                info,
-                hint,
-            }),
-        ),
-        (
-            "diff",
-            &manifest.diff,
-            known_fields!(DiffColors {
-                added,
-                added_bg,
-                added_fg,
-                modified,
-                modified_bg,
-                modified_fg,
-                removed,
-                removed_bg,
-                removed_fg,
-                text_bg,
-                ignored,
-            }),
-        ),
-        (
-            "surface",
-            &manifest.surface,
-            known_fields!(SurfaceColors {
-                menu,
-                sidebar,
-                statusline,
-                float,
-                popup,
-                overlay,
-                highlight,
-                selection,
-                focus,
-                search,
-            }),
-        ),
-        (
-            "typography",
-            &manifest.typography,
-            known_fields!(TypographyColors {
-                comment,
-                gutter,
-                line_number,
-                selection_text,
-                link,
-                title,
-            }),
-        ),
-        (
-            "editor",
-            &manifest.editor,
-            known_fields!(EditorColors {
-                cursor,
-                cursor_text,
-                match_paren,
-                selection_bg,
-                selection_fg,
-                inlay_hint_bg,
-                inlay_hint_fg,
-                search_bg,
-                search_fg,
-                diagnostic_error,
-                diagnostic_warn,
-                diagnostic_info,
-                diagnostic_hint,
-                diagnostic_underline_error,
-                diagnostic_underline_warn,
-                diagnostic_underline_info,
-                diagnostic_underline_hint,
-            }),
-        ),
-        (
-            "terminal",
-            &manifest.terminal,
-            known_fields!(TerminalAnsiColors {
-                black,
-                red,
-                green,
-                yellow,
-                blue,
-                magenta,
-                cyan,
-                white,
-                bright_black,
-                bright_red,
-                bright_green,
-                bright_yellow,
-                bright_blue,
-                bright_magenta,
-                bright_cyan,
-                bright_white,
-            }),
-        ),
-    ];
-
-    // Syntax fields via syntax_fields! macro
-    macro_rules! syntax_known {
-        ($(#[$_meta:meta])* $_name:ident { $($field:ident),+ $(,)? }) => {
-            const SYNTAX_FIELDS: &[&str] = &[$(stringify!($field)),+];
-        };
-    }
-    crate::palette::syntax_fields!(syntax_known);
-
-    let mut unknowns = Vec::new();
-
-    for (section_name, section, known) in checks {
+pub fn validate_fields(manifest: &PaletteManifest) -> Box<[UnknownField]> {
+    fn check_section(
+        unknowns: &mut Vec<UnknownField>,
+        section_name: &str,
+        section: &ManifestSection,
+        known: &[&str],
+    ) {
+        let mut sorted = known.to_vec();
+        sorted.sort_unstable();
         for key in section.keys() {
-            if !known.contains(&key.as_ref()) {
-                unknowns.push(UnknownField {
-                    section: Box::from(*section_name),
+            match sorted.binary_search(&key.as_ref()) {
+                Ok(_) => {}
+                Err(_) => unknowns.push(UnknownField {
+                    section: Box::from(section_name),
                     field: Box::from(key.as_ref()),
-                });
+                }),
             }
         }
     }
 
-    // Check syntax section
-    for key in manifest.syntax.keys() {
-        if !SYNTAX_FIELDS.contains(&key.as_ref()) {
-            unknowns.push(UnknownField {
-                section: Box::from("syntax"),
-                field: Box::from(key.as_ref()),
-            });
-        }
-    }
+    let mut unknowns = Vec::new();
 
-    // Check syntax_style section (same field names as syntax)
-    for key in manifest.syntax_style.keys() {
-        if !SYNTAX_FIELDS.contains(&key.as_ref()) {
-            unknowns.push(UnknownField {
-                section: Box::from("syntax_style"),
-                field: Box::from(key.as_ref()),
-            });
-        }
-    }
+    // Section-to-manifest mapping is manual; field lists come from
+    // color_fields! via the known_fields module (single source of truth).
+    check_section(&mut unknowns, "base", &manifest.base, known_fields::BASE);
+    check_section(
+        &mut unknowns,
+        "semantic",
+        &manifest.semantic,
+        known_fields::SEMANTIC,
+    );
+    check_section(&mut unknowns, "diff", &manifest.diff, known_fields::DIFF);
+    check_section(
+        &mut unknowns,
+        "surface",
+        &manifest.surface,
+        known_fields::SURFACE,
+    );
+    check_section(
+        &mut unknowns,
+        "typography",
+        &manifest.typography,
+        known_fields::TYPOGRAPHY,
+    );
+    check_section(
+        &mut unknowns,
+        "editor",
+        &manifest.editor,
+        known_fields::EDITOR,
+    );
+    check_section(
+        &mut unknowns,
+        "terminal",
+        &manifest.terminal,
+        known_fields::TERMINAL,
+    );
 
-    unknowns
+    // Syntax and syntax_style sections share the same valid field names.
+    check_section(
+        &mut unknowns,
+        "syntax",
+        &manifest.syntax,
+        known_fields::SYNTAX,
+    );
+    check_section(
+        &mut unknowns,
+        "syntax_style",
+        &manifest.syntax_style,
+        known_fields::SYNTAX,
+    );
+
+    unknowns.into_boxed_slice()
 }
 
 #[derive(Deserialize)]

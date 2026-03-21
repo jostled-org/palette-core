@@ -61,8 +61,6 @@ pub fn to_egui_visuals(palette: &Palette) -> ::egui::Visuals {
     // Semantic colors
     apply_color!(&palette.semantic.error => v.error_fg_color);
     apply_color!(&palette.semantic.warning => v.warn_fg_color);
-    apply_color!(&palette.semantic.info => v.hyperlink_color);
-
     // Window stroke
     apply_stroke!(&palette.base.border, 1.0 =>
         v.window_stroke,

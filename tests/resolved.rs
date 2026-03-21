@@ -1,16 +1,16 @@
 use palette_core::color::Color;
 use palette_core::palette::{
-    BaseColors, DiffColors, EditorColors, Palette, SemanticColors, SurfaceColors, SyntaxColors,
-    TerminalAnsiColors, TypographyColors,
+    AnsiColors, BaseColors, DiffColors, EditorColors, Palette, SemanticColors, SurfaceColors,
+    SyntaxColors, TypographyColors,
 };
 use palette_core::style::SyntaxStyles;
-use palette_core::{preset, preset_ids};
+use palette_core::{load_preset, preset_ids};
 
 mod common;
 
 #[test]
 fn complete_preset_resolves_matching_originals() {
-    let palette = preset("tokyonight").unwrap();
+    let palette = load_preset("tokyonight").unwrap();
     let resolved = palette.resolve();
 
     // Every populated slot in the original should match the resolved value.
@@ -65,7 +65,7 @@ fn sparse_palette_fills_gaps_from_default() {
         typography: TypographyColors::default(),
         syntax: SyntaxColors::default(),
         editor: EditorColors::default(),
-        terminal_ansi: TerminalAnsiColors::default(),
+        terminal: AnsiColors::default(),
         syntax_style: SyntaxStyles::default(),
         #[cfg(feature = "platform")]
         platform: Default::default(),
@@ -128,7 +128,7 @@ fn resolve_with_custom_fallback_precedence() {
         typography: TypographyColors::default(),
         syntax: SyntaxColors::default(),
         editor: EditorColors::default(),
-        terminal_ansi: TerminalAnsiColors::default(),
+        terminal: AnsiColors::default(),
         syntax_style: SyntaxStyles::default(),
         #[cfg(feature = "platform")]
         platform: Default::default(),
@@ -147,7 +147,7 @@ fn resolve_with_custom_fallback_precedence() {
         typography: TypographyColors::default(),
         syntax: SyntaxColors::default(),
         editor: EditorColors::default(),
-        terminal_ansi: TerminalAnsiColors::default(),
+        terminal: AnsiColors::default(),
         syntax_style: SyntaxStyles::default(),
         #[cfg(feature = "platform")]
         platform: Default::default(),
@@ -175,7 +175,7 @@ fn all_slots_count_matches_expected_per_group() {
     assert_eq!(resolved.typography.all_slots().count(), 6);
     assert_eq!(resolved.syntax.all_slots().count(), 38);
     assert_eq!(resolved.editor.all_slots().count(), 17);
-    assert_eq!(resolved.terminal_ansi.all_slots().count(), 16);
+    assert_eq!(resolved.terminal.all_slots().count(), 16);
 }
 
 #[test]
@@ -215,9 +215,9 @@ fn default_palette_completeness() {
         "editor incomplete"
     );
     assert_eq!(
-        default.terminal_ansi.populated_slots().count(),
+        default.terminal.populated_slots().count(),
         16,
-        "terminal_ansi incomplete"
+        "terminal incomplete"
     );
 }
 
@@ -227,7 +227,7 @@ fn all_presets_resolve_without_black_fallback() {
     let black = Color::default();
 
     for id in preset_ids() {
-        let palette = preset(id).unwrap();
+        let palette = load_preset(id).unwrap();
         let resolved = palette.resolve();
 
         // Base background should never fall back to black (every preset defines it).
@@ -250,7 +250,7 @@ fn all_presets_resolve_without_black_fallback() {
 
 #[test]
 fn meta_preserved_through_resolution() {
-    let palette = preset("tokyonight").unwrap();
+    let palette = load_preset("tokyonight").unwrap();
     let resolved = palette.resolve();
 
     assert!(resolved.meta.is_some());

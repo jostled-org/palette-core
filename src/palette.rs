@@ -233,7 +233,7 @@ macro_rules! color_fields {
 
         $macro_name!(
             /// Standard 16-color ANSI terminal palette.
-            TerminalAnsiColors {
+            AnsiColors {
             black,
             red,
             green,
@@ -272,7 +272,7 @@ pub struct PaletteMeta {
 /// Resolved color palette ready for rendering.
 ///
 /// Built from a [`PaletteManifest`] (parsed TOML) via [`Palette::from_manifest`],
-/// or obtained directly from [`preset`](crate::preset), [`load_preset`](crate::load_preset),
+/// or obtained directly from [`load_preset`](crate::load_preset),
 /// or [`Registry::load`](crate::Registry::load). Each field is a color group
 /// whose slots are `Option<Color>` — absent slots mean the theme defers to
 /// the renderer's default.
@@ -296,7 +296,7 @@ pub struct Palette {
     /// Editor chrome (cursor, selections, diagnostics).
     pub editor: EditorColors,
     /// Standard 16-color ANSI terminal palette.
-    pub terminal_ansi: TerminalAnsiColors,
+    pub terminal: AnsiColors,
     /// Syntax token style modifiers (bold, italic, underline).
     pub syntax_style: SyntaxStyles,
     /// Per-platform color overrides.
@@ -426,7 +426,7 @@ impl Default for Palette {
                 diagnostic_underline_hint: c(0x70, 0x70, 0x88),
             },
             syntax_style: SyntaxStyles::default(),
-            terminal_ansi: TerminalAnsiColors {
+            terminal: AnsiColors {
                 black: c(0x1a, 0x1a, 0x2e),
                 red: c(0xe0, 0x50, 0x50),
                 green: c(0x50, 0xc8, 0x78),
@@ -468,7 +468,7 @@ impl Palette {
             typography: TypographyColors::from_section(&manifest.typography, "typography")?,
             syntax: SyntaxColors::from_section(&manifest.syntax, "syntax")?,
             editor: EditorColors::from_section(&manifest.editor, "editor")?,
-            terminal_ansi: TerminalAnsiColors::from_section(&manifest.terminal, "terminal")?,
+            terminal: AnsiColors::from_section(&manifest.terminal, "terminal")?,
             syntax_style: SyntaxStyles::from_section(&manifest.syntax_style, "syntax_style")?,
             #[cfg(feature = "platform")]
             platform: crate::platform::from_sections(&manifest.platform)?,

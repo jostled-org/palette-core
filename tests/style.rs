@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use palette_core::error::PaletteError;
 use palette_core::style::{ResolvedSyntaxStyles, StyleModifiers, SyntaxStyles};
-use palette_core::{preset, preset_ids};
+use palette_core::{load_preset, preset_ids};
 
 fn section(pairs: &[(&str, &str)]) -> HashMap<Arc<str>, Arc<str>> {
     pairs
@@ -301,7 +301,7 @@ fn syntax_styles_fields_match_syntax_colors() {
 #[test]
 fn all_presets_parse_styles_without_error() {
     for id in preset_ids() {
-        let palette = preset(id).unwrap();
+        let palette = load_preset(id).unwrap();
         // If it loaded, styles parsed successfully.
         // Verify resolve doesn't panic.
         let _ = palette.resolve();

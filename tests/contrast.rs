@@ -117,7 +117,7 @@ fn ratio_7_passes_all() {
 
 // --- Palette validation ---
 
-fn validate_preset_aa(preset_id: &str) -> Vec<palette_core::contrast::ContrastViolation> {
+fn validate_preset_aa(preset_id: &str) -> Box<[palette_core::contrast::ContrastViolation]> {
     let palette = palette_core::registry::load_preset(preset_id).unwrap();
     validate_palette(&palette, ContrastLevel::AaNormal)
 }
@@ -227,7 +227,7 @@ fn fg_bg_pairs_covered_by_validation() {
     // Verify that validate_palette checks all _fg/_bg suffix pairs in editor and diff.
     // Build a palette where every slot has the same color so every pair produces a
     // violation (ratio 1:1), then assert the expected pair labels appear.
-    let palette = palette_core::preset("tokyonight").unwrap();
+    let palette = palette_core::load_preset("tokyonight").unwrap();
     let mut same = palette.clone();
 
     let grey = Color::from_hex("#808080").unwrap();
@@ -313,7 +313,7 @@ fn github_presets_diff_modified_readable() {
     // Diff backgrounds are line highlights with the indicator color overlaid; 2.5:1
     // matches the contrast the existing added/removed tints achieve in light themes.
     for id in ["github_dark", "github_light"] {
-        let palette = palette_core::preset(id).unwrap();
+        let palette = palette_core::load_preset(id).unwrap();
         let fg = palette.diff.modified_fg.expect("missing modified_fg");
         let bg = palette.diff.modified_bg.expect("missing modified_bg");
         let ratio = fg.contrast_ratio(&bg);
@@ -327,7 +327,7 @@ fn github_presets_diff_modified_readable() {
 #[test]
 fn all_presets_focus_passes_aa_large() {
     for id in palette_core::preset_ids() {
-        let palette = palette_core::preset(id).unwrap();
+        let palette = palette_core::load_preset(id).unwrap();
         let resolved = palette.resolve();
         let ratio = resolved
             .base
@@ -399,7 +399,7 @@ fn nudge_unadjustable_returns_original() {
 #[test]
 fn resolve_with_contrast_matches_resolve_on_clean_preset() {
     // A well-contrasted preset should produce identical results.
-    let palette = palette_core::preset("golden_hour").unwrap();
+    let palette = palette_core::load_preset("golden_hour").unwrap();
     let plain = palette.resolve();
     let adjusted = palette.resolve_with_contrast(ContrastLevel::AaNormal);
     assert_eq!(
@@ -452,7 +452,7 @@ fn resolve_with_contrast_fixes_bad_palette() {
 #[test]
 fn resolve_with_contrast_zero_violations_on_presets() {
     for id in palette_core::preset_ids() {
-        let palette = palette_core::preset(id).unwrap();
+        let palette = palette_core::load_preset(id).unwrap();
         let resolved = palette.resolve_with_contrast(ContrastLevel::AaNormal);
 
         // Re-validate by checking all the same pairs validate_palette would.

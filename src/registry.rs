@@ -169,7 +169,6 @@ fn resolve_parent(child_path: &Path, parent_id: &str) -> Result<PaletteManifest,
 /// Load a built-in preset by ID, resolving single-level inheritance.
 ///
 /// Returns [`PaletteError::UnknownPreset`] if the ID is not recognized.
-/// For an infallible alternative, see [`preset`].
 pub fn load_preset(id: &str) -> Result<Palette, PaletteError> {
     let toml = preset_toml(id).ok_or_else(|| PaletteError::UnknownPreset(Arc::from(id)))?;
     resolve_with_inheritance(toml, |parent_id| {
@@ -177,15 +176,6 @@ pub fn load_preset(id: &str) -> Result<Palette, PaletteError> {
             .ok_or_else(|| PaletteError::UnknownPreset(Arc::from(parent_id)))?;
         PaletteManifest::from_toml(parent_toml)
     })
-}
-
-/// Load a built-in preset by ID, returning `None` if the ID is not recognized.
-///
-/// Built-in presets are compiled into the binary and test-verified, so parsing
-/// cannot fail. This provides an infallible alternative to [`load_preset`] for
-/// the common case of loading a known built-in theme.
-pub fn preset(id: &str) -> Option<Palette> {
-    load_preset(id).ok()
 }
 
 // ---------------------------------------------------------------------------
@@ -293,15 +283,15 @@ impl Registry {
             source,
         })?;
 
-        self.add_toml(toml)
+        self.add_toml(&toml)
     }
 
     /// Register a custom theme from a TOML string.
     ///
     /// Parses the manifest once and stores it. Subsequent [`load`](Self::load)
     /// calls use the pre-parsed manifest directly.
-    pub fn add_toml(&mut self, toml: String) -> Result<(), PaletteError> {
-        let manifest = PaletteManifest::from_toml(&toml)?;
+    pub fn add_toml(&mut self, toml: &str) -> Result<(), PaletteError> {
+        let manifest = PaletteManifest::from_toml(toml)?;
         let info = theme_info_from_manifest(&manifest)?;
         self.cache.borrow_mut().remove(&info.id);
         self.upsert_entry(info, Source::Custom(Box::new(manifest)));

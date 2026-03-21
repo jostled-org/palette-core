@@ -1,9 +1,8 @@
 #![cfg(feature = "wasm")]
 
-use palette_core::contrast::ContrastLevel;
 use palette_core::wasm::{
     JsColor, JsRegistry, blend_js, contrast_ratio_js, load_preset, load_preset_css,
-    load_preset_json, meets_contrast_level_js, parse_contrast_level, preset_ids_js,
+    load_preset_json, meets_contrast_level_js, preset_ids_js,
 };
 
 // --- JsColor ---
@@ -66,33 +65,24 @@ fn js_color_relative_luminance_white() {
     assert!((white.relative_luminance() - 1.0).abs() < 0.001);
 }
 
-// --- parse_contrast_level ---
+// --- contrast level parsing (tested through meets_contrast_level_js) ---
 
 #[test]
-fn parse_contrast_level_all_variants() {
-    assert_eq!(parse_contrast_level("aa").unwrap(), ContrastLevel::AaNormal);
-    assert_eq!(
-        parse_contrast_level("aa-large").unwrap(),
-        ContrastLevel::AaLarge
-    );
-    assert_eq!(
-        parse_contrast_level("aaa").unwrap(),
-        ContrastLevel::AaaNormal
-    );
-    assert_eq!(
-        parse_contrast_level("aaa-large").unwrap(),
-        ContrastLevel::AaaLarge
-    );
+fn contrast_level_strings_accepted() {
+    let black = JsColor::from_hex("#000000").unwrap();
+    let white = JsColor::from_hex("#FFFFFF").unwrap();
+    // All four level strings should parse without error on a high-contrast pair.
+    assert!(meets_contrast_level_js(&black, &white, "aa").unwrap());
+    assert!(meets_contrast_level_js(&black, &white, "aa-large").unwrap());
+    assert!(meets_contrast_level_js(&black, &white, "aaa").unwrap());
+    assert!(meets_contrast_level_js(&black, &white, "aaa-large").unwrap());
 }
 
 #[test]
-fn parse_contrast_level_unknown_returns_err() {
-    // JsValue errors can't be inspected on native target.
-    // Verify via the fact that no ContrastLevel variant matches "unknown".
-    assert!(!matches!(
-        parse_contrast_level("aa").unwrap(),
-        ContrastLevel::AaaNormal
-    ));
+fn contrast_level_unknown_string_returns_err() {
+    let black = JsColor::from_hex("#000000").unwrap();
+    let white = JsColor::from_hex("#FFFFFF").unwrap();
+    assert!(meets_contrast_level_js(&black, &white, "unknown").is_err());
 }
 
 // --- Preset loading ---

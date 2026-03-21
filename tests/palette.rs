@@ -30,9 +30,9 @@ fn merged_variant_inherits() {
     let palette = Palette::from_manifest(&merged).unwrap();
 
     // Storm overrides background
-    assert_eq!(palette.base.background.unwrap().to_hex(), "#24283B",);
+    assert_eq!(&*palette.base.background.unwrap().to_hex(), "#24283B",);
     // Inherits terminal colors from base (except black)
-    assert_eq!(palette.terminal_ansi.red.unwrap().to_hex(), "#F7768E",);
+    assert_eq!(&*palette.terminal.red.unwrap().to_hex(), "#F7768E",);
 }
 
 #[test]
@@ -47,7 +47,7 @@ background = "#000000"
     assert!(palette.base.background.is_some());
     assert!(palette.base.foreground.is_none());
     assert!(palette.syntax.keywords.is_none());
-    assert!(palette.terminal_ansi.red.is_none());
+    assert!(palette.terminal.red.is_none());
 }
 
 #[test]

@@ -75,5 +75,5 @@ fn platform_override_resolves_hex_values() {
 
     let terminal = palette.platform.get("terminal").unwrap();
     let bg = terminal.background.unwrap();
-    assert_eq!(bg.to_hex(), "#16161E");
+    assert_eq!(&*bg.to_hex(), "#16161E");
 }

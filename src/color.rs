@@ -69,8 +69,11 @@ impl Color {
     }
 
     /// Format as a `#RRGGBB` hex string.
-    pub fn to_hex(&self) -> String {
-        self.to_string()
+    pub fn to_hex(&self) -> Box<str> {
+        let mut buf = String::with_capacity(7);
+        use std::fmt::Write;
+        let _ = write!(buf, "#{:02X}{:02X}{:02X}", self.r, self.g, self.b);
+        buf.into_boxed_str()
     }
 
     /// WCAG 2.1 relative luminance. Returns a value in `[0.0, 1.0]`.

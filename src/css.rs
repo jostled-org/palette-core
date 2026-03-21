@@ -1,4 +1,3 @@
-use std::borrow::Cow;
 use std::fmt::Write;
 
 use crate::color::Color;
@@ -6,8 +5,8 @@ use crate::palette::Palette;
 
 /// Map a section/field pair to its short CSS custom property name.
 ///
-/// Returns `None` if no explicit name is registered, in which case
-/// `write_section` falls back to `{section}-{field_kebab}`.
+/// Returns `None` if no explicit name is registered. The test
+/// `all_fields_have_explicit_css_names` guarantees every field has a mapping.
 pub fn css_name(section: &str, field: &str) -> Option<&'static str> {
     match (section, field) {
         // Core — base (no section prefix)
@@ -140,10 +139,6 @@ pub fn css_name(section: &str, field: &str) -> Option<&'static str> {
     }
 }
 
-fn fallback_slot(section: &str, field: &str) -> String {
-    format!("{section}-{}", field.replace('_', "-"))
-}
-
 fn write_section<'a>(
     out: &mut String,
     prefix: Option<&str>,
@@ -151,9 +146,9 @@ fn write_section<'a>(
     slots: impl Iterator<Item = (&'static str, &'a Color)>,
 ) {
     for (field, color) in slots {
-        let slot: Cow<'static, str> = match css_name(section, field) {
-            Some(name) => Cow::Borrowed(name),
-            None => Cow::Owned(fallback_slot(section, field)),
+        let slot = match css_name(section, field) {
+            Some(name) => name,
+            None => field, // test guarantees every field has a css_name mapping
         };
         // String::write_fmt is infallible
         let _ = match prefix {
@@ -181,7 +176,7 @@ impl Palette {
 
 /// Bare CSS custom-property declarations without a selector block.
 pub fn to_css_custom_properties(palette: &Palette, prefix: Option<&str>) -> String {
-    let mut out = String::with_capacity(3072);
+    let mut out = String::with_capacity(1024);
     write_section(&mut out, prefix, "base", palette.base.populated_slots());
     write_section(
         &mut out,
@@ -208,7 +203,7 @@ pub fn to_css_custom_properties(palette: &Palette, prefix: Option<&str>) -> Stri
         &mut out,
         prefix,
         "terminal",
-        palette.terminal_ansi.populated_slots(),
+        palette.terminal.populated_slots(),
     );
     write_style_section(&mut out, prefix, &palette.syntax_style);
     out
@@ -223,9 +218,9 @@ fn write_style_section(
         if style.is_empty() {
             continue;
         }
-        let slot: Cow<'static, str> = match css_name("syntax", field) {
-            Some(name) => Cow::Borrowed(name),
-            None => Cow::Owned(fallback_slot("syntax", field)),
+        let slot = match css_name("syntax", field) {
+            Some(name) => name,
+            None => field, // test guarantees every field has a css_name mapping
         };
         let _ = match prefix {
             Some(p) => writeln!(out, "  --{p}-{slot}-style: {};", style.to_css_value()),

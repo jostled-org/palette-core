@@ -98,7 +98,7 @@ fn all_populated_slots_present() {
         + palette.typography.populated_slots().count()
         + palette.syntax.populated_slots().count()
         + palette.editor.populated_slots().count()
-        + palette.terminal_ansi.populated_slots().count()
+        + palette.terminal.populated_slots().count()
         + style_count;
 
     let css_line_count = css.lines().filter(|l| l.contains("--")).count();
@@ -181,11 +181,7 @@ fn all_fields_have_explicit_css_names() {
         ),
         (
             "terminal",
-            palette
-                .terminal_ansi
-                .populated_slots()
-                .map(|(n, _)| n)
-                .collect(),
+            palette.terminal.populated_slots().map(|(n, _)| n).collect(),
         ),
     ];
 

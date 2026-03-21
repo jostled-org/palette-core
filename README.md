@@ -10,9 +10,9 @@ Need a color palette? Do you have to hand-roll it?
 **Palette Core** is a theme engine that turns TOML palette definitions into CSS, terminal, egui, JSON, and WASM exports.
 
 ```rust
-use palette_core::preset;
+use palette_core::load_preset;
 
-let palette = preset("tokyonight").expect("builtin preset");
+let palette = load_preset("tokyonight").unwrap();
 let css = palette.to_css();
 ```
 
@@ -38,10 +38,10 @@ cargo add palette-core
 ### Terminal
 
 ```rust
-use palette_core::preset;
+use palette_core::load_preset;
 use palette_core::terminal::to_terminal_theme;
 
-let palette = preset("catppuccin").expect("builtin preset");
+let palette = load_preset("catppuccin").unwrap();
 let theme = to_terminal_theme(&palette);
 ```
 
@@ -62,10 +62,10 @@ background = "#24283b"
 ### Contrast validation and auto-fix
 
 ```rust
-use palette_core::{preset, ContrastLevel};
+use palette_core::{load_preset, ContrastLevel};
 use palette_core::contrast::validate_palette;
 
-let palette = preset("tokyonight").expect("builtin preset");
+let palette = load_preset("tokyonight").unwrap();
 let violations = validate_palette(&palette, ContrastLevel::AaNormal);
 
 // Auto-fix: nudge failing foregrounds to meet WCAG at resolve time

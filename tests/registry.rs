@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use palette_core::color::Color;
 use palette_core::error::PaletteError;
-use palette_core::registry::{load_preset, load_preset_file, preset, preset_ids};
+use palette_core::registry::{load_preset, load_preset_file, preset_ids};
 use palette_core::{Registry, ThemeInfo};
 
 #[test]
@@ -40,8 +40,8 @@ fn unknown_preset_returns_error() {
 }
 
 #[test]
-fn preset_returns_palette_for_builtin() {
-    let palette = preset("tokyonight").expect("builtin should exist");
+fn load_preset_returns_palette_for_builtin() {
+    let palette = load_preset("tokyonight").unwrap();
     assert_eq!(
         palette.base.background,
         Some(Color::from_hex("#1a1b2a").unwrap()),
@@ -49,13 +49,8 @@ fn preset_returns_palette_for_builtin() {
 }
 
 #[test]
-fn preset_returns_none_for_unknown_id() {
-    assert!(preset("nonexistent").is_none());
-}
-
-#[test]
-fn preset_resolves_inheritance() {
-    let storm = preset("tokyonight_storm").expect("builtin variant should exist");
+fn load_preset_resolves_inheritance() {
+    let storm = load_preset("tokyonight_storm").unwrap();
     assert_eq!(
         storm.base.background,
         Some(Color::from_hex("#24283b").unwrap()),
@@ -386,7 +381,7 @@ fn registry_by_style_nonexistent_returns_empty() {
 #[test]
 fn registry_add_toml_registers_custom_theme() {
     let mut reg = Registry::new();
-    reg.add_toml(MINIMAL_TOML.to_owned()).unwrap();
+    reg.add_toml(MINIMAL_TOML).unwrap();
     assert_eq!(reg.list().count(), 32);
 
     let last = reg.list().last().unwrap();

@@ -11,7 +11,15 @@ fn to_js_error(err: impl std::fmt::Display) -> JsValue {
     JsValue::from_str(&err.to_string())
 }
 
-pub fn parse_contrast_level(s: &str) -> Result<ContrastLevel, JsValue> {
+/// Parse a WCAG contrast level string into a [`ContrastLevel`] variant.
+///
+/// | Input string  | Variant                       |
+/// |---------------|-------------------------------|
+/// | `"aa"`        | [`ContrastLevel::AaNormal`]   |
+/// | `"aa-large"`  | [`ContrastLevel::AaLarge`]    |
+/// | `"aaa"`       | [`ContrastLevel::AaaNormal`]  |
+/// | `"aaa-large"` | [`ContrastLevel::AaaLarge`]   |
+pub(crate) fn parse_contrast_level(s: &str) -> Result<ContrastLevel, JsValue> {
     match s {
         "aa" => Ok(ContrastLevel::AaNormal),
         "aa-large" => Ok(ContrastLevel::AaLarge),
@@ -56,7 +64,7 @@ impl JsColor {
 
     #[wasm_bindgen(js_name = "toHex")]
     pub fn to_hex(&self) -> String {
-        self.inner.to_hex()
+        String::from(self.inner.to_hex())
     }
 
     #[wasm_bindgen(getter)]
@@ -116,21 +124,66 @@ pub struct JsPalette {
     inner: Palette,
 }
 
+/// Generate a `#[wasm_bindgen] impl` block with methods returning `Option<String>`
+/// from palette meta fields.
+macro_rules! palette_meta_getters {
+    ($ty:ident, $($(#[$attr:meta])* $fn_name:ident => $field:ident),+ $(,)?) => {
+        #[wasm_bindgen]
+        impl $ty {
+            $(
+                $(#[$attr])*
+                pub fn $fn_name(&self) -> Option<String> {
+                    self.inner.meta.as_ref().map(|m| m.$field.to_string())
+                }
+            )+
+        }
+    };
+}
+
+/// Generate a `#[wasm_bindgen] impl` block with methods returning `js_sys::Map`
+/// from palette slot group fields.
+macro_rules! palette_slot_getters {
+    ($ty:ident, $($(#[$attr:meta])* $fn_name:ident => $field:ident),+ $(,)?) => {
+        #[wasm_bindgen]
+        impl $ty {
+            $(
+                $(#[$attr])*
+                pub fn $fn_name(&self) -> js_sys::Map {
+                    slots_to_js_map(self.inner.$field.populated_slots())
+                }
+            )+
+        }
+    };
+}
+
+palette_meta_getters!(JsPalette,
+    name => name,
+    #[wasm_bindgen(js_name = "presetId")]
+    preset_id => preset_id,
+    style => style,
+);
+
+palette_slot_getters!(JsPalette,
+    #[wasm_bindgen(js_name = "baseSlots")]
+    base_slots => base,
+    #[wasm_bindgen(js_name = "semanticSlots")]
+    semantic_slots => semantic,
+    #[wasm_bindgen(js_name = "diffSlots")]
+    diff_slots => diff,
+    #[wasm_bindgen(js_name = "surfaceSlots")]
+    surface_slots => surface,
+    #[wasm_bindgen(js_name = "typographySlots")]
+    typography_slots => typography,
+    #[wasm_bindgen(js_name = "syntaxSlots")]
+    syntax_slots => syntax,
+    #[wasm_bindgen(js_name = "editorSlots")]
+    editor_slots => editor,
+    #[wasm_bindgen(js_name = "terminalAnsiSlots")]
+    terminal_slots => terminal,
+);
+
 #[wasm_bindgen]
 impl JsPalette {
-    pub fn name(&self) -> Option<String> {
-        self.inner.meta.as_ref().map(|m| m.name.to_string())
-    }
-
-    #[wasm_bindgen(js_name = "presetId")]
-    pub fn preset_id(&self) -> Option<String> {
-        self.inner.meta.as_ref().map(|m| m.preset_id.to_string())
-    }
-
-    pub fn style(&self) -> Option<String> {
-        self.inner.meta.as_ref().map(|m| m.style.to_string())
-    }
-
     /// CSS block with `:root` selector, no prefix.
     #[wasm_bindgen(js_name = "toCss")]
     pub fn to_css(&self) -> String {
@@ -146,46 +199,6 @@ impl JsPalette {
     #[wasm_bindgen(js_name = "toJson")]
     pub fn to_json(&self) -> Result<String, JsValue> {
         crate::snapshot::to_json(&self.inner).map_err(to_js_error)
-    }
-
-    #[wasm_bindgen(js_name = "baseSlots")]
-    pub fn base_slots(&self) -> js_sys::Map {
-        slots_to_js_map(self.inner.base.populated_slots())
-    }
-
-    #[wasm_bindgen(js_name = "semanticSlots")]
-    pub fn semantic_slots(&self) -> js_sys::Map {
-        slots_to_js_map(self.inner.semantic.populated_slots())
-    }
-
-    #[wasm_bindgen(js_name = "diffSlots")]
-    pub fn diff_slots(&self) -> js_sys::Map {
-        slots_to_js_map(self.inner.diff.populated_slots())
-    }
-
-    #[wasm_bindgen(js_name = "surfaceSlots")]
-    pub fn surface_slots(&self) -> js_sys::Map {
-        slots_to_js_map(self.inner.surface.populated_slots())
-    }
-
-    #[wasm_bindgen(js_name = "typographySlots")]
-    pub fn typography_slots(&self) -> js_sys::Map {
-        slots_to_js_map(self.inner.typography.populated_slots())
-    }
-
-    #[wasm_bindgen(js_name = "syntaxSlots")]
-    pub fn syntax_slots(&self) -> js_sys::Map {
-        slots_to_js_map(self.inner.syntax.populated_slots())
-    }
-
-    #[wasm_bindgen(js_name = "editorSlots")]
-    pub fn editor_slots(&self) -> js_sys::Map {
-        slots_to_js_map(self.inner.editor.populated_slots())
-    }
-
-    #[wasm_bindgen(js_name = "terminalAnsiSlots")]
-    pub fn terminal_ansi_slots(&self) -> js_sys::Map {
-        slots_to_js_map(self.inner.terminal_ansi.populated_slots())
     }
 
     /// Style modifier slots as a `Map<string, string>` (e.g. `"bold,italic"`).
@@ -204,28 +217,31 @@ impl JsPalette {
     }
 }
 
+fn load_preset_palette(id: &str) -> Result<Palette, JsValue> {
+    crate::registry::load_preset(id).map_err(to_js_error)
+}
+
 #[wasm_bindgen(js_name = "loadPreset")]
 pub fn load_preset(id: &str) -> Result<JsPalette, JsValue> {
-    crate::registry::load_preset(id)
-        .map(|p| JsPalette { inner: p })
-        .map_err(to_js_error)
+    load_preset_palette(id).map(|p| JsPalette { inner: p })
 }
 
 /// Load a built-in preset by ID, returning `undefined` if not found.
 #[wasm_bindgen(js_name = "preset")]
 pub fn preset_js(id: &str) -> Option<JsPalette> {
-    crate::registry::preset(id).map(|p| JsPalette { inner: p })
+    crate::registry::load_preset(id)
+        .ok()
+        .map(|p| JsPalette { inner: p })
 }
 
 #[wasm_bindgen(js_name = "loadPresetCss")]
 pub fn load_preset_css(id: &str) -> Result<String, JsValue> {
-    let palette = crate::registry::load_preset(id).map_err(to_js_error)?;
-    Ok(palette.to_css())
+    load_preset_palette(id).map(|p| p.to_css())
 }
 
 #[wasm_bindgen(js_name = "loadPresetJson")]
 pub fn load_preset_json(id: &str) -> Result<String, JsValue> {
-    let palette = crate::registry::load_preset(id).map_err(to_js_error)?;
+    let palette = load_preset_palette(id)?;
     crate::snapshot::to_json(&palette).map_err(to_js_error)
 }
 
@@ -276,23 +292,30 @@ impl JsThemeInfo {
     }
 }
 
-#[wasm_bindgen]
-impl JsThemeInfo {
-    #[wasm_bindgen(getter)]
-    pub fn id(&self) -> String {
-        self.id.to_string()
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn name(&self) -> String {
-        self.name.to_string()
-    }
-
-    #[wasm_bindgen(getter)]
-    pub fn style(&self) -> String {
-        self.style.to_string()
-    }
+/// Generate a `#[wasm_bindgen] impl` block with getter methods returning `String`
+/// from `Arc<str>` fields.
+macro_rules! arc_str_getters {
+    ($ty:ident, $($(#[$attr:meta])* $fn_name:ident => $field:ident),+ $(,)?) => {
+        #[wasm_bindgen]
+        impl $ty {
+            $(
+                $(#[$attr])*
+                pub fn $fn_name(&self) -> String {
+                    self.$field.to_string()
+                }
+            )+
+        }
+    };
 }
+
+arc_str_getters!(JsThemeInfo,
+    #[wasm_bindgen(getter)]
+    id => id,
+    #[wasm_bindgen(getter)]
+    name => name,
+    #[wasm_bindgen(getter)]
+    style => style,
+);
 
 #[wasm_bindgen]
 pub struct JsRegistry {
@@ -330,7 +353,7 @@ impl JsRegistry {
 
     #[wasm_bindgen(js_name = "addToml")]
     pub fn add_toml(&mut self, toml: &str) -> Result<(), JsValue> {
-        self.inner.add_toml(toml.to_owned()).map_err(to_js_error)
+        self.inner.add_toml(toml).map_err(to_js_error)
     }
 
     #[wasm_bindgen(js_name = "byStyle")]

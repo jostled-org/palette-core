@@ -102,7 +102,7 @@ pub struct ResolvedPalette {
     /// Editor chrome (cursor, selections, diagnostics).
     pub editor: ResolvedEditorColors,
     /// Standard 16-color ANSI terminal palette.
-    pub terminal_ansi: ResolvedTerminalAnsiColors,
+    pub terminal: ResolvedAnsiColors,
     /// Syntax token style modifiers.
     pub syntax_style: ResolvedSyntaxStyles,
 }
@@ -127,6 +127,9 @@ impl Palette {
     /// Slots absent in both `self` and `fallback` resolve to
     /// [`Color::default`] (black). Use [`resolve`](Self::resolve) with the
     /// complete default palette to avoid this.
+    ///
+    /// Each `.merge()` produces a stack-allocated group of `Option<Color>`
+    /// (Copy types) consumed immediately by `from_group`. No heap allocation.
     pub fn resolve_with(&self, fallback: &Palette) -> ResolvedPalette {
         ResolvedPalette {
             meta: self.meta.clone(),
@@ -141,9 +144,7 @@ impl Palette {
                 &self.syntax.merge(&fallback.syntax),
             ),
             editor: ResolvedEditorColors::from_group(&self.editor.merge(&fallback.editor)),
-            terminal_ansi: ResolvedTerminalAnsiColors::from_group(
-                &self.terminal_ansi.merge(&fallback.terminal_ansi),
-            ),
+            terminal: ResolvedAnsiColors::from_group(&self.terminal.merge(&fallback.terminal)),
             syntax_style: ResolvedSyntaxStyles::from_group_with_fallback(
                 &self.syntax_style.merge(&fallback.syntax_style),
             ),
