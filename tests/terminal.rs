@@ -8,7 +8,7 @@ use ratatui::style::Color as RatatuiColor;
 use palette_core::color::Color;
 use palette_core::palette::Palette;
 use palette_core::terminal::{
-    style, to_ratatui_color, to_resolved_terminal_theme, to_terminal_theme,
+    to_ratatui_color, to_resolved_terminal_theme, to_terminal_theme,
 };
 
 mod common;
@@ -129,12 +129,3 @@ fn chromatic_returns_12_non_grayscale_colors() {
     assert!(!colors.contains(&theme.terminal.bright_white));
 }
 
-#[test]
-fn style_builder_sets_fg_and_bg() {
-    let fg = RatatuiColor::Rgb(0xC0, 0xCA, 0xF5);
-    let bg = RatatuiColor::Rgb(0x1A, 0x1B, 0x2A);
-    let s = style(fg, bg);
-
-    assert_eq!(s.fg, Some(fg));
-    assert_eq!(s.bg, Some(bg));
-}
