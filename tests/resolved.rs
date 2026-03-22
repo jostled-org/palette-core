@@ -388,3 +388,64 @@ fn syntax_fallback_all_sub_tokens_resolve_from_parent() {
     assert_eq!(resolved.syntax.constants_char, green);
     assert_eq!(resolved.syntax.attributes_builtin, green);
 }
+
+#[test]
+fn resolved_tokyonight_is_dark() {
+    let palette = load_preset("tokyonight").unwrap();
+    let resolved = palette.resolve();
+    assert!(!resolved.is_light());
+}
+
+#[test]
+fn resolved_github_light_is_light() {
+    let palette = load_preset("github_light").unwrap();
+    let resolved = palette.resolve();
+    assert!(resolved.is_light());
+}
+
+#[test]
+fn resolved_is_light_threshold_boundary() {
+    // Luminance of 0.179 is the WCAG perceptual midpoint.
+    // A color just above the threshold should be light.
+    // RGB (124, 124, 124) has luminance ~0.195 (above 0.179).
+    let above = Color {
+        r: 124,
+        g: 124,
+        b: 124,
+    };
+    assert!(
+        above.relative_luminance() > 0.179,
+        "expected luminance above threshold, got {}",
+        above.relative_luminance()
+    );
+
+    let palette_above = Palette {
+        base: BaseColors {
+            background: Some(above),
+            ..BaseColors::default()
+        },
+        ..Palette::default()
+    };
+    assert!(palette_above.resolve().is_light());
+
+    // RGB (115, 115, 115) has luminance ~0.162 (below 0.179).
+    let below = Color {
+        r: 115,
+        g: 115,
+        b: 115,
+    };
+    assert!(
+        below.relative_luminance() <= 0.179,
+        "expected luminance at or below threshold, got {}",
+        below.relative_luminance()
+    );
+
+    let palette_below = Palette {
+        base: BaseColors {
+            background: Some(below),
+            ..BaseColors::default()
+        },
+        ..Palette::default()
+    };
+    assert!(!palette_below.resolve().is_light());
+}

@@ -210,3 +210,28 @@ fn js_registry_by_style_nonexistent_returns_empty() {
     let reg = JsRegistry::new();
     assert!(reg.by_style("nonexistent").is_empty());
 }
+
+// --- is_light ---
+
+#[test]
+fn js_palette_is_light_matches_resolved() {
+    // Dark preset
+    let dark = load_preset("tokyonight").unwrap();
+    assert!(!dark.is_light());
+
+    // Light preset
+    let light = load_preset("github_light").unwrap();
+    assert!(light.is_light());
+}
+
+#[test]
+fn js_theme_info_is_light() {
+    let reg = JsRegistry::new();
+    let list = reg.list();
+
+    let tokyonight = list.iter().find(|t| t.id() == "tokyonight").unwrap();
+    assert!(!tokyonight.is_light());
+
+    let github_light = list.iter().find(|t| t.id() == "github_light").unwrap();
+    assert!(github_light.is_light());
+}

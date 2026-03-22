@@ -116,25 +116,50 @@ pub(crate) use syntax_fields;
 /// Each `child => parent` pair means: when `child` is absent, inherit
 /// from `parent` before defaulting. Used by both `ResolvedSyntaxColors`
 /// and `ResolvedSyntaxStyles`.
-macro_rules! syntax_fallback {
-    ($mac:ident) => {
-        $mac! {
-            keywords_control => keywords,
-            keywords_import => keywords,
-            keywords_operator => keywords,
-            functions_builtin => functions,
-            functions_method => functions,
-            functions_macro => functions,
-            constants_char => constants,
-            punctuation_special => punctuation,
-            attributes_builtin => attributes,
-            modules => types,
-            labels => variables,
-            comments_doc => comments,
-        }
+macro_rules! resolve_syntax_fallback {
+    ($resolved:ident, $group:ident) => {
+        $resolved.keywords_control = $group
+            .keywords_control
+            .or($group.keywords)
+            .unwrap_or_default();
+        $resolved.keywords_import = $group
+            .keywords_import
+            .or($group.keywords)
+            .unwrap_or_default();
+        $resolved.keywords_operator = $group
+            .keywords_operator
+            .or($group.keywords)
+            .unwrap_or_default();
+        $resolved.functions_builtin = $group
+            .functions_builtin
+            .or($group.functions)
+            .unwrap_or_default();
+        $resolved.functions_method = $group
+            .functions_method
+            .or($group.functions)
+            .unwrap_or_default();
+        $resolved.functions_macro = $group
+            .functions_macro
+            .or($group.functions)
+            .unwrap_or_default();
+        $resolved.constants_char = $group
+            .constants_char
+            .or($group.constants)
+            .unwrap_or_default();
+        $resolved.punctuation_special = $group
+            .punctuation_special
+            .or($group.punctuation)
+            .unwrap_or_default();
+        $resolved.attributes_builtin = $group
+            .attributes_builtin
+            .or($group.attributes)
+            .unwrap_or_default();
+        $resolved.modules = $group.modules.or($group.types).unwrap_or_default();
+        $resolved.labels = $group.labels.or($group.variables).unwrap_or_default();
+        $resolved.comments_doc = $group.comments_doc.or($group.comments).unwrap_or_default();
     };
 }
-pub(crate) use syntax_fallback;
+pub(crate) use resolve_syntax_fallback;
 
 /// Single source of truth for color group field lists.
 ///

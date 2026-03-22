@@ -398,6 +398,74 @@ fn registry_builtin_metadata_matches_expected() {
             id: Arc::from("tokyonight"),
             name: Arc::from("TokyoNight (Night)"),
             style: Arc::from("night"),
+            is_light: false,
         }
+    );
+}
+
+// ---------------------------------------------------------------------------
+// ThemeInfo.is_light tests (Step 2)
+// ---------------------------------------------------------------------------
+
+#[test]
+fn theme_info_is_light_matches_resolved_for_all_presets() {
+    let reg = Registry::new();
+    for id in preset_ids() {
+        let palette = load_preset(id).unwrap();
+        let resolved_is_light = palette.resolve().is_light();
+        let info = reg.list().find(|t| t.id.as_ref() == *id).unwrap();
+        assert_eq!(
+            info.is_light, resolved_is_light,
+            "preset {id}: ThemeInfo.is_light ({}) != ResolvedPalette::is_light() ({})",
+            info.is_light, resolved_is_light
+        );
+    }
+}
+
+#[test]
+fn theme_info_golden_hour_dusk_is_dark() {
+    let reg = Registry::new();
+    let info = reg
+        .list()
+        .find(|t| t.id.as_ref() == "golden_hour_dusk")
+        .unwrap();
+    assert!(!info.is_light, "golden_hour_dusk should be dark");
+}
+
+#[test]
+fn theme_info_github_light_is_light() {
+    let reg = Registry::new();
+    let info = reg
+        .list()
+        .find(|t| t.id.as_ref() == "github_light")
+        .unwrap();
+    assert!(info.is_light, "github_light should be light");
+}
+
+#[test]
+fn theme_info_custom_theme_is_light_computed() {
+    let light_toml = r##"
+[meta]
+name = "Bright Custom"
+preset_id = "bright_custom"
+schema_version = "1"
+style = "light"
+kind = "preset-base"
+
+[base]
+background = "#f6f8fa"
+foreground = "#24292e"
+"##;
+
+    let mut reg = Registry::new();
+    reg.add_toml(light_toml).unwrap();
+
+    let info = reg
+        .list()
+        .find(|t| t.id.as_ref() == "bright_custom")
+        .unwrap();
+    assert!(
+        info.is_light,
+        "custom theme with light background should be light"
     );
 }

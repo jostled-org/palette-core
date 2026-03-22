@@ -3,8 +3,9 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::sync::Arc;
 
+use crate::color::Color;
 use crate::error::PaletteError;
-use crate::manifest::PaletteManifest;
+use crate::manifest::{ManifestSection, PaletteManifest};
 use crate::merge::merge_manifests;
 use crate::palette::Palette;
 
@@ -17,6 +18,8 @@ pub struct ThemeInfo {
     pub name: Arc<str>,
     /// Visual style tag: `"dark"`, `"light"`, etc.
     pub style: Arc<str>,
+    /// `true` if the resolved background is perceptually light (luminance > 0.179).
+    pub is_light: bool,
 }
 
 struct BuiltinInfo {
@@ -98,20 +101,6 @@ where
 {
     let manifest = PaletteManifest::from_toml(toml_str)?;
     resolve_manifest_impl(&manifest, resolve_parent)
-}
-
-/// Resolve a pre-parsed manifest into a [`Palette`], applying single-level
-/// inheritance if the manifest declares `inherits`.
-///
-/// Only one level of inheritance is supported.
-fn resolve_manifest_with_inheritance<F>(
-    manifest: &PaletteManifest,
-    resolve_parent: F,
-) -> Result<Palette, PaletteError>
-where
-    F: FnOnce(&str) -> Result<PaletteManifest, PaletteError>,
-{
-    resolve_manifest_impl(manifest, resolve_parent)
 }
 
 /// Shared body: check inheritance, merge if needed, build palette.
@@ -222,13 +211,17 @@ impl Registry {
     pub fn new() -> Self {
         let entries: Vec<Entry> = builtin_info()
             .iter()
-            .map(|b| Entry {
-                info: ThemeInfo {
-                    id: Arc::from(b.id),
-                    name: Arc::from(b.name),
-                    style: Arc::from(b.style),
-                },
-                source: Source::Builtin,
+            .map(|b| {
+                let is_light = is_light_from_preset(b.id);
+                Entry {
+                    info: ThemeInfo {
+                        id: Arc::from(b.id),
+                        name: Arc::from(b.name),
+                        style: Arc::from(b.style),
+                        is_light,
+                    },
+                    source: Source::Builtin,
+                }
             })
             .collect();
         let index = entries
@@ -264,9 +257,9 @@ impl Registry {
                     preset_toml(id).ok_or_else(|| PaletteError::UnknownPreset(Arc::from(id)))?;
                 resolve_with_inheritance(toml_str, |parent_id| self.resolve_manifest(parent_id))?
             }
-            Source::Custom(manifest) => resolve_manifest_with_inheritance(manifest, |parent_id| {
-                self.resolve_manifest(parent_id)
-            })?,
+            Source::Custom(manifest) => {
+                resolve_manifest_impl(manifest, |parent_id| self.resolve_manifest(parent_id))?
+            }
         };
         self.cache
             .borrow_mut()
@@ -366,9 +359,38 @@ impl Registry {
 
 fn theme_info_from_manifest(manifest: &PaletteManifest) -> Result<ThemeInfo, PaletteError> {
     let meta = manifest.meta.as_ref().ok_or(PaletteError::MissingMeta)?;
+    let is_light = is_light_from_section(&manifest.base)?;
     Ok(ThemeInfo {
         id: Arc::clone(&meta.preset_id),
         name: Arc::clone(&meta.name),
         style: Arc::clone(&meta.style),
+        is_light,
     })
+}
+
+/// Compute `is_light` for a built-in preset from its embedded TOML.
+fn is_light_from_preset(id: &str) -> bool {
+    preset_toml(id)
+        .and_then(|toml| {
+            let manifest = PaletteManifest::from_toml(toml).ok()?;
+            is_light_from_section(&manifest.base).ok()
+        })
+        .unwrap_or(false)
+}
+
+/// Check background luminance directly from a manifest base section.
+///
+/// Avoids building a full Palette + ResolvedPalette just to read one field.
+/// Falls back to the default palette's background when the section has no
+/// `background` key. Returns an error when a hex value is present but malformed.
+fn is_light_from_section(base: &ManifestSection) -> Result<bool, PaletteError> {
+    let bg = match base.get("background") {
+        Some(hex) => Color::from_hex(hex).map_err(|_| PaletteError::InvalidHex {
+            section: Arc::from("base"),
+            field: Arc::from("background"),
+            value: Arc::clone(hex),
+        })?,
+        None => Palette::default().base.background.unwrap_or_default(),
+    };
+    Ok(bg.relative_luminance() > 0.179)
 }

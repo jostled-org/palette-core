@@ -69,12 +69,7 @@ impl ResolvedSyntaxColors {
     /// is: `self.slot → self.parent → Color::default()`.
     pub fn from_group_with_fallback(group: &crate::palette::SyntaxColors) -> Self {
         let mut resolved = Self::from_group(group);
-        macro_rules! apply_fallback {
-            ($($child:ident => $parent:ident),+ $(,)?) => {
-                $(resolved.$child = group.$child.or(group.$parent).unwrap_or_default();)+
-            };
-        }
-        crate::palette::syntax_fallback!(apply_fallback);
+        crate::palette::resolve_syntax_fallback!(resolved, group);
         resolved
     }
 }
@@ -105,6 +100,15 @@ pub struct ResolvedPalette {
     pub terminal: ResolvedAnsiColors,
     /// Syntax token style modifiers.
     pub syntax_style: ResolvedSyntaxStyles,
+}
+
+impl ResolvedPalette {
+    /// Returns `true` if the background color is perceptually light.
+    ///
+    /// Uses the WCAG relative luminance midpoint (0.179) as the threshold.
+    pub fn is_light(&self) -> bool {
+        self.base.background.relative_luminance() > 0.179
+    }
 }
 
 impl Palette {

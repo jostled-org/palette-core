@@ -138,7 +138,7 @@ macro_rules! for_each_static_pair {
 ///
 /// Returns an empty slice when every tested pair meets the given level.
 pub fn validate_palette(palette: &Palette, level: ContrastLevel) -> Box<[ContrastViolation]> {
-    let mut violations = Vec::new();
+    let mut violations = Vec::with_capacity(16);
     let mut push = |v: Option<ContrastViolation>| {
         if let Some(v) = v {
             violations.push(v);
@@ -244,6 +244,9 @@ fn nudge_direction(fg: Color, bg_lum: f64, threshold: f64, lighten: bool) -> Opt
     // Binary search for the minimal lightness shift that meets the threshold.
     // HSL h/s and bg luminance are invariant across iterations.
     for _ in 0..20 {
+        if hi - lo < 1e-4 {
+            break;
+        }
         let mid = (lo + hi) / 2.0;
         let shifted_l = match lighten {
             true => (base_hsl.l + mid).clamp(0.0, 1.0),

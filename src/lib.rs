@@ -83,4 +83,5 @@ pub mod snapshot;
 pub mod egui;
 
 #[cfg(feature = "wasm")]
+/// JavaScript bindings via `wasm-bindgen`.
 pub mod wasm;

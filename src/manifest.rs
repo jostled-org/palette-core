@@ -142,11 +142,30 @@ mod known_fields {
     crate::palette::color_fields!(emit);
 }
 
+struct SortedFields {
+    base: Box<[&'static str]>,
+    semantic: Box<[&'static str]>,
+    diff: Box<[&'static str]>,
+    surface: Box<[&'static str]>,
+    typography: Box<[&'static str]>,
+    syntax: Box<[&'static str]>,
+    editor: Box<[&'static str]>,
+    terminal: Box<[&'static str]>,
+}
+
+fn sort_fields(fields: &[&'static str]) -> Box<[&'static str]> {
+    let mut sorted = fields.to_vec();
+    sorted.sort_unstable();
+    sorted.into_boxed_slice()
+}
+
 /// Check every section key against the known field set.
 ///
 /// This is opt-in validation for theme lint tooling -- not called during
 /// normal [`PaletteManifest::from_manifest`](crate::Palette::from_manifest).
 pub fn validate_fields(manifest: &PaletteManifest) -> Box<[UnknownField]> {
+    use std::sync::LazyLock;
+
     fn check_section(
         unknowns: &mut Vec<UnknownField>,
         section_name: &str,
@@ -164,46 +183,43 @@ pub fn validate_fields(manifest: &PaletteManifest) -> Box<[UnknownField]> {
         }
     }
 
-    fn sort_fields<'a>(fields: &'a [&'a str]) -> Box<[&'a str]> {
-        let mut sorted = fields.to_vec();
-        sorted.sort_unstable();
-        sorted.into_boxed_slice()
-    }
+    // Sort each known-field slice once per process.
+    static SORTED: LazyLock<SortedFields> = LazyLock::new(|| SortedFields {
+        base: sort_fields(known_fields::BASE),
+        semantic: sort_fields(known_fields::SEMANTIC),
+        diff: sort_fields(known_fields::DIFF),
+        surface: sort_fields(known_fields::SURFACE),
+        typography: sort_fields(known_fields::TYPOGRAPHY),
+        syntax: sort_fields(known_fields::SYNTAX),
+        editor: sort_fields(known_fields::EDITOR),
+        terminal: sort_fields(known_fields::TERMINAL),
+    });
 
-    // Sort each known-field slice once up front.
-    let base = sort_fields(known_fields::BASE);
-    let semantic = sort_fields(known_fields::SEMANTIC);
-    let diff = sort_fields(known_fields::DIFF);
-    let surface = sort_fields(known_fields::SURFACE);
-    let typography = sort_fields(known_fields::TYPOGRAPHY);
-    let syntax = sort_fields(known_fields::SYNTAX);
-    let editor = sort_fields(known_fields::EDITOR);
-    let terminal = sort_fields(known_fields::TERMINAL);
-
+    let s = &*SORTED;
     let mut unknowns = Vec::new();
 
     // Section-to-manifest mapping is manual; field lists come from
     // color_fields! via the known_fields module (single source of truth).
-    check_section(&mut unknowns, "base", &manifest.base, &base);
-    check_section(&mut unknowns, "semantic", &manifest.semantic, &semantic);
-    check_section(&mut unknowns, "diff", &manifest.diff, &diff);
-    check_section(&mut unknowns, "surface", &manifest.surface, &surface);
+    check_section(&mut unknowns, "base", &manifest.base, &s.base);
+    check_section(&mut unknowns, "semantic", &manifest.semantic, &s.semantic);
+    check_section(&mut unknowns, "diff", &manifest.diff, &s.diff);
+    check_section(&mut unknowns, "surface", &manifest.surface, &s.surface);
     check_section(
         &mut unknowns,
         "typography",
         &manifest.typography,
-        &typography,
+        &s.typography,
     );
-    check_section(&mut unknowns, "editor", &manifest.editor, &editor);
-    check_section(&mut unknowns, "terminal", &manifest.terminal, &terminal);
+    check_section(&mut unknowns, "editor", &manifest.editor, &s.editor);
+    check_section(&mut unknowns, "terminal", &manifest.terminal, &s.terminal);
 
     // Syntax and syntax_style sections share the same valid field names.
-    check_section(&mut unknowns, "syntax", &manifest.syntax, &syntax);
+    check_section(&mut unknowns, "syntax", &manifest.syntax, &s.syntax);
     check_section(
         &mut unknowns,
         "syntax_style",
         &manifest.syntax_style,
-        &syntax,
+        &s.syntax,
     );
 
     unknowns.into_boxed_slice()

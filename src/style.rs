@@ -184,12 +184,7 @@ impl ResolvedSyntaxStyles {
     /// [`ResolvedSyntaxColors::from_group_with_fallback`](crate::resolved::ResolvedSyntaxColors::from_group_with_fallback).
     pub fn from_group_with_fallback(group: &SyntaxStyles) -> Self {
         let mut resolved = Self::from_group(group);
-        macro_rules! apply_fallback {
-            ($($child:ident => $parent:ident),+ $(,)?) => {
-                $(resolved.$child = group.$child.or(group.$parent).unwrap_or_default();)+
-            };
-        }
-        crate::palette::syntax_fallback!(apply_fallback);
+        crate::palette::resolve_syntax_fallback!(resolved, group);
         resolved
     }
 }
