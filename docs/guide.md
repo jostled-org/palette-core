@@ -170,6 +170,35 @@ for (i, panel) in panels.iter().enumerate() {
 }
 ```
 
+#### Theme picker
+
+Feed `Registry::list()` into a ratatui `List` for a theme selection UI:
+
+```rust
+use ratatui::widgets::{List, ListItem};
+use palette_core::Registry;
+
+let reg = Registry::new();
+let items: Vec<ListItem> = reg
+    .list()
+    .map(|t| ListItem::new(format!("{} ({})", t.name, t.style)))
+    .collect();
+let list = List::new(items).highlight_symbol("▶ ");
+```
+
+Group by light/dark using `is_light`:
+
+```rust
+let (light, dark): (Vec<_>, Vec<_>) = reg.list().partition(|t| t.is_light);
+```
+
+When the user selects a theme, load it by ID:
+
+```rust
+let palette = reg.load(&selected_id)?;
+let theme = to_terminal_theme(&palette);
+```
+
 ### egui
 
 Requires the `egui` feature.
