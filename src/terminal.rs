@@ -12,22 +12,27 @@ pub fn to_ratatui_color(color: &Color) -> RatatuiColor {
     RatatuiColor::Rgb(color.r, color.g, color.b)
 }
 
-macro_rules! terminal_group {
-    ($(#[$_meta:meta])* $color_type:ident { $($field:ident),+ $(,)? }) => {
+macro_rules! terminal_group_impl {
+    (
+        $prefix:ident, $doc_prefix:literal, $method:ident, $ftype:ty,
+        $convert:expr,
+        $(#[$_meta:meta])* $color_type:ident { $($field:ident),+ $(,)? },
+        $source_type:ty
+    ) => {
         pastey::paste! {
-            #[doc = concat!("Ratatui-native version of [`", stringify!($color_type), "`](crate::palette::", stringify!($color_type), ").")]
+            #[doc = concat!($doc_prefix, " version of [`", stringify!($color_type), "`](crate::palette::", stringify!($color_type), ").")]
             #[derive(Debug, Clone)]
-            pub struct [<Terminal $color_type>] {
+            pub struct [<$prefix $color_type>] {
                 $(
                     #[doc = concat!("`", stringify!($field), "` slot.")]
-                    pub $field: Option<RatatuiColor>,
+                    pub $field: $ftype,
                 )+
             }
 
-            impl [<Terminal $color_type>] {
-                fn from_palette(group: &crate::palette::$color_type) -> Self {
+            impl [<$prefix $color_type>] {
+                fn $method(group: &$source_type) -> Self {
                     Self {
-                        $($field: group.$field.map(|c| to_ratatui_color(&c)),)+
+                        $($field: ($convert)(&group.$field),)+
                     }
                 }
             }
@@ -35,25 +40,28 @@ macro_rules! terminal_group {
     };
 }
 
-macro_rules! resolved_terminal_group {
-    ($(#[$_meta:meta])* $color_type:ident { $($field:ident),+ $(,)? }) => {
+macro_rules! terminal_group {
+    ($(#[$meta:meta])* $color_type:ident { $($field:ident),+ $(,)? }) => {
         pastey::paste! {
-            #[doc = concat!("Resolved ratatui-native version of [`", stringify!($color_type), "`](crate::palette::", stringify!($color_type), ").")]
-            #[derive(Debug, Clone)]
-            pub struct [<ResolvedTerminal $color_type>] {
-                $(
-                    #[doc = concat!("`", stringify!($field), "` slot.")]
-                    pub $field: RatatuiColor,
-                )+
-            }
+            terminal_group_impl!(
+                Terminal, "Ratatui-native", from_palette, Option<RatatuiColor>,
+                |c: &Option<Color>| c.map(|c| to_ratatui_color(&c)),
+                $(#[$meta])* $color_type { $($field),+ },
+                crate::palette::$color_type
+            );
+        }
+    };
+}
 
-            impl [<ResolvedTerminal $color_type>] {
-                fn from_resolved(group: &crate::resolved::[<Resolved $color_type>]) -> Self {
-                    Self {
-                        $($field: to_ratatui_color(&group.$field),)+
-                    }
-                }
-            }
+macro_rules! resolved_terminal_group {
+    ($(#[$meta:meta])* $color_type:ident { $($field:ident),+ $(,)? }) => {
+        pastey::paste! {
+            terminal_group_impl!(
+                ResolvedTerminal, "Resolved ratatui-native", from_resolved, RatatuiColor,
+                |c: &Color| to_ratatui_color(c),
+                $(#[$meta])* $color_type { $($field),+ },
+                crate::resolved::[<Resolved $color_type>]
+            );
         }
     };
 }

@@ -59,8 +59,6 @@ let resolved = palette.resolve_with(&custom_fallback);
 
 ## Theme classification
 
-`ResolvedPalette::is_light()` reports whether a theme's background is perceptually light, using the WCAG relative luminance midpoint (0.179) as the threshold.
-
 ```rust
 use palette_core::load_preset;
 
@@ -72,29 +70,25 @@ let dark = load_preset("tokyonight").unwrap().resolve();
 assert!(!dark.is_light());
 ```
 
-`ThemeInfo.is_light` provides the same classification without loading the full palette — useful for populating theme pickers with light/dark grouping:
+`is_light()` checks background luminance against the WCAG midpoint (0.179).
+
+For theme pickers, `ThemeInfo.is_light` gives the same answer without loading the full palette:
 
 ```rust
 use palette_core::Registry;
 
 let reg = Registry::new();
 let (light, dark): (Vec<_>, Vec<_>) = reg.list().iter().partition(|t| t.is_light);
-
-println!("Light themes: {}", light.len());
-println!("Dark themes: {}", dark.len());
 ```
 
-In WASM, both `JsPalette` and `JsThemeInfo` expose `isLight()`:
+WASM:
 
 ```js
-import { preset, JsRegistry } from "palette-core";
-
 const palette = preset("github_light");
-console.log(palette.isLight()); // true
+palette.isLight(); // true
 
 const reg = new JsRegistry();
-const themes = reg.list();
-const darkThemes = themes.filter(t => !t.isLight());
+const darkThemes = reg.list().filter(t => !t.isLight());
 ```
 
 ## Style modifiers
