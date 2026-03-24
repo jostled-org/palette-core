@@ -38,19 +38,16 @@ fn slots_to_js_map<'a>(slots: impl Iterator<Item = (&'static str, &'a Color)>) -
     map
 }
 
-/// A color exposed to JavaScript as an opaque wrapper around [`Color`].
 #[wasm_bindgen]
 pub struct JsColor {
     inner: Color,
 }
 
 impl JsColor {
-    /// Wrap a [`Color`] for use across the WASM boundary.
     pub fn from_color(color: Color) -> Self {
         Self { inner: color }
     }
 
-    /// Borrow the inner [`Color`].
     pub fn as_color(&self) -> &Color {
         &self.inner
     }
@@ -58,7 +55,6 @@ impl JsColor {
 
 #[wasm_bindgen]
 impl JsColor {
-    /// Parse a `#RRGGBB` hex string into a color.
     #[wasm_bindgen(js_name = "fromHex")]
     pub fn from_hex(hex: &str) -> Result<JsColor, JsValue> {
         Color::from_hex(hex)
@@ -66,59 +62,50 @@ impl JsColor {
             .map_err(to_js_error)
     }
 
-    /// Format as a `#RRGGBB` hex string.
     #[wasm_bindgen(js_name = "toHex")]
     pub fn to_hex(&self) -> String {
         String::from(self.inner.to_hex())
     }
 
-    /// Red channel (0–255).
     #[wasm_bindgen(getter)]
     pub fn r(&self) -> u8 {
         self.inner.r
     }
 
-    /// Green channel (0–255).
     #[wasm_bindgen(getter)]
     pub fn g(&self) -> u8 {
         self.inner.g
     }
 
-    /// Blue channel (0–255).
     #[wasm_bindgen(getter)]
     pub fn b(&self) -> u8 {
         self.inner.b
     }
 
-    /// Lighten by `amount` (0.0–1.0).
     pub fn lighten(&self, amount: f64) -> JsColor {
         Self {
             inner: self.inner.lighten(amount),
         }
     }
 
-    /// Darken by `amount` (0.0–1.0).
     pub fn darken(&self, amount: f64) -> JsColor {
         Self {
             inner: self.inner.darken(amount),
         }
     }
 
-    /// Increase saturation by `amount` (0.0–1.0).
     pub fn saturate(&self, amount: f64) -> JsColor {
         Self {
             inner: self.inner.saturate(amount),
         }
     }
 
-    /// Decrease saturation by `amount` (0.0–1.0).
     pub fn desaturate(&self, amount: f64) -> JsColor {
         Self {
             inner: self.inner.desaturate(amount),
         }
     }
 
-    /// Rotate hue by `degrees`.
     #[wasm_bindgen(js_name = "rotateHue")]
     pub fn rotate_hue(&self, degrees: f64) -> JsColor {
         Self {
@@ -126,14 +113,12 @@ impl JsColor {
         }
     }
 
-    /// WCAG 2.1 relative luminance in `[0.0, 1.0]`.
     #[wasm_bindgen(js_name = "relativeLuminance")]
     pub fn relative_luminance(&self) -> f64 {
         self.inner.relative_luminance()
     }
 }
 
-/// A loaded palette exposed to JavaScript.
 #[wasm_bindgen]
 pub struct JsPalette {
     inner: Palette,
@@ -146,7 +131,6 @@ macro_rules! palette_meta_getters {
         #[wasm_bindgen]
         impl $ty {
             $(
-                #[doc = concat!("Palette meta `", stringify!($field), "` field, if present.")]
                 $(#[$attr])*
                 pub fn $fn_name(&self) -> Option<String> {
                     self.inner.meta.as_ref().map(|m| m.$field.to_string())
@@ -163,7 +147,6 @@ macro_rules! palette_slot_getters {
         #[wasm_bindgen]
         impl $ty {
             $(
-                #[doc = concat!("Color slots in the `", stringify!($field), "` group as a `Map<string, JsColor>`.")]
                 $(#[$attr])*
                 pub fn $fn_name(&self) -> js_sys::Map {
                     slots_to_js_map(self.inner.$field.populated_slots())
@@ -213,7 +196,6 @@ impl JsPalette {
         self.inner.to_css_scoped(selector, prefix.as_deref())
     }
 
-    /// Serialize to a pretty-printed JSON string.
     #[wasm_bindgen(js_name = "toJson")]
     pub fn to_json(&self) -> Result<String, JsValue> {
         self.inner.to_json().map_err(to_js_error)
@@ -246,7 +228,6 @@ fn load_preset_palette(id: &str) -> Result<Palette, JsValue> {
     crate::registry::load_preset(id).map_err(to_js_error)
 }
 
-/// Load a built-in preset by ID, returning the full palette.
 #[wasm_bindgen(js_name = "loadPreset")]
 pub fn load_preset(id: &str) -> Result<JsPalette, JsValue> {
     load_preset_palette(id).map(|p| JsPalette { inner: p })
@@ -258,20 +239,17 @@ pub fn preset_js(id: &str) -> Option<JsPalette> {
     load_preset_palette(id).ok().map(|p| JsPalette { inner: p })
 }
 
-/// Load a built-in preset and return its CSS custom properties.
 #[wasm_bindgen(js_name = "loadPresetCss")]
 pub fn load_preset_css(id: &str) -> Result<String, JsValue> {
     load_preset_palette(id).map(|p| p.to_css())
 }
 
-/// Load a built-in preset and return its JSON representation.
 #[wasm_bindgen(js_name = "loadPresetJson")]
 pub fn load_preset_json(id: &str) -> Result<String, JsValue> {
     let palette = load_preset_palette(id)?;
     palette.to_json().map_err(to_js_error)
 }
 
-/// All built-in preset IDs.
 #[wasm_bindgen(js_name = "presetIds")]
 pub fn preset_ids_js() -> Vec<String> {
     crate::registry::preset_ids()
@@ -280,20 +258,17 @@ pub fn preset_ids_js() -> Vec<String> {
         .collect()
 }
 
-/// WCAG 2.1 contrast ratio between two colors.
 #[wasm_bindgen(js_name = "contrastRatio")]
 pub fn contrast_ratio_js(a: &JsColor, b: &JsColor) -> f64 {
     crate::contrast::contrast_ratio(&a.inner, &b.inner)
 }
 
-/// Check whether a foreground/background pair meets a WCAG contrast level.
 #[wasm_bindgen(js_name = "meetsContrastLevel")]
 pub fn meets_contrast_level_js(fg: &JsColor, bg: &JsColor, level: &str) -> Result<bool, JsValue> {
     let parsed = parse_contrast_level(level)?;
     Ok(crate::contrast::meets_level(&fg.inner, &bg.inner, parsed))
 }
 
-/// Alpha-composite `fg` over `bg`.
 #[wasm_bindgen(js_name = "blend")]
 pub fn blend_js(fg: &JsColor, bg: &JsColor, alpha: f64) -> JsColor {
     JsColor {
@@ -305,7 +280,6 @@ pub fn blend_js(fg: &JsColor, bg: &JsColor, alpha: f64) -> JsColor {
 // Registry wrappers
 // ---------------------------------------------------------------------------
 
-/// Theme metadata exposed to JavaScript.
 #[wasm_bindgen]
 pub struct JsThemeInfo {
     id: Arc<str>,
@@ -332,7 +306,6 @@ macro_rules! arc_str_getters {
         #[wasm_bindgen]
         impl $ty {
             $(
-                #[doc = concat!("The `", stringify!($field), "` field.")]
                 $(#[$attr])*
                 pub fn $fn_name(&self) -> String {
                     self.$field.to_string()
@@ -360,7 +333,6 @@ impl JsThemeInfo {
     }
 }
 
-/// Theme registry exposed to JavaScript.
 #[wasm_bindgen]
 pub struct JsRegistry {
     inner: Registry,
@@ -374,7 +346,6 @@ impl Default for JsRegistry {
 
 #[wasm_bindgen]
 impl JsRegistry {
-    /// Create a registry pre-populated with all built-in presets.
     #[wasm_bindgen(constructor)]
     pub fn new() -> Self {
         Self {
@@ -382,7 +353,6 @@ impl JsRegistry {
         }
     }
 
-    /// All registered themes.
     pub fn list(&self) -> Vec<JsThemeInfo> {
         self.inner
             .list()
@@ -390,7 +360,6 @@ impl JsRegistry {
             .collect()
     }
 
-    /// Load a theme by ID, resolving inheritance.
     pub fn load(&self, id: &str) -> Result<JsPalette, JsValue> {
         self.inner
             .load(id)
@@ -398,13 +367,11 @@ impl JsRegistry {
             .map_err(to_js_error)
     }
 
-    /// Register a custom theme from a TOML string.
     #[wasm_bindgen(js_name = "addToml")]
     pub fn add_toml(&mut self, toml: &str) -> Result<(), JsValue> {
         self.inner.add_toml(toml).map_err(to_js_error)
     }
 
-    /// Filter themes by style tag (e.g. `"dark"`, `"light"`).
     #[wasm_bindgen(js_name = "byStyle")]
     pub fn by_style(&self, style: &str) -> Vec<JsThemeInfo> {
         self.inner
