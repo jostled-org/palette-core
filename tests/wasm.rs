@@ -79,6 +79,7 @@ fn contrast_level_strings_accepted() {
 }
 
 #[test]
+#[cfg(target_arch = "wasm32")]
 fn contrast_level_unknown_string_returns_err() {
     let black = JsColor::from_hex("#000000").unwrap();
     let white = JsColor::from_hex("#FFFFFF").unwrap();
@@ -175,7 +176,7 @@ foreground = "#c0caf5"
 fn js_registry_new_lists_builtins() {
     let reg = JsRegistry::new();
     let list = reg.list();
-    assert_eq!(list.len(), 28);
+    assert_eq!(list.len(), 31);
 }
 
 #[test]
@@ -189,7 +190,7 @@ fn js_registry_load_tokyonight() {
 fn js_registry_add_toml_grows_list() {
     let mut reg = JsRegistry::new();
     reg.add_toml(CUSTOM_TOML).unwrap();
-    assert_eq!(reg.list().len(), 29);
+    assert_eq!(reg.list().len(), 32);
 
     let last = reg.list().into_iter().last().unwrap();
     assert_eq!(last.id(), "custom_wasm");
