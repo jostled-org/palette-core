@@ -4,6 +4,7 @@ use wasm_bindgen::prelude::*;
 
 use crate::color::Color;
 use crate::contrast::ContrastLevel;
+use crate::gradient::Gradient;
 use crate::palette::Palette;
 use crate::registry::{Registry, ThemeInfo};
 
@@ -119,6 +120,42 @@ impl JsColor {
     }
 }
 
+// ---------------------------------------------------------------------------
+// Gradient bindings
+// ---------------------------------------------------------------------------
+
+#[wasm_bindgen]
+pub struct JsGradient {
+    inner: Gradient,
+}
+
+#[wasm_bindgen]
+impl JsGradient {
+    /// Interpolate the gradient at position `t` (clamped to \[0, 1\]).
+    pub fn at(&self, t: f64) -> String {
+        String::from(self.inner.at(t).to_hex())
+    }
+
+    /// Sample `n` evenly spaced colors as hex strings.
+    pub fn sample(&self, n: usize) -> Vec<String> {
+        self.inner
+            .sample(n)
+            .iter()
+            .map(|c| String::from(c.to_hex()))
+            .collect()
+    }
+
+    /// Emit a CSS `linear-gradient()` expression.
+    #[wasm_bindgen(js_name = "toCss")]
+    pub fn to_css(&self) -> String {
+        String::from(self.inner.to_css())
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Palette bindings
+// ---------------------------------------------------------------------------
+
 #[wasm_bindgen]
 pub struct JsPalette {
     inner: Palette,
@@ -206,6 +243,24 @@ impl JsPalette {
     pub fn is_light(&self) -> bool {
         let bg = self.inner.base.background.unwrap_or_default();
         bg.is_light()
+    }
+
+    /// Look up a named gradient. Returns `None` if no gradient with that name exists.
+    pub fn gradient(&self, name: &str) -> Option<JsGradient> {
+        let resolved = self.inner.resolve();
+        resolved
+            .gradient(name)
+            .map(|g| JsGradient { inner: g.clone() })
+    }
+
+    /// List all gradient names defined in this palette.
+    #[wasm_bindgen(js_name = "gradientNames")]
+    pub fn gradient_names(&self) -> Vec<String> {
+        self.inner
+            .gradients
+            .iter()
+            .map(|(k, _)| k.to_string())
+            .collect()
     }
 
     /// Style modifier slots as a `Map<string, string>` (e.g. `"bold,italic"`).

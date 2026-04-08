@@ -1,4 +1,7 @@
+use std::sync::Arc;
+
 use palette_core::color::Color;
+use palette_core::manifest::PaletteManifest;
 use palette_core::palette::{
     AnsiColors, BaseColors, DiffColors, EditorColors, Palette, SemanticColors, SurfaceColors,
     SyntaxColors, TypographyColors,
@@ -67,6 +70,7 @@ fn sparse_palette_fills_gaps_from_default() {
         editor: EditorColors::default(),
         terminal: AnsiColors::default(),
         syntax_style: SyntaxStyles::default(),
+        gradients: Arc::from([]),
         #[cfg(feature = "platform")]
         platform: Default::default(),
     };
@@ -130,6 +134,7 @@ fn resolve_with_custom_fallback_precedence() {
         editor: EditorColors::default(),
         terminal: AnsiColors::default(),
         syntax_style: SyntaxStyles::default(),
+        gradients: Arc::from([]),
         #[cfg(feature = "platform")]
         platform: Default::default(),
     };
@@ -149,6 +154,7 @@ fn resolve_with_custom_fallback_precedence() {
         editor: EditorColors::default(),
         terminal: AnsiColors::default(),
         syntax_style: SyntaxStyles::default(),
+        gradients: Arc::from([]),
         #[cfg(feature = "platform")]
         platform: Default::default(),
     };
@@ -448,4 +454,70 @@ fn resolved_is_light_threshold_boundary() {
         ..Palette::default()
     };
     assert!(!palette_below.resolve().is_light());
+}
+
+// 4.T1: gradient_with_token_references_resolves
+#[test]
+fn gradient_with_token_references_resolves() {
+    let toml = r##"
+[base]
+background = "#000000"
+foreground = "#FFFFFF"
+
+[gradient.brand]
+stops = ["base.background", "base.foreground"]
+"##;
+    let manifest = PaletteManifest::from_toml(toml).unwrap();
+    let palette = Palette::from_manifest(&manifest).unwrap();
+    let resolved = palette.resolve();
+    let gradient = resolved
+        .gradient("brand")
+        .expect("gradient 'brand' should exist");
+    let stops = gradient.stops();
+    assert_eq!(stops[0].color, Color { r: 0, g: 0, b: 0 });
+    assert_eq!(
+        stops[stops.len() - 1].color,
+        Color {
+            r: 255,
+            g: 255,
+            b: 255,
+        }
+    );
+}
+
+// 4.T2: resolved_palette_gradients_iterator
+#[test]
+fn resolved_palette_gradients_iterator() {
+    let toml = r##"
+[base]
+background = "#000000"
+foreground = "#FFFFFF"
+
+[gradient.brand]
+stops = ["#FF0000", "#0000FF"]
+
+[gradient.heat]
+stops = ["#FF0000", "#FFFF00", "#00FF00"]
+"##;
+    let manifest = PaletteManifest::from_toml(toml).unwrap();
+    let palette = Palette::from_manifest(&manifest).unwrap();
+    let resolved = palette.resolve();
+    let names: Vec<&str> = resolved.gradients().map(|(name, _)| name).collect();
+    assert_eq!(names.len(), 2);
+    assert!(names.contains(&"brand"));
+    assert!(names.contains(&"heat"));
+}
+
+// 4.T3: gradient_missing_returns_none
+#[test]
+fn gradient_missing_returns_none() {
+    let toml = r##"
+[base]
+background = "#000000"
+foreground = "#FFFFFF"
+"##;
+    let manifest = PaletteManifest::from_toml(toml).unwrap();
+    let palette = Palette::from_manifest(&manifest).unwrap();
+    let resolved = palette.resolve();
+    assert!(resolved.gradient("anything").is_none());
 }

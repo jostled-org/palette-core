@@ -110,6 +110,143 @@ fn full_merge_produces_union_of_all_keys() {
     assert_eq!(&**merged.terminal.get("red").unwrap(), "#f00");
 }
 
+// 5.T1: variant_inherits_base_gradient
+#[test]
+fn variant_inherits_base_gradient() {
+    let base_toml = r##"
+[meta]
+name = "Base"
+preset_id = "base"
+schema_version = "1"
+style = "dark"
+kind = "preset-base"
+
+[base]
+background = "#000000"
+foreground = "#FFFFFF"
+
+[gradient.brand]
+stops = ["#FF0000", "#0000FF"]
+"##;
+    let variant_toml = r##"
+[meta]
+name = "Variant"
+preset_id = "variant"
+schema_version = "1"
+style = "dark"
+kind = "preset-variant"
+
+[base]
+background = "#111111"
+"##;
+    let base = PaletteManifest::from_toml(base_toml).unwrap();
+    let variant = PaletteManifest::from_toml(variant_toml).unwrap();
+    let merged = merge_manifests(&variant, &base);
+    let palette = palette_core::Palette::from_manifest(&merged).unwrap();
+    let resolved = palette.resolve();
+    let gradient = resolved
+        .gradient("brand")
+        .expect("variant should inherit base gradient");
+    assert_eq!(gradient.stops().len(), 2);
+}
+
+// 5.T2: variant_overrides_base_gradient
+#[test]
+fn variant_overrides_base_gradient() {
+    let base_toml = r##"
+[meta]
+name = "Base"
+preset_id = "base"
+schema_version = "1"
+style = "dark"
+kind = "preset-base"
+
+[base]
+background = "#000000"
+foreground = "#FFFFFF"
+
+[gradient.brand]
+stops = ["#000000", "#FFFFFF"]
+"##;
+    let variant_toml = r##"
+[meta]
+name = "Variant"
+preset_id = "variant"
+schema_version = "1"
+style = "dark"
+kind = "preset-variant"
+
+[base]
+background = "#111111"
+
+[gradient.brand]
+stops = ["#FF0000", "#0000FF"]
+"##;
+    let base = PaletteManifest::from_toml(base_toml).unwrap();
+    let variant = PaletteManifest::from_toml(variant_toml).unwrap();
+    let merged = merge_manifests(&variant, &base);
+    let palette = palette_core::Palette::from_manifest(&merged).unwrap();
+    let resolved = palette.resolve();
+    let gradient = resolved.gradient("brand").unwrap();
+    let stops = gradient.stops();
+    // Variant's red and blue, not base's black and white
+    assert_eq!(
+        stops[0].color,
+        palette_core::color::Color { r: 255, g: 0, b: 0 }
+    );
+    assert_eq!(
+        stops[1].color,
+        palette_core::color::Color { r: 0, g: 0, b: 255 }
+    );
+}
+
+// 5.T3: variant_adds_new_gradient
+#[test]
+fn variant_adds_new_gradient() {
+    let base_toml = r##"
+[meta]
+name = "Base"
+preset_id = "base"
+schema_version = "1"
+style = "dark"
+kind = "preset-base"
+
+[base]
+background = "#000000"
+foreground = "#FFFFFF"
+
+[gradient.brand]
+stops = ["#FF0000", "#0000FF"]
+"##;
+    let variant_toml = r##"
+[meta]
+name = "Variant"
+preset_id = "variant"
+schema_version = "1"
+style = "dark"
+kind = "preset-variant"
+
+[base]
+background = "#111111"
+
+[gradient.heat]
+stops = ["#FF0000", "#FFFF00", "#00FF00"]
+"##;
+    let base = PaletteManifest::from_toml(base_toml).unwrap();
+    let variant = PaletteManifest::from_toml(variant_toml).unwrap();
+    let merged = merge_manifests(&variant, &base);
+    let palette = palette_core::Palette::from_manifest(&merged).unwrap();
+    let resolved = palette.resolve();
+    assert!(
+        resolved.gradient("brand").is_some(),
+        "base gradient should be inherited"
+    );
+    assert!(
+        resolved.gradient("heat").is_some(),
+        "variant gradient should be present"
+    );
+}
+
 #[test]
 fn real_preset_tokyonight_storm_merge() {
     let base_toml = include_str!("../presets/tokyonight.toml");

@@ -519,6 +519,87 @@ let ratio = base.contrast_ratio(&Color::from_hex("#FFFFFF")?);
 
 Methods: `lighten`, `darken`, `saturate`, `desaturate`, `rotate_hue`, `blend`, `contrast_ratio`, `meets_level`. Amounts are absolute (CSS color model). Non-finite inputs return the color unchanged.
 
+## Gradients
+
+Define multi-stop color gradients in your theme TOML. Stops can be hex colors or token references to palette fields. Interpolation runs in OKLab (perceptually uniform) by default, with OKLCH for hue-focused ramps.
+
+### TOML syntax
+
+```toml
+[gradient.heat]
+stops = ["#2563EB", "#F59E0B", "#EF4444"]
+
+[gradient.brand]
+stops = ["base.background", "semantic.info"]
+```
+
+### Explicit positions
+
+By default, stops are evenly spaced across \[0, 1\]. Use table syntax for custom positions:
+
+```toml
+[gradient.custom]
+stops = [
+  { color = "base.background", at = 0.0 },
+  { color = "semantic.info", at = 0.7 },
+  { color = "semantic.error", at = 1.0 },
+]
+```
+
+### Interpolation color space
+
+The default is OKLab — perceptually uniform, no muddy midtones on complementary pairs. For rainbow ramps where chroma should stay high through the middle, use OKLCH:
+
+```toml
+[gradient.rainbow]
+stops = ["#FF0000", "#00FF00", "#0000FF"]
+space = "oklch"
+```
+
+### Using gradients in Rust
+
+```rust
+use palette_core::load_preset;
+
+let palette = load_preset("golden_hour").unwrap();
+let resolved = palette.resolve();
+
+if let Some(gradient) = resolved.gradient("brand") {
+    let mid = gradient.at(0.5);          // interpolate at position
+    let ramp = gradient.sample(8);       // 8 evenly spaced colors
+    let css = gradient.to_css();         // linear-gradient(in oklab, ...)
+}
+```
+
+### CSS export
+
+`to_css()` produces a valid CSS `linear-gradient()` expression. Evenly spaced stops omit explicit positions (CSS default behavior).
+
+```rust
+use palette_core::gradient::{Gradient, GradientStop, ColorSpace};
+use palette_core::Color;
+
+let stops = vec![
+    GradientStop { color: Color::from_hex("#2563EB").unwrap(), position: 0.0 },
+    GradientStop { color: Color::from_hex("#F59E0B").unwrap(), position: 0.5 },
+    GradientStop { color: Color::from_hex("#EF4444").unwrap(), position: 1.0 },
+];
+let gradient = Gradient::new(stops, ColorSpace::OkLch).unwrap();
+assert!(gradient.to_css().starts_with("linear-gradient(in oklch,"));
+```
+
+### WASM
+
+```js
+const palette = preset("golden_hour");
+const gradient = palette.gradient("brand");
+if (gradient) {
+    gradient.at(0.5);      // "#RRGGBB"
+    gradient.sample(8);    // ["#...", "#...", ...]
+    gradient.toCss();      // "linear-gradient(in oklab, ...)"
+}
+```
+
 ## Platform overrides
 
 Per-platform color overrides for themes that need different values on different targets. Requires the `platform` feature.

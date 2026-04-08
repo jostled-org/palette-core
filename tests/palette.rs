@@ -118,3 +118,156 @@ fn default_produces_valid_css() {
     assert!(css.contains("--fg:"));
     assert!(css.contains("--error:"));
 }
+
+#[test]
+fn gradient_with_valid_token_reference_parses() {
+    let toml = r##"
+[base]
+background = "#000000"
+foreground = "#FFFFFF"
+
+[gradient.brand]
+stops = ["base.background", "base.foreground"]
+"##;
+    let manifest = PaletteManifest::from_toml(toml).unwrap();
+    let palette = Palette::from_manifest(&manifest).unwrap();
+    assert_eq!(palette.gradients.len(), 1);
+    let (name, brand) = &palette.gradients[0];
+    assert_eq!(name.as_ref(), "brand");
+    assert_eq!(brand.stops().len(), 2);
+}
+
+#[test]
+fn gradient_with_bad_token_reference_fails_at_parse() {
+    let toml = r##"
+[base]
+background = "#000000"
+
+[gradient.bad]
+stops = ["nonexistent.field", "#FFFFFF"]
+"##;
+    let manifest = PaletteManifest::from_toml(toml).unwrap();
+    let err = Palette::from_manifest(&manifest).unwrap_err();
+    assert!(
+        matches!(&err, PaletteError::InvalidGradientRef { .. }),
+        "expected InvalidGradientRef, got: {err:?}",
+    );
+}
+
+#[test]
+fn gradient_with_bad_hex_literal_fails_as_invalid_hex() {
+    let toml = r##"
+[base]
+background = "#000000"
+
+[gradient.bad]
+stops = ["#GGGGGG", "#FFFFFF"]
+"##;
+    let manifest = PaletteManifest::from_toml(toml).unwrap();
+    let err = Palette::from_manifest(&manifest).unwrap_err();
+    assert!(
+        matches!(
+            &err,
+            PaletteError::InvalidHex { section, field, value }
+                if section.as_ref() == "gradient.bad"
+                && field.as_ref() == "stops[0]"
+                && value.as_ref() == "#GGGGGG"
+        ),
+        "expected InvalidHex with gradient stop context, got: {err:?}",
+    );
+}
+
+#[test]
+fn gradient_with_bad_section_name_fails_at_parse() {
+    let toml = r##"
+[base]
+background = "#000000"
+
+[gradient.bad]
+stops = ["fakesection.foreground", "#FFFFFF"]
+"##;
+    let manifest = PaletteManifest::from_toml(toml).unwrap();
+    let err = Palette::from_manifest(&manifest).unwrap_err();
+    assert!(
+        matches!(&err, PaletteError::InvalidGradientRef { .. }),
+        "expected InvalidGradientRef, got: {err:?}",
+    );
+}
+
+#[test]
+fn gradient_fewer_than_two_stops_fails() {
+    let toml = r##"
+[base]
+background = "#000000"
+
+[gradient.bad]
+stops = ["#FF0000"]
+"##;
+    let manifest = PaletteManifest::from_toml(toml).unwrap();
+    let err = Palette::from_manifest(&manifest).unwrap_err();
+    assert!(
+        matches!(&err, PaletteError::InsufficientStops { count: 1 }),
+        "expected InsufficientStops, got: {err:?}",
+    );
+}
+
+#[test]
+fn gradient_unsorted_positions_fails() {
+    let toml = r##"
+[base]
+background = "#000000"
+
+[gradient.bad]
+stops = [
+    { color = "#FF0000", at = 0.5 },
+    { color = "#00FF00", at = 0.3 },
+    { color = "#0000FF", at = 1.0 },
+]
+"##;
+    let manifest = PaletteManifest::from_toml(toml).unwrap();
+    let err = Palette::from_manifest(&manifest).unwrap_err();
+    assert!(
+        matches!(&err, PaletteError::UnsortedStops),
+        "expected UnsortedStops, got: {err:?}",
+    );
+}
+
+#[test]
+fn gradient_out_of_range_position_fails() {
+    let toml = r##"
+[base]
+background = "#000000"
+
+[gradient.bad]
+stops = [
+    { color = "#FF0000", at = -0.1 },
+    { color = "#0000FF", at = 1.0 },
+]
+"##;
+    let manifest = PaletteManifest::from_toml(toml).unwrap();
+    let err = Palette::from_manifest(&manifest).unwrap_err();
+    assert!(
+        matches!(&err, PaletteError::InvalidGradientPosition { position } if *position == -0.1),
+        "expected InvalidGradientPosition, got: {err:?}",
+    );
+}
+
+#[test]
+fn gradient_mixed_stop_syntax_fails_with_dedicated_error() {
+    let toml = r##"
+[base]
+background = "#000000"
+
+[gradient.bad]
+stops = [
+    "#FF0000",
+    { color = "#0000FF", at = 1.0 },
+]
+"##;
+    let manifest = PaletteManifest::from_toml(toml).unwrap();
+    let err = Palette::from_manifest(&manifest).unwrap_err();
+    assert!(
+        matches!(&err, PaletteError::MixedGradientStopKinds { gradient } if gradient.as_ref() == "bad"),
+        "expected MixedGradientStopKinds, got: {err:?}",
+    );
+}

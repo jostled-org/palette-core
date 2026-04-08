@@ -2,8 +2,13 @@ use std::sync::Arc;
 
 use crate::color::Color;
 use crate::error::PaletteError;
-use crate::manifest::{ManifestSection, PaletteManifest};
+use crate::gradient::{ColorSpace, GradientColor, GradientDef};
+use crate::manifest::{ManifestSection, PaletteManifest, RawGradientStop};
 use crate::style::SyntaxStyles;
+
+/// Named gradient definitions sorted by name. Immutable after construction;
+/// `Arc` keeps `Palette::clone()` a ref-count bump for gradient data.
+pub type GradientDefs = Arc<[(Arc<str>, GradientDef)]>;
 
 fn resolve_color(
     section: &ManifestSection,
@@ -301,7 +306,7 @@ pub struct PaletteMeta {
 /// or [`Registry::load`](crate::Registry::load). Each field is a color group
 /// whose slots are `Option<Color>` — absent slots mean the theme defers to
 /// the renderer's default.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "snapshot", derive(serde::Serialize))]
 pub struct Palette {
     /// Theme identity, if parsed from a manifest with `[meta]`.
@@ -324,6 +329,8 @@ pub struct Palette {
     pub terminal: AnsiColors,
     /// Syntax token style modifiers (bold, italic, underline).
     pub syntax_style: SyntaxStyles,
+    /// Named gradient definitions with validated token references, sorted by name.
+    pub gradients: GradientDefs,
     /// Per-platform color overrides.
     #[cfg(feature = "platform")]
     pub platform: crate::platform::PlatformOverrides,
@@ -451,6 +458,7 @@ impl Default for Palette {
                 diagnostic_underline_hint: c(0x70, 0x70, 0x88),
             },
             syntax_style: SyntaxStyles::default(),
+            gradients: Arc::from([]),
             terminal: AnsiColors {
                 black: c(0x1a, 0x1a, 0x2e),
                 red: c(0xe0, 0x50, 0x50),
@@ -475,6 +483,164 @@ impl Default for Palette {
     }
 }
 
+/// Build an `InvalidGradientRef` error for the given stop.
+fn bad_gradient_ref(gradient_name: &Arc<str>, stop_index: usize, raw: &str) -> PaletteError {
+    PaletteError::InvalidGradientRef {
+        gradient: Arc::clone(gradient_name),
+        stop_index,
+        reference: Arc::from(raw),
+    }
+}
+
+fn gradient_section_name(gradient_name: &Arc<str>) -> Arc<str> {
+    Arc::from(format!("gradient.{gradient_name}"))
+}
+
+fn gradient_stop_field(stop_index: usize) -> Arc<str> {
+    Arc::from(format!("stops[{stop_index}]"))
+}
+
+fn validate_gradient_position(position: f64) -> Result<(), PaletteError> {
+    match position.is_nan() || !(0.0..=1.0).contains(&position) {
+        true => Err(PaletteError::InvalidGradientPosition { position }),
+        false => Ok(()),
+    }
+}
+
+/// Parse a hex literal into a `GradientColor::Literal`.
+fn parse_hex_stop(
+    raw: &str,
+    gradient_name: &Arc<str>,
+    stop_index: usize,
+) -> Result<GradientColor, PaletteError> {
+    Color::from_hex(raw)
+        .map(GradientColor::Literal)
+        .map_err(|e| {
+            e.into_palette_error(
+                gradient_section_name(gradient_name),
+                gradient_stop_field(stop_index),
+            )
+        })
+}
+
+/// Parse a `"section.field"` token reference, validating against known fields.
+fn parse_token_stop(
+    raw: &str,
+    gradient_name: &Arc<str>,
+    stop_index: usize,
+) -> Result<GradientColor, PaletteError> {
+    let (section, field) = raw
+        .split_once('.')
+        .ok_or_else(|| bad_gradient_ref(gradient_name, stop_index, raw))?;
+    let fields = crate::manifest::known_fields::fields_for_section(section)
+        .ok_or_else(|| bad_gradient_ref(gradient_name, stop_index, raw))?;
+    match fields.contains(&field) {
+        true => Ok(GradientColor::Token {
+            section: Arc::from(section),
+            field: Arc::from(field),
+        }),
+        false => Err(bad_gradient_ref(gradient_name, stop_index, raw)),
+    }
+}
+
+/// Parse a raw stop string as either a hex literal or a `"section.field"` token reference.
+fn parse_gradient_stop_value(
+    raw: &str,
+    gradient_name: &Arc<str>,
+    stop_index: usize,
+) -> Result<GradientColor, PaletteError> {
+    match raw.starts_with('#') {
+        true => parse_hex_stop(raw, gradient_name, stop_index),
+        false => parse_token_stop(raw, gradient_name, stop_index),
+    }
+}
+
+/// Parse a color space string into a `ColorSpace` enum.
+fn parse_color_space(
+    space: Option<&str>,
+    gradient_name: &Arc<str>,
+) -> Result<ColorSpace, PaletteError> {
+    match space {
+        None => Ok(ColorSpace::default()),
+        Some("oklab") => Ok(ColorSpace::OkLab),
+        Some("oklch") => Ok(ColorSpace::OkLch),
+        Some(other) => Err(PaletteError::InvalidColorSpace {
+            gradient: Arc::clone(gradient_name),
+            value: Arc::from(other),
+        }),
+    }
+}
+
+/// Parse and validate all gradient definitions from the manifest.
+///
+/// Returns a sorted `Arc` slice for deterministic serialization and
+/// binary-search lookup. `Palette` is cloned in the registry cache,
+/// so `Arc` keeps that clone a ref-count bump.
+fn parse_gradients(manifest: &PaletteManifest) -> Result<GradientDefs, PaletteError> {
+    let mut gradients = Vec::with_capacity(manifest.gradient.len());
+
+    for (name, raw_def) in &manifest.gradient {
+        let space = parse_color_space(raw_def.space.as_deref(), name)?;
+
+        match raw_def.stops.len() < 2 {
+            true => {
+                return Err(PaletteError::InsufficientStops {
+                    count: raw_def.stops.len(),
+                });
+            }
+            false => {}
+        }
+
+        let all_shorthand = raw_def
+            .stops
+            .iter()
+            .all(|s| matches!(s, RawGradientStop::Shorthand(_)));
+        let all_explicit = raw_def
+            .stops
+            .iter()
+            .all(|s| matches!(s, RawGradientStop::Explicit { .. }));
+        match all_shorthand || all_explicit {
+            true => {}
+            false => {
+                return Err(PaletteError::MixedGradientStopKinds {
+                    gradient: Arc::clone(name),
+                });
+            }
+        }
+
+        let divisor = (raw_def.stops.len() - 1) as f64;
+
+        let typed_stops: Vec<(GradientColor, f64)> = raw_def
+            .stops
+            .iter()
+            .enumerate()
+            .map(|(i, raw_stop)| {
+                let (color_str, position) = match raw_stop {
+                    RawGradientStop::Shorthand(s) => (s.as_str(), i as f64 / divisor),
+                    RawGradientStop::Explicit { color, at } => (color.as_str(), *at),
+                };
+                validate_gradient_position(position)?;
+                let color = parse_gradient_stop_value(color_str, name, i)?;
+                Ok((color, position))
+            })
+            .collect::<Result<_, PaletteError>>()?;
+
+        let sorted = typed_stops.windows(2).all(|w| w[0].1 <= w[1].1);
+        match sorted {
+            true => {}
+            false => return Err(PaletteError::UnsortedStops),
+        }
+
+        gradients.push((
+            Arc::clone(name),
+            GradientDef::new(typed_stops.into_boxed_slice(), space),
+        ));
+    }
+
+    gradients.sort_by(|(a, _), (b, _)| a.cmp(b));
+    Ok(gradients.into())
+}
+
 impl Palette {
     /// Build a palette from a parsed manifest, resolving hex strings to [`Color`] values.
     pub fn from_manifest(manifest: &PaletteManifest) -> Result<Self, PaletteError> {
@@ -485,6 +651,8 @@ impl Palette {
                 style: Arc::clone(&m.style),
             })
         });
+
+        let gradients = parse_gradients(manifest)?;
 
         Ok(Self {
             meta,
@@ -497,6 +665,7 @@ impl Palette {
             editor: EditorColors::from_section(&manifest.editor, "editor")?,
             terminal: AnsiColors::from_section(&manifest.terminal, "terminal")?,
             syntax_style: SyntaxStyles::from_section(&manifest.syntax_style, "syntax_style")?,
+            gradients,
             #[cfg(feature = "platform")]
             platform: crate::platform::from_sections(&manifest.platform)?,
         })

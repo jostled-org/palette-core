@@ -1,5 +1,7 @@
 use palette_core::color::Color;
-use palette_core::manipulation::blend;
+use palette_core::manipulation::{
+    blend, lerp_oklab, lerp_oklch, oklab_to_srgb, oklch_to_oklab, srgb_to_oklab, srgb_to_oklch,
+};
 
 fn color(hex: &str) -> Color {
     Color::from_hex(hex).unwrap()
@@ -246,4 +248,178 @@ fn blend_infinity_returns_bg() {
     let fg = color("#FF0000");
     let bg = color("#0000FF");
     assert_eq!(blend(fg, bg, f64::INFINITY), bg);
+}
+
+// --- OkLab round-trip ---
+
+#[test]
+fn oklab_round_trip_black() {
+    let c = Color { r: 0, g: 0, b: 0 };
+    let lab = srgb_to_oklab(c);
+    let back = oklab_to_srgb(lab);
+    assert_eq!(back, c);
+}
+
+#[test]
+fn oklab_round_trip_white() {
+    let c = Color {
+        r: 255,
+        g: 255,
+        b: 255,
+    };
+    let lab = srgb_to_oklab(c);
+    let back = oklab_to_srgb(lab);
+    assert_eq!(back, c);
+}
+
+#[test]
+fn oklab_round_trip_primary_colors() {
+    for (label, c) in [
+        ("red", Color { r: 255, g: 0, b: 0 }),
+        ("green", Color { r: 0, g: 255, b: 0 }),
+        ("blue", Color { r: 0, g: 0, b: 255 }),
+    ] {
+        let back = oklab_to_srgb(srgb_to_oklab(c));
+        assert_channel_eq(back, c, 1, &format!("{label} oklab round-trip"));
+    }
+}
+
+#[test]
+fn oklab_known_reference_values() {
+    // Red (#FF0000)
+    let red_lab = srgb_to_oklab(color("#FF0000"));
+    assert!((red_lab.l - 0.6279).abs() < 0.002, "red L: {}", red_lab.l);
+    assert!((red_lab.a - 0.2249).abs() < 0.002, "red a: {}", red_lab.a);
+    assert!((red_lab.b - 0.1264).abs() < 0.002, "red b: {}", red_lab.b);
+
+    // Blue (#0000FF)
+    let blue_lab = srgb_to_oklab(color("#0000FF"));
+    assert!(
+        (blue_lab.l - 0.4520).abs() < 0.002,
+        "blue L: {}",
+        blue_lab.l
+    );
+    assert!(
+        (blue_lab.a - (-0.0324)).abs() < 0.002,
+        "blue a: {}",
+        blue_lab.a
+    );
+    assert!(
+        (blue_lab.b - (-0.3115)).abs() < 0.002,
+        "blue b: {}",
+        blue_lab.b
+    );
+
+    // 50% gray (#808080) — L≈0.5999 (plan had incorrect 0.5340)
+    let gray_lab = srgb_to_oklab(color("#808080"));
+    assert!(
+        (gray_lab.l - 0.5999).abs() < 0.002,
+        "gray L: {}",
+        gray_lab.l
+    );
+    assert!(gray_lab.a.abs() < 0.002, "gray a: {}", gray_lab.a);
+    assert!(gray_lab.b.abs() < 0.002, "gray b: {}", gray_lab.b);
+}
+
+#[test]
+fn oklab_midpoint_not_muddy() {
+    let blue = srgb_to_oklab(color("#0000FF"));
+    let yellow = srgb_to_oklab(color("#FFFF00"));
+    let mid = lerp_oklab(blue, yellow, 0.5);
+    let mid_color = oklab_to_srgb(mid);
+
+    // sRGB linear blend of blue+yellow produces gray-ish
+    let srgb_mid = blend(color("#0000FF"), color("#FFFF00"), 0.5);
+
+    // OkLab midpoint should have higher saturation (not muddy gray)
+    let mid_sat = channel_spread(mid_color);
+    let srgb_sat = channel_spread(srgb_mid);
+    assert!(
+        mid_sat > srgb_sat,
+        "OkLab midpoint should be more saturated than sRGB blend: oklab={mid_sat}, srgb={srgb_sat}"
+    );
+}
+
+/// Rough measure of how "colorful" a color is (max channel - min channel).
+fn channel_spread(c: Color) -> u8 {
+    let max = c.r.max(c.g).max(c.b);
+    let min = c.r.min(c.g).min(c.b);
+    max - min
+}
+
+// --- OKLCH ---
+
+#[test]
+fn oklch_round_trip_preserves_hue() {
+    let red = color("#FF0000");
+    let lch = srgb_to_oklch(red);
+    // Known OKLab red hue is approximately 29°
+    assert!(
+        (lch.h - 29.0).abs() < 2.0,
+        "red hue should be ~29°, got {}",
+        lch.h
+    );
+    let back = oklab_to_srgb(oklch_to_oklab(lch));
+    assert_channel_eq(back, red, 1, "oklch red round-trip");
+}
+
+#[test]
+fn oklch_shortest_arc_interpolation() {
+    // Two colors ~30° apart in hue
+    let a = srgb_to_oklch(color("#FF0000")); // hue ~29°
+    let b = srgb_to_oklch(color("#FF8800")); // hue ~55° (orange)
+    let mid = lerp_oklch(a, b, 0.5);
+    let mid_hue = mid.h;
+
+    // Midpoint hue should be between the two input hues
+    let (lo, hi) = match a.h < b.h {
+        true => (a.h, b.h),
+        false => (b.h, a.h),
+    };
+    assert!(
+        mid_hue >= lo && mid_hue <= hi,
+        "interpolated hue {mid_hue} should be between {lo} and {hi}"
+    );
+}
+
+#[test]
+fn oklch_hue_wrap_around_zero() {
+    // Construct OKLCH values with hues crossing 0°
+    let a = srgb_to_oklch(color("#FF0000")); // hue ~29°
+    // We need hue ~350°. Manually construct to ensure exact hue values.
+    let mut lch_a = a;
+    lch_a.h = 350.0;
+    let mut lch_b = a;
+    lch_b.h = 10.0;
+
+    let mid = lerp_oklch(lch_a, lch_b, 0.5);
+    // Should go the short way: 350 -> 0 -> 10, midpoint ~0°
+    assert!(
+        mid.h > 355.0 || mid.h < 5.0,
+        "hue wrap midpoint should be ~0°, got {}",
+        mid.h
+    );
+}
+
+#[test]
+fn oklch_achromatic_hue_handled() {
+    let black = color("#000000");
+    let lch = srgb_to_oklch(black);
+    // Achromatic: chroma ~0, hue should be 0 (not NaN)
+    assert!(lch.h.is_finite(), "achromatic hue should be finite");
+    assert!(
+        lch.c.abs() < 0.001,
+        "black chroma should be ~0, got {}",
+        lch.c
+    );
+
+    // Interpolate between achromatic and chromatic
+    let red_lch = srgb_to_oklch(color("#FF0000"));
+    let mid = lerp_oklch(lch, red_lch, 0.5);
+    let mid_color = oklab_to_srgb(oklch_to_oklab(mid));
+    // Result should be a valid color (not NaN-corrupted)
+    assert!(
+        mid_color.r > 0 || mid_color.g > 0 || mid_color.b > 0,
+        "interpolation with achromatic should produce valid color"
+    );
 }

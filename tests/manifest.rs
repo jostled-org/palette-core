@@ -197,3 +197,62 @@ fn real_preset_tokyonight_storm_parses() {
     assert_eq!(&*meta.kind, "preset-variant");
     assert_eq!(manifest.inherits_from(), Some("tokyonight"));
 }
+
+#[test]
+fn gradient_section_parses_hex_stops() {
+    let toml = r##"
+[base]
+background = "#000000"
+
+[gradient.heat]
+stops = ["#FF0000", "#00FF00", "#0000FF"]
+"##;
+    let manifest = PaletteManifest::from_toml(toml).unwrap();
+    assert_eq!(manifest.gradient.len(), 1);
+    let heat = manifest.gradient.get("heat").unwrap();
+    assert_eq!(heat.stops.len(), 3);
+}
+
+#[test]
+fn gradient_section_parses_explicit_positions() {
+    let toml = r##"
+[base]
+background = "#000000"
+
+[gradient.ramp]
+stops = [
+    { color = "#FF0000", at = 0.0 },
+    { color = "#0000FF", at = 1.0 },
+]
+"##;
+    let manifest = PaletteManifest::from_toml(toml).unwrap();
+    let ramp = manifest.gradient.get("ramp").unwrap();
+    assert_eq!(ramp.stops.len(), 2);
+}
+
+#[test]
+fn gradient_section_parses_color_space() {
+    let toml_oklch = r##"
+[base]
+background = "#000000"
+
+[gradient.hue]
+stops = ["#FF0000", "#0000FF"]
+space = "oklch"
+"##;
+    let manifest = PaletteManifest::from_toml(toml_oklch).unwrap();
+    let hue = manifest.gradient.get("hue").unwrap();
+    assert_eq!(hue.space.as_deref(), Some("oklch"));
+
+    // Default (no space key)
+    let toml_default = r##"
+[base]
+background = "#000000"
+
+[gradient.plain]
+stops = ["#FF0000", "#0000FF"]
+"##;
+    let manifest = PaletteManifest::from_toml(toml_default).unwrap();
+    let plain = manifest.gradient.get("plain").unwrap();
+    assert!(plain.space.is_none());
+}

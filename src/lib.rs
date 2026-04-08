@@ -54,13 +54,16 @@ pub mod registry;
 pub mod contrast;
 /// CSS custom-property export.
 pub mod css;
+/// Multi-stop color gradient with perceptual interpolation.
+pub mod gradient;
 /// HSL color manipulation: lighten, darken, saturate, blend.
 pub mod manipulation;
 
 pub use color::Color;
 pub use contrast::ContrastLevel;
 pub use error::PaletteError;
-pub use palette::{Palette, PaletteMeta};
+pub use gradient::{ColorSpace, Gradient, GradientColor, GradientDef, GradientStop};
+pub use palette::{GradientDefs, Palette, PaletteMeta};
 pub use registry::{Registry, ThemeInfo, load_preset, load_preset_file, preset_ids};
 
 /// Text style modifiers for syntax tokens.

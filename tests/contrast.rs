@@ -205,6 +205,7 @@ fn bad_palette_produces_violations() {
         editor: HashMap::new(),
         terminal: HashMap::new(),
         syntax_style: HashMap::new(),
+        gradient: HashMap::new(),
         #[cfg(feature = "platform")]
         platform: Default::default(),
     };
@@ -296,6 +297,7 @@ fn none_fields_skipped_without_error() {
         editor: HashMap::new(),
         terminal: HashMap::new(),
         syntax_style: HashMap::new(),
+        gradient: HashMap::new(),
         #[cfg(feature = "platform")]
         platform: Default::default(),
     };
@@ -424,6 +426,7 @@ fn resolve_with_contrast_fixes_bad_palette() {
         editor: HashMap::new(),
         terminal: HashMap::new(),
         syntax_style: HashMap::new(),
+        gradient: HashMap::new(),
         #[cfg(feature = "platform")]
         platform: Default::default(),
     };

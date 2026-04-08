@@ -1,7 +1,13 @@
-use crate::manifest::{ManifestSection, PaletteManifest};
+use std::collections::HashMap;
+use std::sync::Arc;
 
-fn merge_sections(primary: &ManifestSection, fallback: &ManifestSection) -> ManifestSection {
-    let mut merged = ManifestSection::with_capacity(primary.len() + fallback.len());
+use crate::manifest::PaletteManifest;
+
+fn merge_map<V: Clone>(
+    primary: &HashMap<Arc<str>, V>,
+    fallback: &HashMap<Arc<str>, V>,
+) -> HashMap<Arc<str>, V> {
+    let mut merged = HashMap::with_capacity(primary.len() + fallback.len());
     for (key, value) in primary {
         merged.insert(key.clone(), value.clone());
     }
@@ -20,7 +26,7 @@ fn merge_platform_sections(
     for (platform, section) in primary {
         match fallback.get(platform) {
             Some(fb) => {
-                merged.insert(platform.clone(), merge_sections(section, fb));
+                merged.insert(platform.clone(), merge_map(section, fb));
             }
             None => {
                 merged.insert(platform.clone(), section.clone());
@@ -39,15 +45,16 @@ fn merge_platform_sections(
 pub fn merge_manifests(variant: &PaletteManifest, base: &PaletteManifest) -> PaletteManifest {
     PaletteManifest {
         meta: variant.meta.clone(),
-        base: merge_sections(&variant.base, &base.base),
-        semantic: merge_sections(&variant.semantic, &base.semantic),
-        diff: merge_sections(&variant.diff, &base.diff),
-        surface: merge_sections(&variant.surface, &base.surface),
-        typography: merge_sections(&variant.typography, &base.typography),
-        syntax: merge_sections(&variant.syntax, &base.syntax),
-        editor: merge_sections(&variant.editor, &base.editor),
-        terminal: merge_sections(&variant.terminal, &base.terminal),
-        syntax_style: merge_sections(&variant.syntax_style, &base.syntax_style),
+        base: merge_map(&variant.base, &base.base),
+        semantic: merge_map(&variant.semantic, &base.semantic),
+        diff: merge_map(&variant.diff, &base.diff),
+        surface: merge_map(&variant.surface, &base.surface),
+        typography: merge_map(&variant.typography, &base.typography),
+        syntax: merge_map(&variant.syntax, &base.syntax),
+        editor: merge_map(&variant.editor, &base.editor),
+        terminal: merge_map(&variant.terminal, &base.terminal),
+        syntax_style: merge_map(&variant.syntax_style, &base.syntax_style),
+        gradient: merge_map(&variant.gradient, &base.gradient),
         #[cfg(feature = "platform")]
         platform: merge_platform_sections(&variant.platform, &base.platform),
     }

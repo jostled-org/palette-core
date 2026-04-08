@@ -5,6 +5,70 @@ use palette_core::wasm::{
     load_preset_json, meets_contrast_level_js, preset_ids_js,
 };
 
+// --- JsGradient ---
+
+const GRADIENT_TOML: &str = r##"
+[meta]
+name = "Gradient Test Theme"
+preset_id = "gradient_test"
+schema_version = "1"
+style = "dark"
+kind = "preset-base"
+
+[base]
+background = "#000000"
+foreground = "#FFFFFF"
+
+[gradient.brand]
+stops = ["#FF0000", "#0000FF"]
+"##;
+
+#[test]
+fn js_palette_gradient_returns_some_for_defined() {
+    let mut reg = JsRegistry::new();
+    reg.add_toml(GRADIENT_TOML).unwrap();
+    let palette = reg.load("gradient_test").unwrap();
+    let grad = palette.gradient("brand");
+    assert!(grad.is_some());
+
+    let grad = grad.unwrap();
+    // at(0.0) should be the first stop (red)
+    assert_eq!(grad.at(0.0), "#FF0000");
+    // at(1.0) should be the last stop (blue)
+    assert_eq!(grad.at(1.0), "#0000FF");
+    // sample(2) should return endpoints
+    let samples = grad.sample(2);
+    assert_eq!(samples.len(), 2);
+    assert_eq!(samples[0], "#FF0000");
+    assert_eq!(samples[1], "#0000FF");
+    // to_css() should produce a valid CSS linear-gradient
+    let css = grad.to_css();
+    assert!(css.starts_with("linear-gradient(in oklab,"));
+    assert!(css.ends_with(')'));
+}
+
+#[test]
+fn js_palette_gradient_returns_none_for_missing() {
+    let palette = load_preset("tokyonight").unwrap();
+    assert!(palette.gradient("missing").is_none());
+}
+
+#[test]
+fn js_palette_gradient_names_lists_defined() {
+    let mut reg = JsRegistry::new();
+    reg.add_toml(GRADIENT_TOML).unwrap();
+    let palette = reg.load("gradient_test").unwrap();
+    let names = palette.gradient_names();
+    assert_eq!(names.len(), 1);
+    assert!(names.contains(&"brand".to_owned()));
+}
+
+#[test]
+fn js_palette_gradient_names_empty_when_none() {
+    let palette = load_preset("tokyonight").unwrap();
+    assert!(palette.gradient_names().is_empty());
+}
+
 // --- JsColor ---
 
 #[test]

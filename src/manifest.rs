@@ -5,6 +5,34 @@ use serde::Deserialize;
 
 use crate::error::PaletteError;
 
+/// A single gradient stop in TOML: either a bare string or `{ color, at }`.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(untagged)]
+pub enum RawGradientStop {
+    /// Shorthand: `"#FF0000"` or `"base.foreground"` — position auto-assigned.
+    Shorthand(String),
+    /// Explicit: `{ color = "...", at = 0.3 }`.
+    Explicit {
+        /// Hex color or token reference.
+        color: String,
+        /// Position in \[0, 1\].
+        at: f64,
+    },
+}
+
+/// Raw gradient definition as deserialized from TOML.
+#[derive(Debug, Clone, Deserialize)]
+pub struct RawGradientDef {
+    /// Ordered color stops.
+    pub stops: Vec<RawGradientStop>,
+    /// Interpolation color space name (e.g. `"oklch"`). `None` means default (OkLab).
+    #[serde(default)]
+    pub space: Option<String>,
+}
+
+/// Named gradient definitions: `[gradient.name]` sections in TOML.
+pub type GradientSections = HashMap<Arc<str>, RawGradientDef>;
+
 /// A single TOML section mapping slot names to hex color strings.
 pub type ManifestSection = HashMap<Arc<str>, Arc<str>>;
 
@@ -59,6 +87,8 @@ pub struct PaletteManifest {
     pub terminal: ManifestSection,
     /// Syntax token style modifiers (bold, italic, underline).
     pub syntax_style: ManifestSection,
+    /// Named gradient definitions parsed from `[gradient.*]` sections.
+    pub gradient: GradientSections,
     /// Per-platform color overrides.
     #[cfg(feature = "platform")]
     pub platform: PlatformSections,
@@ -82,6 +112,7 @@ impl PaletteManifest {
                 editor: raw.editor,
                 terminal: raw.terminal,
                 syntax_style: raw.syntax_style,
+                gradient: raw.gradient,
                 #[cfg(feature = "platform")]
                 platform: raw.platform,
             }),
@@ -112,34 +143,50 @@ impl std::fmt::Display for UnknownField {
 /// Field-name arrays from [`color_fields!`](crate::palette::color_fields) --
 /// single source of truth for validation. Unsorted (semantic order);
 /// [`validate_fields`] sorts once per call for `binary_search`.
-mod known_fields {
+pub(crate) mod known_fields {
     macro_rules! emit {
         ($(#[$_meta:meta])* BaseColors { $($field:ident),+ $(,)? }) => {
-            pub(super) const BASE: &[&str] = &[$(stringify!($field)),+];
+            pub(crate) const BASE: &[&str] = &[$(stringify!($field)),+];
         };
         ($(#[$_meta:meta])* SemanticColors { $($field:ident),+ $(,)? }) => {
-            pub(super) const SEMANTIC: &[&str] = &[$(stringify!($field)),+];
+            pub(crate) const SEMANTIC: &[&str] = &[$(stringify!($field)),+];
         };
         ($(#[$_meta:meta])* DiffColors { $($field:ident),+ $(,)? }) => {
-            pub(super) const DIFF: &[&str] = &[$(stringify!($field)),+];
+            pub(crate) const DIFF: &[&str] = &[$(stringify!($field)),+];
         };
         ($(#[$_meta:meta])* SurfaceColors { $($field:ident),+ $(,)? }) => {
-            pub(super) const SURFACE: &[&str] = &[$(stringify!($field)),+];
+            pub(crate) const SURFACE: &[&str] = &[$(stringify!($field)),+];
         };
         ($(#[$_meta:meta])* TypographyColors { $($field:ident),+ $(,)? }) => {
-            pub(super) const TYPOGRAPHY: &[&str] = &[$(stringify!($field)),+];
+            pub(crate) const TYPOGRAPHY: &[&str] = &[$(stringify!($field)),+];
         };
         ($(#[$_meta:meta])* SyntaxColors { $($field:ident),+ $(,)? }) => {
-            pub(super) const SYNTAX: &[&str] = &[$(stringify!($field)),+];
+            pub(crate) const SYNTAX: &[&str] = &[$(stringify!($field)),+];
         };
         ($(#[$_meta:meta])* EditorColors { $($field:ident),+ $(,)? }) => {
-            pub(super) const EDITOR: &[&str] = &[$(stringify!($field)),+];
+            pub(crate) const EDITOR: &[&str] = &[$(stringify!($field)),+];
         };
         ($(#[$_meta:meta])* AnsiColors { $($field:ident),+ $(,)? }) => {
-            pub(super) const TERMINAL: &[&str] = &[$(stringify!($field)),+];
+            pub(crate) const TERMINAL: &[&str] = &[$(stringify!($field)),+];
         };
     }
     crate::palette::color_fields!(emit);
+
+    /// Map a section name to its known field list. Returns `None` for
+    /// unrecognized section names.
+    pub(crate) fn fields_for_section(section: &str) -> Option<&'static [&'static str]> {
+        match section {
+            "base" => Some(BASE),
+            "semantic" => Some(SEMANTIC),
+            "diff" => Some(DIFF),
+            "surface" => Some(SURFACE),
+            "typography" => Some(TYPOGRAPHY),
+            "syntax" => Some(SYNTAX),
+            "editor" => Some(EDITOR),
+            "terminal" => Some(TERMINAL),
+            _ => None,
+        }
+    }
 }
 
 struct SortedFields {
@@ -247,6 +294,8 @@ struct RawManifest {
     terminal: ManifestSection,
     #[serde(default)]
     syntax_style: ManifestSection,
+    #[serde(default)]
+    gradient: GradientSections,
     #[cfg(feature = "platform")]
     #[serde(default)]
     platform: PlatformSections,

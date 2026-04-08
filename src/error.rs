@@ -58,4 +58,51 @@ pub enum PaletteError {
     /// No built-in or registered preset matches the given ID.
     #[error("unknown preset: {0}")]
     UnknownPreset(Arc<str>),
+
+    /// A gradient has fewer than 2 color stops.
+    #[error("gradient requires at least 2 stops, got {count}")]
+    InsufficientStops {
+        /// Number of stops provided.
+        count: usize,
+    },
+
+    /// Gradient stop positions are not monotonically increasing.
+    #[error("gradient stop positions are not sorted")]
+    UnsortedStops,
+
+    /// A gradient stop position is outside the normalized `[0, 1]` range.
+    #[error("gradient stop position must be in [0, 1], got {position}")]
+    InvalidGradientPosition {
+        /// The out-of-range position value.
+        position: f64,
+    },
+
+    /// A gradient mixes shorthand and explicit stop syntaxes.
+    #[error("gradient [{gradient}] mixes shorthand and explicit stop syntax")]
+    MixedGradientStopKinds {
+        /// Name of the gradient definition.
+        gradient: Arc<str>,
+    },
+
+    /// A gradient stop references a token path that does not exist.
+    #[error(
+        "invalid gradient reference in [{gradient}] stop {stop_index}: \"{reference}\" is not a known color field"
+    )]
+    InvalidGradientRef {
+        /// Name of the gradient definition.
+        gradient: Arc<str>,
+        /// Zero-based index of the offending stop.
+        stop_index: usize,
+        /// The raw `"section.field"` string that failed validation.
+        reference: Arc<str>,
+    },
+
+    /// A gradient specifies an unrecognized interpolation color space.
+    #[error("invalid color space \"{value}\" in [gradient.{gradient}]")]
+    InvalidColorSpace {
+        /// Name of the gradient definition.
+        gradient: Arc<str>,
+        /// The unrecognized color space string.
+        value: Arc<str>,
+    },
 }

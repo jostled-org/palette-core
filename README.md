@@ -74,9 +74,9 @@ let resolved = palette.resolve_with_contrast(ContrastLevel::AaNormal);
 
 ## Documentation
 
-The [guide](docs/guide.md) covers rendering targets, theme switching, custom presets, color manipulation, platform overrides, and WASM bindings.
+The [guide](docs/guide.md) covers rendering targets, theme switching, custom presets, color manipulation, gradients, platform overrides, and WASM bindings.
 
-31 presets ship built-in — Catppuccin, TokyoNight, Dracula, Nord, Gruvbox, and [more](docs/guide.md#bundled-presets). Golden Hour is an original warm-toned family (light, dusk, twilight) exclusive to palette-core. Optional [feature flags](docs/guide.md#feature-flags) enable `terminal`, `egui`, `syntect`, `snapshot`, `platform`, and `wasm` targets.
+31 presets ship built-in — Catppuccin, TokyoNight, Dracula, Nord, Gruvbox, and [more](docs/guide.md#bundled-presets). Golden Hour is an original warm-toned family (light, dusk, twilight) exclusive to palette-core. Themes can define [gradients](docs/guide.md#gradients) with OKLab/OKLCH interpolation and CSS `linear-gradient()` export. Optional [feature flags](docs/guide.md#feature-flags) enable `terminal`, `egui`, `syntect`, `snapshot`, `platform`, and `wasm` targets.
 
 ## Demos
 

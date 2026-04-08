@@ -5,10 +5,11 @@
 //! [`Palette::resolve`] (fills gaps from [`Palette::default`]) or
 //! [`Palette::resolve_with`] (fills gaps from a custom fallback).
 
-use std::sync::LazyLock;
+use std::sync::{Arc, LazyLock};
 
 use crate::color::Color;
 use crate::contrast::{ContrastLevel, adjust_contrast};
+use crate::gradient::{Gradient, GradientColor, GradientDef, GradientStop};
 use crate::palette::Palette;
 use crate::style::ResolvedSyntaxStyles;
 
@@ -77,7 +78,7 @@ impl ResolvedSyntaxColors {
 /// Fully resolved palette where every color slot is a concrete [`Color`].
 ///
 /// Built via [`Palette::resolve`] or [`Palette::resolve_with`].
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "snapshot", derive(serde::Serialize))]
 pub struct ResolvedPalette {
     /// Theme identity, if the source palette had metadata.
@@ -100,6 +101,8 @@ pub struct ResolvedPalette {
     pub terminal: ResolvedAnsiColors,
     /// Syntax token style modifiers.
     pub syntax_style: ResolvedSyntaxStyles,
+    /// Named gradients, sorted by name for binary search lookup.
+    gradients: Box<[(Arc<str>, Gradient)]>,
 }
 
 impl ResolvedPalette {
@@ -108,6 +111,19 @@ impl ResolvedPalette {
     /// Uses the WCAG relative luminance midpoint (0.179) as the threshold.
     pub fn is_light(&self) -> bool {
         self.base.background.is_light()
+    }
+
+    /// Look up a named gradient. Returns `None` if no gradient with that name exists.
+    pub fn gradient(&self, name: &str) -> Option<&Gradient> {
+        self.gradients
+            .binary_search_by_key(&name, |(k, _)| k.as_ref())
+            .ok()
+            .map(|i| &self.gradients[i].1)
+    }
+
+    /// Iterate over all named gradients as `(name, gradient)` pairs.
+    pub fn gradients(&self) -> impl Iterator<Item = (&str, &Gradient)> {
+        self.gradients.iter().map(|(k, v)| (k.as_ref(), v))
     }
 }
 
@@ -135,23 +151,98 @@ impl Palette {
     /// Each `.merge()` produces a stack-allocated group of `Option<Color>`
     /// (Copy types) consumed immediately by `from_group`. No heap allocation.
     pub fn resolve_with(&self, fallback: &Palette) -> ResolvedPalette {
-        ResolvedPalette {
+        let base = ResolvedBaseColors::from_group(&self.base.merge(&fallback.base));
+        let semantic = ResolvedSemanticColors::from_group(&self.semantic.merge(&fallback.semantic));
+        let diff = ResolvedDiffColors::from_group(&self.diff.merge(&fallback.diff));
+        let surface = ResolvedSurfaceColors::from_group(&self.surface.merge(&fallback.surface));
+        let typography =
+            ResolvedTypographyColors::from_group(&self.typography.merge(&fallback.typography));
+        let syntax =
+            ResolvedSyntaxColors::from_group_with_fallback(&self.syntax.merge(&fallback.syntax));
+        let editor = ResolvedEditorColors::from_group(&self.editor.merge(&fallback.editor));
+        let terminal = ResolvedAnsiColors::from_group(&self.terminal.merge(&fallback.terminal));
+        let syntax_style = ResolvedSyntaxStyles::from_group_with_fallback(
+            &self.syntax_style.merge(&fallback.syntax_style),
+        );
+
+        let mut resolved = ResolvedPalette {
             meta: self.meta.clone(),
-            base: ResolvedBaseColors::from_group(&self.base.merge(&fallback.base)),
-            semantic: ResolvedSemanticColors::from_group(&self.semantic.merge(&fallback.semantic)),
-            diff: ResolvedDiffColors::from_group(&self.diff.merge(&fallback.diff)),
-            surface: ResolvedSurfaceColors::from_group(&self.surface.merge(&fallback.surface)),
-            typography: ResolvedTypographyColors::from_group(
-                &self.typography.merge(&fallback.typography),
-            ),
-            syntax: ResolvedSyntaxColors::from_group_with_fallback(
-                &self.syntax.merge(&fallback.syntax),
-            ),
-            editor: ResolvedEditorColors::from_group(&self.editor.merge(&fallback.editor)),
-            terminal: ResolvedAnsiColors::from_group(&self.terminal.merge(&fallback.terminal)),
-            syntax_style: ResolvedSyntaxStyles::from_group_with_fallback(
-                &self.syntax_style.merge(&fallback.syntax_style),
-            ),
+            base,
+            semantic,
+            diff,
+            surface,
+            typography,
+            syntax,
+            editor,
+            terminal,
+            syntax_style,
+            gradients: Box::new([]),
+        };
+        resolved.gradients = resolve_gradients(&self.gradients, &resolved);
+        resolved
+    }
+}
+
+/// Find a named slot within an `all_slots()` iterator.
+fn find_slot<'a>(mut slots: impl Iterator<Item = (&'static str, &'a Color)>, field: &str) -> Color {
+    slots
+        .find(|(name, _)| *name == field)
+        .map(|(_, color)| *color)
+        .unwrap_or_default()
+}
+
+impl ResolvedPalette {
+    /// Look up a resolved color by section and field name.
+    ///
+    /// Token references were validated at parse time, so an unrecognized
+    /// section/field falls back to `Color::default()`.
+    fn lookup_token(&self, section: &str, field: &str) -> Color {
+        match section {
+            "base" => find_slot(self.base.all_slots(), field),
+            "semantic" => find_slot(self.semantic.all_slots(), field),
+            "diff" => find_slot(self.diff.all_slots(), field),
+            "surface" => find_slot(self.surface.all_slots(), field),
+            "typography" => find_slot(self.typography.all_slots(), field),
+            "syntax" => find_slot(self.syntax.all_slots(), field),
+            "editor" => find_slot(self.editor.all_slots(), field),
+            "terminal" => find_slot(self.terminal.all_slots(), field),
+            _ => Color::default(),
         }
     }
+}
+
+/// Resolve all gradient definitions into concrete gradients.
+///
+/// Input is already sorted by name (from `parse_gradients`), so the output
+/// preserves that order for binary-search lookup.
+fn resolve_gradients(
+    defs: &[(Arc<str>, GradientDef)],
+    resolved: &ResolvedPalette,
+) -> Box<[(Arc<str>, Gradient)]> {
+    defs.iter()
+        .map(|(name, def)| {
+            let stops: Vec<GradientStop> = def
+                .stops()
+                .iter()
+                .map(|(gc, position)| {
+                    let color = match gc {
+                        GradientColor::Literal(c) => *c,
+                        GradientColor::Token { section, field } => {
+                            resolved.lookup_token(section, field)
+                        }
+                    };
+                    GradientStop {
+                        color,
+                        position: *position,
+                    }
+                })
+                .collect();
+            // Validated at parse time to have ≥ 2 sorted stops.
+            (
+                Arc::clone(name),
+                Gradient::new_unchecked(stops, def.space()),
+            )
+        })
+        .collect::<Vec<_>>()
+        .into_boxed_slice()
 }
