@@ -211,6 +211,29 @@ let palette = load_preset("github_dark").unwrap();
 ctx.set_visuals(to_egui_visuals(&palette));
 ```
 
+### syntect
+
+Requires the `syntect` feature.
+
+```rust
+use palette_core::load_preset;
+use palette_core::syntect::to_syntect_theme;
+
+let palette = load_preset("tokyonight").unwrap();
+let resolved = palette.resolve();
+let theme = to_syntect_theme(&resolved, &resolved.syntax_style);
+```
+
+The returned `Theme` populates global settings (foreground, background, caret, selection, gutter) from the resolved palette's base and editor colors. Each of the 38 syntax fields maps to one or more TextMate scope selectors, with font styles (bold, italic, underline) carried through.
+
+Pass the theme directly to syntect's highlighter:
+
+```rust,ignore
+use syntect::easy::HighlightLines;
+
+let mut h = HighlightLines::new(syntax, &theme);
+```
+
 ### JSON
 
 Requires the `snapshot` feature.
@@ -532,9 +555,10 @@ Sections: `base`, `semantic`, `diff`, `surface`, `typography`, `syntax`, `editor
 | `terminal` | `ratatui` | `Palette` → `ratatui::style::Color` maps |
 | `egui` | `egui` | `Palette` → `egui::Visuals` |
 | `snapshot` | `serde_json` | JSON serialization of `Palette` |
+| `syntect` | `syntect` | `Palette` → `syntect::highlighting::Theme` |
 | `platform` | — | Parse `[platform.terminal]` / `[platform.web]` overrides |
 | `wasm` | `wasm-bindgen`, `js-sys` | JavaScript bindings (includes `snapshot`) |
-| `full` | all except `wasm` | `terminal` + `egui` + `snapshot` + `platform` |
+| `full` | all except `wasm` | `terminal` + `egui` + `snapshot` + `syntect` + `platform` |
 
 Core functionality — parsing, merge, CSS export, WCAG contrast, color manipulation — requires no optional dependencies.
 

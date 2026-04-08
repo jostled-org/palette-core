@@ -7,7 +7,7 @@
 
 Need a color palette? Do you have to hand-roll it?
 
-**Palette Core** is a theme engine that turns TOML palette definitions into CSS, terminal, egui, JSON, and WASM exports.
+**Palette Core** is a theme engine that turns TOML palette definitions into CSS, terminal, egui, syntect, JSON, and WASM exports.
 
 ```rust
 use palette_core::load_preset;
@@ -76,7 +76,7 @@ let resolved = palette.resolve_with_contrast(ContrastLevel::AaNormal);
 
 The [guide](docs/guide.md) covers rendering targets, theme switching, custom presets, color manipulation, platform overrides, and WASM bindings.
 
-31 presets ship built-in — Catppuccin, TokyoNight, Dracula, Nord, Gruvbox, and [more](docs/guide.md#bundled-presets). Golden Hour is an original warm-toned family (light, dusk, twilight) exclusive to palette-core. Optional [feature flags](docs/guide.md#feature-flags) enable `terminal`, `egui`, `snapshot`, `platform`, and `wasm` targets.
+31 presets ship built-in — Catppuccin, TokyoNight, Dracula, Nord, Gruvbox, and [more](docs/guide.md#bundled-presets). Golden Hour is an original warm-toned family (light, dusk, twilight) exclusive to palette-core. Optional [feature flags](docs/guide.md#feature-flags) enable `terminal`, `egui`, `syntect`, `snapshot`, `platform`, and `wasm` targets.
 
 ## Demos
 

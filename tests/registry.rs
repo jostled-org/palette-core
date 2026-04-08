@@ -469,3 +469,45 @@ foreground = "#24292e"
         "custom theme with light background should be light"
     );
 }
+
+#[test]
+fn theme_info_custom_inherited_theme_uses_inherited_background() {
+    let base_toml = r##"
+[meta]
+name = "Light Base"
+preset_id = "light_base"
+schema_version = "1"
+style = "light"
+kind = "preset-base"
+
+[base]
+background = "#f6f8fa"
+foreground = "#24292e"
+"##;
+
+    let variant_toml = r##"
+[meta]
+name = "Inherited Light Variant"
+preset_id = "inherited_light_variant"
+schema_version = "1"
+style = "light"
+kind = "preset-variant"
+inherits = "light_base"
+
+[base]
+foreground = "#111111"
+"##;
+
+    let mut reg = Registry::new();
+    reg.add_toml(base_toml).unwrap();
+    reg.add_toml(variant_toml).unwrap();
+
+    let info = reg
+        .list()
+        .find(|t| t.id.as_ref() == "inherited_light_variant")
+        .unwrap();
+    assert!(
+        info.is_light,
+        "custom inherited theme should use inherited light background"
+    );
+}

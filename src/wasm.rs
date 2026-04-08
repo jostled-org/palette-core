@@ -205,7 +205,7 @@ impl JsPalette {
     #[wasm_bindgen(js_name = "isLight")]
     pub fn is_light(&self) -> bool {
         let bg = self.inner.base.background.unwrap_or_default();
-        bg.relative_luminance() > 0.179
+        bg.is_light()
     }
 
     /// Style modifier slots as a `Map<string, string>` (e.g. `"bold,italic"`).

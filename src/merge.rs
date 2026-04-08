@@ -16,10 +16,21 @@ fn merge_platform_sections(
     primary: &crate::manifest::PlatformSections,
     fallback: &crate::manifest::PlatformSections,
 ) -> crate::manifest::PlatformSections {
-    let mut merged = primary.clone();
+    let mut merged = crate::manifest::PlatformSections::new();
+    for (platform, section) in primary {
+        match fallback.get(platform) {
+            Some(fb) => {
+                merged.insert(platform.clone(), merge_sections(section, fb));
+            }
+            None => {
+                merged.insert(platform.clone(), section.clone());
+            }
+        }
+    }
     for (platform, section) in fallback {
-        let existing = merged.entry(platform.clone()).or_default();
-        *existing = merge_sections(existing, section);
+        merged
+            .entry(platform.clone())
+            .or_insert_with(|| section.clone());
     }
     merged
 }

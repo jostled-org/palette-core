@@ -76,6 +76,21 @@ impl Color {
         buf.into_boxed_str()
     }
 
+    /// WCAG 2.1 relative luminance midpoint threshold.
+    ///
+    /// Colors with `relative_luminance() > LUMINANCE_MIDPOINT` are perceptually
+    /// light. Derived from the geometric mean of black (0.0) and white (1.0)
+    /// luminance under the WCAG contrast formula: `(1.05 / 0.05) = 21:1` yields
+    /// a midpoint of approximately 0.179.
+    pub const LUMINANCE_MIDPOINT: f64 = 0.179;
+
+    /// Returns `true` if this color is perceptually light.
+    ///
+    /// Uses [`Self::LUMINANCE_MIDPOINT`] (WCAG relative luminance midpoint).
+    pub fn is_light(&self) -> bool {
+        self.relative_luminance() > Self::LUMINANCE_MIDPOINT
+    }
+
     /// WCAG 2.1 relative luminance. Returns a value in `[0.0, 1.0]`.
     pub fn relative_luminance(&self) -> f64 {
         let linearize = |channel: u8| {

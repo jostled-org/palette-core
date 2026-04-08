@@ -34,6 +34,7 @@
 //! | JSON snapshot | `snapshot` | [`Palette::to_json`](snapshot) |
 //! | ratatui `Color` | `terminal` | [`terminal::to_terminal_theme`] |
 //! | egui `Visuals` | `egui` | [`egui::to_egui_visuals`] |
+//! | syntect `Theme` | `syntect` | [`syntect::to_syntect_theme`] |
 //! | WASM/JS bindings | `wasm` | `wasm` module |
 
 /// 8-bit RGB color type and hex parsing.
@@ -81,6 +82,10 @@ pub mod snapshot;
 
 #[cfg(feature = "egui")]
 pub mod egui;
+
+/// syntect `Theme` generation from resolved palettes.
+#[cfg(feature = "syntect")]
+pub mod syntect;
 
 #[cfg(feature = "wasm")]
 pub mod wasm;

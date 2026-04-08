@@ -107,7 +107,7 @@ impl ResolvedPalette {
     ///
     /// Uses the WCAG relative luminance midpoint (0.179) as the threshold.
     pub fn is_light(&self) -> bool {
-        self.base.background.relative_luminance() > 0.179
+        self.base.background.is_light()
     }
 }
 
