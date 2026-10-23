@@ -33,7 +33,8 @@ macro_rules! apply_stroke {
     ($field:expr, $width:expr => $($target:expr),+) => {
         match $field {
             Some(c) => {
-                let stroke = ::egui::Stroke::new($width, to_color32(c));
+                let width: f32 = $width;
+                let stroke = ::egui::Stroke::new(width, to_color32(c));
                 $($target = stroke;)+
             }
             None => {}
